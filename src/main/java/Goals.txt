@@ -1,0 +1,19 @@
+Goals of this project:
+
+1. Create a game board
+2. This board, from the site .html, will track all user mouse position.
+3. Position of other mouse (multiplayer) will be broadcast and rendered to other players.
+4. This board can be rotated (mousewheel or arrows), while keeping coordinates.
+5. This board can hold items.
+6. Items can be moved and hidden (facedown, and vice versa).
+7. Rendering of the item is client-side. Regardless of board rotation, the items always face the player's P.O.V.
+    7.1 Note: P.O.V. = Point of View
+        7.1.1 Note: If the board is tilted 90 degrees, the cards remain upright.
+        7.1.2 Note: The items, separately, can be rotated (select/highlight then [mousewheel] or [arrows]).
+            7.1.2.1: Independently rotated items retain their rotational property as rendered on client-side.
+8. This board can be zoomed out from, as well as zoomed in.
+    8.1: Items in the board retain their relative size. They will 'shrink' and 'grow' with the board.
+
+
+
+

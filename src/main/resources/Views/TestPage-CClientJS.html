@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+        <link rel="stylesheet" href="style.css">
+        <style>
+
+        </style>
+    </head>
+    <body>
+        <div id="screen">
+<!--            <button type="button" id="enlarge">Enlarge</button>-->
+<!--            <button type="button" id="shrink">Shrink</button>-->
+<!--            <img src="/Images/sticky-note-with-postponed-messageFreePikDotCom.jpg" alt="CorkBoardWithPostItNote" id="tableTop">-->
+            <div id="tableContainer"></div>
+        </div>
+
+
+        <script>
+            /*
+             * Create a javascript websocket object using the URL from Java server endpoint
+             * and connect to websocket endpoint.
+             */
+            const socket = new WebSocket('ws://localhost:8080');
+
+            // Javascript callback function when connection is established.
+            socket.onopen = function(event) {
+            }
+
+            // Javascript callback function when messages is received from server.
+            socket.onmessage = function(msg) {
+            }
+
+            // Javascript callback function when connection is closed.
+            socket.onclose = function(msg) {
+            }
+
+            /* When using scroll wheel on tableTop, shrink or enlarge tableTop */
+            document.getElementById("tabletop").addEventListener("wheel",
+                function(scroll) {
+                    var scrolled = scroll.deltaY;
+                    if(scrolled < 0) {
+                        this.style.scale *= 1.001;
+                    } else {
+                        this.style.scale *= 0.999;
+                    }
+
+                }, false
+            );
+
+            /* Enlarge tableTop via 'scale' property */
+            document.getElementById("enlarge").onclick = function(scroll) {
+
+                document.getElementById("tabletop").style.transform = transform(1.05);
+
+            }
+
+            /* Shrink tableTop vis 'scale' property */
+            document.getElementById("shrink").onclick = function(scroll) {
+
+                document.getElementById("tabletop").style.scale = transform(0.95);
+
+            }
+            console.log(document.getElementById("tableTop").style.scale);
+
+
+            var mousePosition;
+            var offset = [0,0];
+            var tabletop = null;
+            var isDown = false;
+        </script>
+    </body>
+</html>
