@@ -13,8 +13,15 @@
     background-color: #cccccc;
     margin: 0;
     height: 100vh;
-    width: 100vw;
+    width: 100vw;/*
+    display: flex;
+    align-items: center;*/
+    /*Okay, but I need this height/width to be LARGE, and the div itself to be clipping past*/
 }
+
+/*#tableContainer::after {
+    content: url(../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg);
+}*/
 
 html, body{
     margin:0;
