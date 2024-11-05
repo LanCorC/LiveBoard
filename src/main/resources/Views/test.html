@@ -13,82 +13,81 @@
 /*            background-image: url(../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg);*/
         }
         #gameBoard {
-/*            background-image: url(../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg);*/
             background-position: center;
-/*            height: inherit;*/
-/*            width: inherit;*/
             background-color: white;
             background-image: none;
-
-        }
-
-        img {
-            position: sticky;
         }
     </style>
 </head>
 <body id="viewport">
 <canvas id="gameBoard"></canvas>
+</body>
 <script>
-    //    window.addEventListener("click", () => {
-    //        const img = new Image();
-    //        img.onload = () => {
-    //            console.log("lfg baby");
-    //        }
-    //        img.src = "./../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg";
-    //        document.getElementById("screen").appendChild(img);
-    //        console.log(document.getElementById("screen"));
-    //    })
-    //
-    //    window.addEventListener("onresize") = location.reload();
-
-
-
-    //Scrolling shenanigans below:
-    let scale = 1;
+    //Variables
     const board = document.getElementById("gameBoard");
-    const context = board.getContext("2d");
-    board.height = window.innerHeight;
-    board.width = window.innerWidth;
+    const background = new Image();
+    console.log("please call me back");
 
-    board.onwheel = (event) => {
-        console.log(scale);
-
-        //Positive deltaY is scrolling down
-        scale *= event.deltaY < 0 ? 0.95 : 1.05;
-
-        //Min and max bounds
-        scale = Math.min(Math.max(0.005, scale), 5);
-
-        requestAnimationFrame(() => afterScale(scale));
-    }
-
-    const img = new Image();
-    img.onload = () => {
-        afterScale();
-        alert('drawn!');
-    }
-    img.src = "../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg";
-
-    function afterScale(measure) {
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.clearRect(0,0,board.width,board.height);
-
-        context.scale(measure, measure);
-        context.drawImage(img, 0, 0);
-    }
-
-    //this is something to import, so it does not clog; like a library
-    window.addEventListener('resize', function(event) {
-        const vp = document.getElementById("viewport");
-        vp.style.height = '100vh';
-        vp.style.width = '100vw';
+    window.onload = function() {
+        console.log("beep!");
         board.height = window.innerHeight;
         board.width = window.innerWidth;
-        afterScale(scale);
-    }, true);
 
+        //Load all event interactions, draws,
+        const context = board.getContext("2d");
+
+        const redraw = function() {
+            //Clear
+            context.save();
+            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.clearRect(0,0,board.width,board.height);
+            context.restore();
+
+            //Repaint
+            context.drawImage(background, 0, 0);
+            console.log("redrawn!");
+        }
+        redraw();
+
+        //multiplier
+        let scale = 1.1;
+
+        const zoom = function(val) {
+            let factor = Math.pow(scale, val); //example: scale 2 equates: double (pow2) or half (pow-2 = x0.5)
+            context.scale(factor, factor);
+            redraw();
+        }
+
+        const scroll = function(event) {
+            console.log(event.deltaY);
+
+            //Positive deltaY is scrolling down, or 'zooming out', thus smaller scale
+            zoom(event.deltaY < 0 ? 1 : -1);
+        }
+
+        //Event is registering
+        //        board.addEventListener("wheel", (event) => { console.log("wheel") } );
+        board.addEventListener("wheel", scroll, false);
+
+
+        //Window resizing -- works
+        //this is something to import, so it does not clog; like a library
+        window.addEventListener('resize', function(event) {
+            const vp = document.getElementById("viewport");
+            vp.style.height = '100vh';
+            vp.style.width = '100vw';
+            board.height = window.innerHeight;
+            board.width = window.innerWidth;
+            console.log("resized");
+            redraw();
+        }, true);
+    }
+
+
+    background.onload = function() {
+        console.log("image here");
+    }
+    background.src = "../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg";
 
 </script>
-</body>
 </html>
