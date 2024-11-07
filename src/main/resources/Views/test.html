@@ -33,8 +33,11 @@
         board.height = window.innerHeight;
         board.width = window.innerWidth;
 
+
         //Load all event interactions, draws,
         const context = board.getContext("2d");
+        trackTransforms(context);
+
 
         const redraw = function() {
             //Clear
@@ -49,17 +52,67 @@
         }
         redraw();
 
-        //multiplier
+        //mouse tracking
+        let mouse = {
+            x: board.width,
+            y: board.height
+        };
+
+        let startPoint;
+        let dragging;
+
+        board.addEventListener("mousemove", function(event) {
+            mouse.x = event.offsetX;
+            mouse.y = event.offsetY;
+            //check for click-hold-drag
+            if(startPoint) {
+                let pt = context.transformPoint(mouse.x, mouse.y);
+                context.translate(pt.x-startPoint.x, pt.y-startPoint.y);
+                redraw();
+            }
+        },false);
+
+        //TODO: check 2ndary canvas if 'playmat' or 'tabletop' selected, as opposed to 'card' or 'deck'
+        board.addEventListener("mousedown", function() {
+            startPoint = context.transformPoint(mouse.x, mouse.y);
+            dragging = true;
+        }, false);
+        board.addEventListener("mouseup", function() {
+            startPoint = null;
+            dragging = false;
+        }, false);
+
+
+        //experimental rotate the entire board
+        //in appropriate application, tie this to a button - works
+        //cons: rotates from 0,0 and does is document global for keypress a,d
+        window.addEventListener("keydown", function(event){
+            let key = event.code;
+            console.log(key);
+            if(key == "KeyA") {
+                console.log("a");
+                context.rotate(15 * Math.PI / 180);
+            } else if(key == "KeyD") {
+                context.rotate(-15 * Math.PI / 180);
+                console.log("d");
+            }
+            redraw();
+        }, false);
+
+        //scroll responsiveness multiplier
         let scale = 1.1;
 
         const zoom = function(val) {
-            let factor = Math.pow(scale, val); //example: scale 2 equates: double (pow2) or half (pow-2 = x0.5)
+            let factor = Math.pow(scale, val); //example: scale '2' results in => double (pow2) or half (pow-2 = x0.5)
+            let pt = context.transformPoint(mouse.x, mouse.y);
+            context.translate(pt.x, pt.y);
             context.scale(factor, factor);
+            context.translate(-pt.x, -pt.y);
             redraw();
         }
 
         const scroll = function(event) {
-            console.log(event.deltaY);
+            event.preventDefault();
 
             //Positive deltaY is scrolling down, or 'zooming out', thus smaller scale
             zoom(event.deltaY < 0 ? 1 : -1);
@@ -83,11 +136,33 @@
         }, true);
     }
 
-
-    background.onload = function() {
-        console.log("image here");
-    }
     background.src = "../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg";
+
+    //transformTracking; for now is single for transforming the point
+    //TODO: maybe bind BOTH canvases here. where one is transformed, called to redraw, so it the other
+    function trackTransforms(ctx) {
+        //has transform properties
+//        let matrix = DOMMatrix();
+
+//        let transforms = []; //stores transforms, for purpose of save() and restore()
+
+//        let save = ctx.save;
+//        ctx.save = function() {
+//            transforms.push(matrix);
+//
+//
+//            return save.call(ctx);
+//        }
+
+        //Assuming this is all i minimally require for single-canvas
+        let point = new DOMPoint();
+        ctx.transformPoint = function(x, y) {
+            point.x = x; point.y = y;
+            let matrix = ctx.getTransform();
+            //converts on-screen client.x,client.y to true canvas position (post transform)
+            return point.matrixTransform(matrix.inverse());
+        }
+    }
 
 </script>
 </html>
