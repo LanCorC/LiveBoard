@@ -16,28 +16,39 @@
             background-position: center;
             background-color: white;
             background-image: none;
+            position: absolute;
+        }
+
+        #touchBoard {
+            background-position: center;
+            background-color: none;
+            position: absolute;
+/*            opacity: 0;*/
+            opacity: 0.5; /* for purposes of testing 'colors'; otherwise should be left at 0 */
         }
     </style>
 </head>
 <body id="viewport">
 <canvas id="gameBoard"></canvas>
+<canvas id="touchBoard"></canvas>
 </body>
 <script>
     //Variables
     const board = document.getElementById("gameBoard");
+    const touch = document.getElementById("touchBoard");
     const background = new Image();
     console.log("please call me back");
 
     window.onload = function() {
         console.log("beep!");
-        board.height = window.innerHeight;
-        board.width = window.innerWidth;
-
 
         //Load all event interactions, draws,
         const context = board.getContext("2d");
-        trackTransforms(context);
+        context.translate(-background.width/2, -background.height/2);
+        bindCanvas(board, touch);
 
+        board.setHeight(window.innerHeight);
+        board.setWidth(window.innerWidth);
 
         const redraw = function() {
             //Clear
@@ -49,7 +60,7 @@
             //Repaint
             context.drawImage(background, 0, 0);
             console.log("redrawn!");
-        }
+        };
         redraw();
 
         //mouse tracking
@@ -59,11 +70,17 @@
         };
 
         let startPoint;
-        let dragging;
+//        let dragging;
 
-        board.addEventListener("mousemove", function(event) {
+        touch.addEventListener("mousemove", function(event) {
             mouse.x = event.offsetX;
             mouse.y = event.offsetY;
+
+            //Temporary code TODO -- testing if we can use 'mousemove' to confirm color pixel being detected
+            let data = touch.getContext("2d").getImageData(mouse.x, mouse.y, 1, 1).data;
+            console.log(data.slice(0,4).toString());
+            //Temporary code TODO
+
             //check for click-hold-drag
             if(startPoint) {
                 let pt = context.transformPoint(mouse.x, mouse.y);
@@ -73,13 +90,13 @@
         },false);
 
         //TODO: check 2ndary canvas if 'playmat' or 'tabletop' selected, as opposed to 'card' or 'deck'
-        board.addEventListener("mousedown", function() {
+        touch.addEventListener("mousedown", function() {
             startPoint = context.transformPoint(mouse.x, mouse.y);
-            dragging = true;
+//            dragging = true;
         }, false);
-        board.addEventListener("mouseup", function() {
+        touch.addEventListener("mouseup", function() {
             startPoint = null;
-            dragging = false;
+//            dragging = false;
         }, false);
 
 
@@ -88,13 +105,10 @@
         //cons: rotates from 0,0 and does is document global for keypress a,d
         window.addEventListener("keydown", function(event){
             let key = event.code;
-            console.log(key);
             if(key == "KeyA") {
-                console.log("a");
                 context.rotate(15 * Math.PI / 180);
             } else if(key == "KeyD") {
                 context.rotate(-15 * Math.PI / 180);
-                console.log("d");
             }
             redraw();
         }, false);
@@ -109,19 +123,18 @@
             context.scale(factor, factor);
             context.translate(-pt.x, -pt.y);
             redraw();
-        }
+        };
 
         const scroll = function(event) {
             event.preventDefault();
 
             //Positive deltaY is scrolling down, or 'zooming out', thus smaller scale
             zoom(event.deltaY < 0 ? 1 : -1);
-        }
+        };
 
         //Event is registering
         //        board.addEventListener("wheel", (event) => { console.log("wheel") } );
-        board.addEventListener("wheel", scroll, false);
-
+        touch.addEventListener("wheel", scroll, false);
 
         //Window resizing -- works
         //this is something to import, so it does not clog; like a library
@@ -129,8 +142,8 @@
             const vp = document.getElementById("viewport");
             vp.style.height = '100vh';
             vp.style.width = '100vw';
-            board.height = window.innerHeight;
-            board.width = window.innerWidth;
+            board.setHeight(window.innerHeight);
+            board.setWidth(window.innerWidth);
             console.log("resized");
             redraw();
         }, true);
@@ -139,30 +152,80 @@
     background.src = "../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg";
 
     //transformTracking; for now is single for transforming the point
-    //TODO: maybe bind BOTH canvases here. where one is transformed, called to redraw, so it the other
-    function trackTransforms(ctx) {
-        //has transform properties
-//        let matrix = DOMMatrix();
+    //Introduces canvas.setHeight(y), canvas.setWidth(x)
+    //Introduces context.transformPoint(x, y)
+    function bindCanvas(visual, interact) {
 
-//        let transforms = []; //stores transforms, for purpose of save() and restore()
+        visual.setWidth = function(x) {
+            visual.width = x;
+            interact.width = x;
+        }
 
-//        let save = ctx.save;
-//        ctx.save = function() {
-//            transforms.push(matrix);
-//
-//
-//            return save.call(ctx);
-//        }
+        visual.setHeight = function(y) {
+            visual.height = y;
+            interact.height = y;
+        }
 
-        //Assuming this is all i minimally require for single-canvas
+        let vis = visual.getContext("2d");
+        let int = interact.getContext("2d");
+
+        let save = vis.save;
+        vis.save = function() {
+            int.save();
+            return save.call(vis);
+        }
+
+        let restore = vis.restore;
+        vis.restore = function() {
+            int.restore();
+            return restore.call(vis);
+        }
+
+        let translate = vis.translate;
+        vis.translate = function(x, y) {
+            int.translate(x, y);
+            return translate.call(vis, x, y);
+        }
+
+        let rotate = vis.rotate;
+        vis.rotate = function(rad) {
+            int.rotate(rad);
+            return rotate.call(vis, rad);
+        }
+
+        let setTransform = vis.setTransform;
+        vis.setTransform = function(x, y, z, a, b, c) {
+            int.setTransform(x, y, z, a, b, c);
+            return setTransform.call(vis, x, y, z, a, b, c);
+        }
+
+        let scale = vis.scale;
+        vis.scale = function(x, y) {
+            int.scale(x, y);
+            return scale.call(vis, x, y);
+        }
+
+        let clearRect = vis.clearRect;
+        vis.clearRect = function(x, y, width, height) {
+            int.clearRect(x, y, width, height);
+            return clearRect.call(vis, x, y, width, height);
+        }
+
+        let drawImage = vis.drawImage;
+        vis.drawImage = function(img, x, y) {
+            int.fillRect(x, y, img.width, img.height);
+            int.fill();
+            return drawImage.call(vis, img, x, y);
+        }
+
+        //converts on-screen client.x,client.y to true canvas position (post transform)
         let point = new DOMPoint();
-        ctx.transformPoint = function(x, y) {
+        vis.transformPoint = function(x, y) {
             point.x = x; point.y = y;
-            let matrix = ctx.getTransform();
-            //converts on-screen client.x,client.y to true canvas position (post transform)
+            let matrix = vis.getTransform();
             return point.matrixTransform(matrix.inverse());
         }
-    }
+    };
 
 </script>
 </html>
