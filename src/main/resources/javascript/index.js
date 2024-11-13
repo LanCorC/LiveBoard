@@ -125,4 +125,4 @@ window.onload = function() {
 }
 
 table.src = "../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg";
-board.style.backgroundImage = "url(../Images/subtle-prism.svg)"; //credits: svgbackgrounds.com
+board.style.backgroundImage = "url(../Images/backgrounds/subtle-prism.svg)"; //credits: svgbackgrounds.com
