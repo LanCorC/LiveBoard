@@ -4,15 +4,22 @@ import gameState from "./gameState.js";
 const makeCard = function(type) {
     let img = new Image;
     let backImg = new Image;
+
+    //properties
     let id = gameState.getID();
     let touchStyle = gameState.idToRGB(id);
+    //TODO: temporary measure for demonstration
+    let coord = {x: Math.random(1) * 2000, y: Math.random(1) * 2000};
+    let width;
+    let height;
+
+    //states
     //only draws 'touchStyle' if reads true, else disabled. examples: card is in a deck, hand, midDrag
     let enabled = true;
     let flipped = false; //determines if backImg,img is rendered
     let rotation = false; //set to radians
-    let coord = {x: 0, y: 0};
-    let width;
-    let height;
+    let selected = false;
+
     //Set image
     let query;
     switch(type) {
@@ -43,21 +50,6 @@ const makeCard = function(type) {
     img.src = `https://picsum.photos/${query}`;
     backImg.src = `https://picsum.photos/${query}`;
 
-//    //register into gameState -- TODO way to select coords for items instead of a designated spawn area
-//    switch(type) {
-//        case "Leader":
-//        case "Monster":
-//        case "Card":
-//            gameState.items.cards.push(this);
-//            break;
-//        case "playMat":
-//        case "gameMat":
-//            gameState.items.playMats.push(this);
-//            break;
-//        default:
-//            return null; //TODO handle error somehow
-//    }
-
     function getX() {
         return coord.x;
     }
@@ -65,7 +57,7 @@ const makeCard = function(type) {
         return coord.y;
     }
 
-    return {type, id, img, touchStyle, enabled, coord, flipped, rotation, getX, getY, width, height};
+    return {type, id, img, touchStyle, enabled, coord, flipped, rotation, getX, getY, width, height, selected};
 }
 
 //hardcoded for testing item summon

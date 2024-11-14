@@ -7,6 +7,7 @@ const board = document.getElementById("gameBoard");
 const touch = document.getElementById("touchBoard");
 const table = new Image();
 const background = new Image();
+let selected = [];
 
 window.onload = function() {
     //Load all event interactions, draws,
@@ -68,22 +69,39 @@ window.onload = function() {
     },false);
 
     //TODO: check 2ndary canvas if 'playmat' or 'tabletop' selected, as opposed to 'card' or 'deck'
-    touch.addEventListener("mousedown", function() {
+    touch.addEventListener("mousedown", function(event) {
         startPoint = context.transformPoint(mouse.x, mouse.y);
 
-        //Temporary code TODO -- testing if we can use 'mousemove' to confirm color pixel being detected
-        //            let a, b, c, d;
         let data = touch.getContext("2d").getImageData(mouse.x, mouse.y, 1, 1).data
         let { 0: r, 1: g, 2: b, 3: t }  = data;
-        console.log(r);
-        console.log(g);
-        console.log(b);
         let itemNo = r + g*255 + b*255*255;
         console.log(`${r} ${g} ${b} is itemNo: ${itemNo}`);
         console.log(itemNo);
-        //Temporary code TODO
 
-        //            dragging = true;
+        //Intention: clicking once will select an obj. ctrl to select more than one.
+        //if not already
+        let item = gameState.findByRGB(r,g,b);
+
+        if (!event.ctrlKey) {
+            //clear
+            selected.forEach((item)=> {
+                item.selected = false;
+            })
+            selected.length = 0;
+        }
+        //add item, if not undefined
+        if(item){
+            if(!selected.includes(item)) {
+                selected.push(item);
+                gameState.select(item);
+            } else {
+                item.selected = false;
+                let index = selected.indexOf(item);
+                selected.splice(index, 1);
+            }
+        }
+        redraw();
+
     }, false);
     touch.addEventListener("mouseup", function() {
         startPoint = null;

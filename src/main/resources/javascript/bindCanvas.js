@@ -15,6 +15,8 @@
     let vis = visual.getContext("2d");
     let int = interact.getContext("2d", {willReadFrequently : true});
 
+     //-- TODO - tie userColor to make it clear which user has selected what
+     //*optional, as the user's mouse will be tracked too
 
     let save = vis.save;
     vis.save = function() {
@@ -75,7 +77,15 @@
         int.fillRect(x, y, item.width, item.height);
         int.fill();
 
-        return drawImage.call(vis, !item.flipped ? item.img : item.backImg, x, y);
+//        return drawImage.call(vis, !item.flipped ? item.img : item.backImg, x, y);
+
+        if(item.selected) {
+            vis.shadowColor = "white";
+            vis.shadowBlur = 200;
+        }
+        drawImage.call(vis, !item.flipped ? item.img : item.backImg, x, y);
+        vis.shadowBlur = 0;
+
     }
 
     //converts on-screen client.x,client.y to true canvas position (post transform)

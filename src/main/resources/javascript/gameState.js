@@ -10,7 +10,7 @@ const gameState = (function() {
     let itemCount = 0;
 
     function getID() {
-        return itemCount++;
+        return ++itemCount;
     }
 
     //may be best for controller to hold
@@ -28,27 +28,63 @@ const gameState = (function() {
         return r + g*255 + b*255*255;
     }
 
-    //turn to array input at some stage, for sake of 'deck'
-    function push(item) {
-        switch(item.type) {
+    //private, internal function
+    function findItem(number, list) {
+        //for each item, take its 'id' property, then compare with our value 'number'
+        let item;
+        if(item = list.find(({id}) => id === number)) {
+            return item;
+        }
+        return;
+    }
+
+    //private, internal function
+    function findList(type) {
+        switch(type) {
             case "Leader":
             case "Monster":
             case "Card":
-                gameState.items.cards.push(item);
-                break;
+                return gameState.items.cards;
             case "playMat":
             case "gameMat":
-                gameState.items.playMats.push(item);
-                break;
+                return gameState.items.playMats;
             case "deck":
-                gameState.items.decks.push(item);
-                break;
+                return gameState.items.decks;
             case "player":
-                gameState.items.players.push(item);
-                break;
+                return gameState.items.players;
             default:
                 return null; //TODO handle error somehow
         }
+    }
+
+    //test works
+    function findByRGB(r, g, b) {
+        let id = r + g*255 + b*255*255;
+        let item;
+        for(const [key, list] of Object.entries(items)) {
+            if(item = findItem(id, list)) return item;
+        }
+    }
+
+    //turn to array input at some stage, for sake of 'deck'
+    function push(item) {
+        return findList(item.type).push(item);
+    }
+
+    //to the end of list
+    function forward(item) {
+        let list = findList(item.type);
+        let index = list.indexOf(item);
+        //moves the item up 'up' the list
+        return list.push(list.splice(index, 1)[0]);
+    }
+
+    function select(item) {
+        item.selected = !item.selected;
+        if(item.selected) {
+            forward(item);
+        }
+        return item.selected;
     }
 
     return {
@@ -56,7 +92,9 @@ const gameState = (function() {
         idToRGB,
         rgbToID,
         items,
-        push
+        push,
+        findByRGB,
+        select
     }
 
 })();
