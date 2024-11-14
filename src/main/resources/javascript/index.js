@@ -74,16 +74,32 @@ window.onload = function() {
     }, false);
 
 
-    //experimental rotate the entire board
-    //in appropriate application, tie this to a button - works
-    //cons: rotates from 0,0 and does is document global for keypress a,d
+    //Rotate the board around the mouse, press 'a' or 'd'
+    //note: 90 is right angle rotation, 180 is upsidedown, 360 is all the way to normal
+    let rotateIncrement = 30;
+    let radians = rotateIncrement * Math.PI / 180;
+
     window.addEventListener("keydown", function(event){
-        let key = event.code;
-        if(key == "KeyA") {
-            context.rotate(15 * Math.PI / 180);
-        } else if(key == "KeyD") {
-            context.rotate(-15 * Math.PI / 180);
+        let ele = document.elementFromPoint(mouse.x, mouse.y);
+        let key = ele == touch ? event.code : null;
+        let rotate;
+        switch(key) {
+            case "KeyA":
+                rotate = () => context.rotate(-radians);
+                break;
+            case "KeyD":
+                rotate = () => context.rotate(radians);
+                break;
+            default:
+                //invalid key, skip processing
+                return;
         }
+
+        let point = context.transformPoint(mouse.x, mouse.y);
+        context.translate(+point.x, +point.y);
+        rotate();
+        context.translate(-point.x, -point.y);
+
         redraw();
     }, false);
 
