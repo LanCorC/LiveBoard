@@ -1,4 +1,6 @@
 import bindCanvas from "./bindCanvas.js";
+import gameState from "./gameState.js";
+import main from "./itemsObjects.js";
 
 //Variables
 const board = document.getElementById("gameBoard");
@@ -24,9 +26,24 @@ window.onload = function() {
         //            context.drawImage(background, 0, 0);
         context.restore();
 
-        //Repaint
+        //Repaint -- default object
         context.drawImage(table, 0, 0);
         console.log("redrawn!");
+
+        //draw all items in gameState
+        for (const [type, list] of Object.entries(gameState.items)) {
+//            if(list.length == 0) {
+//                continue;
+//            }
+//            console.log(type);
+//            console.log(list.length);
+            list.forEach((item) => {
+                if(item) {
+//                    console.log(item);
+                    context.drawImage(item, item.getX(), item.getY());
+                }
+            });
+        }
     };
     redraw();
     //mouse tracking
@@ -136,9 +153,12 @@ window.onload = function() {
         redraw();
     }, true);
 
+    //summon items
+    main();
     //For some reason, this needs to be called twice in order to properly capture, as far as tested, "mousedown"
     redraw();
 }
 
-table.src = "../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg";
+let test = "../Images";
+table.src = `../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg`;
 board.style.backgroundImage = "url(../Images/backgrounds/subtle-prism.svg)"; //credits: svgbackgrounds.com

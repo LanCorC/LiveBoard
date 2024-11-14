@@ -13,7 +13,8 @@
     }
 
     let vis = visual.getContext("2d");
-    let int = interact.getContext("2d");
+    let int = interact.getContext("2d", {willReadFrequently : true});
+
 
     let save = vis.save;
     vis.save = function() {
@@ -58,25 +59,23 @@
     }
 
     let drawImage = vis.drawImage;
-    vis.drawImage = function(img, x, y) {
-        int.fillRect(x, y, img.width, img.height);
-        //* fillStytle will be filled by item's unique RGB, then reverse-engineered on itemDrag, itemFlip,
-        //itemRotate
-
-        //TODO: ship to separate method within gameState singleton
-        //mock item
-        let itemNo = 65280;
-        let r = itemNo % 255;
-        let g = Math.floor(itemNo/255%255);
-        let b = Math.floor(itemNo/255/255%255);
-        //mock item
-        if(img.width == 7964) {
-            int.fillStyle = `rgb(${r} ${g} ${b} / 100%)`;
-            //TODO temporary note, 255all is white, 0all is black, % is transparency
+    vis.drawImage = function(item, x, y) {
+        //TODO: below is 'default image' for testing, this is not an interactable obj
+        if (item instanceof Element) {
+            int.fillStyle = "black";
+            int.fillRect(x, y, item.width, item.height);
             int.fill();
+
+            //* fillStytle will be filled by item's unique RGB, then reverse-engineered on itemDrag, itemFlip,
+            //itemRotate
+            return drawImage.call(vis, item, x, y);
         }
 
-        return drawImage.call(vis, img, x, y);
+        int.fillStyle = item.touchStyle;
+        int.fillRect(x, y, item.width, item.height);
+        int.fill();
+
+        return drawImage.call(vis, !item.flipped ? item.img : item.backImg, x, y);
     }
 
     //converts on-screen client.x,client.y to true canvas position (post transform)
