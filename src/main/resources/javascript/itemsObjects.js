@@ -48,7 +48,8 @@ const makeCard = function(type) {
             return null; //TODO handle error somehow
     }
     img.src = `https://picsum.photos/${query}`;
-    backImg.src = `https://picsum.photos/${query}`;
+    //"id" query added for sake of loose ensuranec that front and back image is different
+    backImg.src = `https://picsum.photos/id/${id}/${query}`;
 
     function getX() {
         return coord.x;
@@ -57,7 +58,7 @@ const makeCard = function(type) {
         return coord.y;
     }
 
-    return {type, id, img, touchStyle, enabled, coord, flipped, rotation, getX, getY, width, height, selected};
+    return {type, id, img, backImg, touchStyle, enabled, coord, flipped, rotation, getX, getY, width, height, selected};
 }
 
 //hardcoded for testing item summon

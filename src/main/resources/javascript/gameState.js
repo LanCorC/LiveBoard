@@ -79,12 +79,24 @@ const gameState = (function() {
         return list.push(list.splice(index, 1)[0]);
     }
 
-    function select(item) {
-        item.selected = !item.selected;
-        if(item.selected) {
-            forward(item);
-        }
-        return item.selected;
+    function select(items) {
+        if(items[0] == undefined) return;
+        items.forEach((item) => {
+            item.selected = true;
+            if(item.selected) forward(item);
+        });
+    }
+    function deselect(items) {
+        if(items[0] == undefined) return;
+        items.forEach((item) => {
+            item.selected = false;
+        });
+    }
+
+    //to accept array
+    function flip(items) {
+        items.forEach((item) => item.flipped = !item.flipped);
+        return items[0].flipped;
     }
 
     return {
@@ -94,7 +106,9 @@ const gameState = (function() {
         items,
         push,
         findByRGB,
-        select
+        select,
+        deselect,
+        flip
     }
 
 })();

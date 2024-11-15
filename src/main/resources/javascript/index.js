@@ -8,6 +8,7 @@ const touch = document.getElementById("touchBoard");
 const table = new Image();
 const background = new Image();
 let selected = [];
+let itemFocus; //current item of "mousedown"; added to 'selected' if mouseUp successful
 
 window.onload = function() {
     //Load all event interactions, draws,
@@ -54,9 +55,14 @@ window.onload = function() {
     };
 
     let startPoint;
-    //        let dragging;
+    let dragging = false;
 
     touch.addEventListener("mousemove", function(event) {
+
+        //console.log("mousemove");
+
+        dragging = true;
+
         mouse.x = event.offsetX;
         mouse.y = event.offsetY;
 
@@ -68,44 +74,72 @@ window.onload = function() {
         }
     },false);
 
-    //TODO: check 2ndary canvas if 'playmat' or 'tabletop' selected, as opposed to 'card' or 'deck'
     touch.addEventListener("mousedown", function(event) {
         startPoint = context.transformPoint(mouse.x, mouse.y);
+        dragging = false;
 
         let data = touch.getContext("2d").getImageData(mouse.x, mouse.y, 1, 1).data
         let { 0: r, 1: g, 2: b, 3: t }  = data;
         let itemNo = r + g*255 + b*255*255;
-        console.log(`${r} ${g} ${b} is itemNo: ${itemNo}`);
-        console.log(itemNo);
 
-        //Intention: clicking once will select an obj. ctrl to select more than one.
-        //if not already
-        let item = gameState.findByRGB(r,g,b);
-
-        if (!event.ctrlKey) {
-            //clear
-            selected.forEach((item)=> {
-                item.selected = false;
-            })
-            selected.length = 0;
+        //on mousedown, if valid item, select and redraw
+        if(itemFocus = gameState.findByRGB(r,g,b)) {
+            gameState.select(new Array(itemFocus));
+//            //this inner 'if' is purely cosmetic -- it doesnt work?
+//            if(!selected.includes(itemFocus) && !event.ctrlKey) purgeSelected();
+            redraw();
         }
-        //add item, if not undefined
-        if(item){
-            if(!selected.includes(item)) {
-                selected.push(item);
-                gameState.select(item);
-            } else {
-                item.selected = false;
-                let index = selected.indexOf(item);
-                selected.splice(index, 1);
-            }
-        }
-        redraw();
 
     }, false);
-    touch.addEventListener("mouseup", function() {
+    touch.addEventListener("mouseup", function(event) {
         startPoint = null;
-        //            dragging = false;
+
+        if(!itemFocus) {
+        //INVALID - ctrl ? nothing : purge
+            if(!event.ctrlKey) purgeSelected();
+
+        } else if(dragging && event.ctrlKey) {
+        //DRAG ctrlkey
+
+            if(!selected.includes(itemFocus)) {
+                gameState.deselect(new Array(itemFocus));
+            }
+            //else, user only panned across board. all else preserved
+
+        } else if(dragging && !event.ctrlKey) {
+        //DRAG noCtrl
+            if(!selected.includes(itemFocus)) {
+                purgeSelected();
+                gameState.deselect(new Array(itemFocus));
+            }
+            //else, items were all dragged and all else preserved
+
+
+        } else if (event.ctrlKey){
+        //NODRAG Ctrl
+
+            if(selected.includes(itemFocus)) {
+                let index = selected.indexOf(itemFocus);
+                gameState.deselect(selected.splice(index, 1)); //remove, then de-select x1
+            } else {
+                selected.push(itemFocus);
+            }
+
+        } else {
+        //NODRAG noCtrl
+
+            purgeSelected();
+            gameState.flip(new Array(itemFocus));
+            selected.push(itemFocus);
+
+            //if item was already in 'selected', it needs to be reconfirmed
+            gameState.select(new Array(itemFocus));
+        }
+
+        itemFocus = null;
+        dragging = false;
+        console.log(selected);
+        redraw();
     }, false);
 
 
@@ -180,3 +214,8 @@ window.onload = function() {
 let test = "../Images";
 table.src = `../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg`;
 board.style.backgroundImage = "url(../Images/backgrounds/subtle-prism.svg)"; //credits: svgbackgrounds.com
+
+function purgeSelected() {
+    gameState.deselect(selected);
+    selected.length = 0;
+}
