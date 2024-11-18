@@ -102,7 +102,7 @@ window.onload = function() {
 
         //on mousedown, if valid item, select and redraw
         if(itemFocus = gameState.findByRGB(r,g,b)) {
-            gameState.select(new Array(itemFocus));
+            gameState.select(itemFocus);
 //            //this inner 'if' is purely cosmetic -- it doesnt work?
 //            if(!selected.includes(itemFocus) && !event.ctrlKey) purgeSelected();
             redraw();
@@ -119,10 +119,8 @@ window.onload = function() {
         } else if(dragging && event.ctrlKey) {
         //DRAG ctrlkey
 
-            //TODO - introducing drag behavior, we likely want to include it;
-            //TODO - likely not. ctrl drag is strictly pan.
             if(!selected.includes(itemFocus)) {
-                gameState.deselect(new Array(itemFocus));
+                gameState.deselect(itemFocus);
             }
             //else, user only panned across board. all else preserved
 
@@ -130,12 +128,9 @@ window.onload = function() {
         //DRAG noCtrl
             if(!selected.includes(itemFocus)) {
                 purgeSelected();
-                gameState.deselect(new Array(itemFocus));
+                gameState.deselect(itemFocus);
             }
-            //TODO - add, for purposes of group dragging, option to preserve 'selected'
-            //TODO - empty already sorts this out for us? drag, item is already in focus
             //else, items were all dragged and all else preserved
-
 
         } else if (event.ctrlKey){
         //NODRAG Ctrl
@@ -151,11 +146,11 @@ window.onload = function() {
         //NODRAG noCtrl
 
             purgeSelected();
-            gameState.flip(new Array(itemFocus));
+            gameState.flip(itemFocus);
             selected.push(itemFocus);
 
             //if item was already in 'selected', it needs to be reconfirmed
-            gameState.select(new Array(itemFocus));
+            gameState.select(itemFocus);
         }
 
         itemFocus = null;
