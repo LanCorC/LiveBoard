@@ -13,7 +13,7 @@ let itemFocus; //current item of "mousedown"; added to 'selected' if mouseUp suc
 window.onload = function() {
     //Load all event interactions, draws,
     const context = board.getContext("2d");
-    context.translate(window.innerWidth/2, window.innerHeight/2);
+    const context2  = touch.getContext("2d", {willReadFrequently : true});
     bindCanvas(board, touch);
 
     board.setHeight(window.innerHeight);
@@ -30,7 +30,7 @@ window.onload = function() {
 
         //Repaint -- default object
         context.drawImage(table, 0, 0);
-        console.log("redrawn!");
+//        console.log("redrawn!");
 
         //draw all items in gameState
         for (const [type, list] of Object.entries(gameState.items)) {
@@ -42,6 +42,7 @@ window.onload = function() {
             list.forEach((item) => {
                 if(item) {
 //                    console.log(item);
+                    //TODO: streamline - implement drawImage() on the item themselves
                     context.drawImage(item, item.getX(), item.getY());
                 }
             });
@@ -61,15 +62,32 @@ window.onload = function() {
 
         //console.log("mousemove");
 
-        dragging = true;
-
         mouse.x = event.offsetX;
         mouse.y = event.offsetY;
 
         //check for click-hold-drag
         if(startPoint) {
-            let pt = context.transformPoint(mouse.x, mouse.y);
-            context.translate(pt.x-startPoint.x, pt.y-startPoint.y);
+            let point = context.transformPoint(mouse.x, mouse.y);
+            let dx = point.x - startPoint.x;
+            let dy = point.y - startPoint.y;
+            if(itemFocus) {
+                //TODO: see how this feels. ctrl, without, group,solo, outside group,
+                //in group, move all items
+                if(selected.includes(itemFocus)) {
+                    //move all items
+                    gameState.dragItems(dx, dy, selected, dragging);
+                } else {
+                //not in the group, deselect group, move just the item
+                    purgeSelected();
+                    gameState.dragItems(dx, dy, itemFocus, dragging);
+                }
+
+            } else {
+                context.translate(point.x-startPoint.x, point.y-startPoint.y);
+            }
+
+            //Placed here, as means to determine (see .dragItems()) whether this is the first
+            dragging = true;
             redraw();
         }
     },false);
@@ -78,7 +96,7 @@ window.onload = function() {
         startPoint = context.transformPoint(mouse.x, mouse.y);
         dragging = false;
 
-        let data = touch.getContext("2d").getImageData(mouse.x, mouse.y, 1, 1).data
+        let data = touch.getContext("2d").getImageData(mouse.x, mouse.y, 1, 1).data;
         let { 0: r, 1: g, 2: b, 3: t }  = data;
         let itemNo = r + g*255 + b*255*255;
 
@@ -101,6 +119,8 @@ window.onload = function() {
         } else if(dragging && event.ctrlKey) {
         //DRAG ctrlkey
 
+            //TODO - introducing drag behavior, we likely want to include it;
+            //TODO - likely not. ctrl drag is strictly pan.
             if(!selected.includes(itemFocus)) {
                 gameState.deselect(new Array(itemFocus));
             }
@@ -112,6 +132,8 @@ window.onload = function() {
                 purgeSelected();
                 gameState.deselect(new Array(itemFocus));
             }
+            //TODO - add, for purposes of group dragging, option to preserve 'selected'
+            //TODO - empty already sorts this out for us? drag, item is already in focus
             //else, items were all dragged and all else preserved
 
 
@@ -161,6 +183,7 @@ window.onload = function() {
                 break;
             default:
                 //invalid key, skip processing
+                console.log("invalid key");
                 return;
         }
 
@@ -182,16 +205,18 @@ window.onload = function() {
         context.scale(factor, factor);
         context.translate(-pt.x, -pt.y);
         redraw();
+
+        console.log()
     };
 
     const scroll = function(event) {
+        if(event.ctrlKey) event.preventDefault();
         //Positive deltaY is scrolling down, or 'zooming out', thus smaller scale
         zoom(event.deltaY < 0 ? 1 : -1);
     };
 
-    //Event is registering
-    //        board.addEventListener("wheel", (event) => { console.log("wheel") } );
-    touch.addEventListener("wheel", scroll, {passive: true});
+//    touch.addEventListener("wheel", scroll, {passive: true});
+    touch.addEventListener("wheel", scroll);
 
     //Window resizing -- works
     //this is something to import, so it does not clog; like a library
@@ -211,9 +236,8 @@ window.onload = function() {
     redraw();
 }
 
-let test = "../Images";
-table.src = `../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg`;
-board.style.backgroundImage = "url(../Images/backgrounds/subtle-prism.svg)"; //credits: svgbackgrounds.com
+table.src = `https://picsum.photos/50/200`;
+board.style.backgroundImage = "url(../Images/backgrounds/flat-mountains.svg)"; //credits: svgbackgrounds.com
 
 function purgeSelected() {
     gameState.deselect(selected);

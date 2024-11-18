@@ -73,6 +73,8 @@
             return drawImage.call(vis, item, x, y);
         }
 
+        //TODO: abstract away 'item' properties by implementing 'draw' on the images themselves
+        //key reasons: different items, different draws; some do not have 'alternate' imgs
         int.fillStyle = item.touchStyle;
         int.fillRect(x, y, item.width, item.height);
         int.fill();
@@ -81,7 +83,7 @@
 
         if(item.selected) {
             vis.shadowColor = "white";
-            vis.shadowBlur = 200;
+            vis.shadowBlur = 100;
         }
         drawImage.call(vis, !item.flipped ? item.img : item.backImg, x, y);
         vis.shadowBlur = 0;

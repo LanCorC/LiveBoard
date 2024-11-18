@@ -4,6 +4,7 @@ const gameState = (function() {
         playMats: [],
         decks: [], //decks and cards could be merged; making either an extension of the other
         cards: [],
+        tokens: [], //dice, etc
         players: [] //mouse, etc
     }
 
@@ -99,6 +100,21 @@ const gameState = (function() {
         return items[0].flipped;
     }
 
+    function dragItems(dx, dy, items, correct) {
+        if(!Array.isArray(items)) items = new Array(items);
+
+        items.forEach((item) => {
+            //each item's relative start point must be recorded
+            if(!correct) {
+                item.setStart();
+            }
+
+            item.coord.x = dx + item.dragStart.x;
+            item.coord.y = dy + item.dragStart.y;
+
+        });
+    }
+
     return {
         getID,
         idToRGB,
@@ -108,7 +124,8 @@ const gameState = (function() {
         findByRGB,
         select,
         deselect,
-        flip
+        flip,
+        dragItems
     }
 
 })();

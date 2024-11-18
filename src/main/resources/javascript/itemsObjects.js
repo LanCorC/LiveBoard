@@ -1,5 +1,53 @@
 import gameState from "./gameState.js";
 
+const makeDrawFunction = function(type) {
+    //hard coded methods here
+    //cardDraw (flip, and or tap)
+    function cardDraw(visual, touch) {
+
+    }
+    //deck (from bottom of list)
+
+    //gameMat, playMat cycling
+
+    //selection here
+    let draw;
+    switch(type) {
+        case "Leader":
+        case "Monster":
+            query = "338/583";
+            width = 338;
+            height = 583;
+            break;
+        case "playMat":
+            query = "2475/975";
+            width = 2475;
+            height = 975;
+            break;
+        case "gameMat":
+            query = "2475/1500";
+            width = 2475;
+            height = 1500;
+            break;
+        case "Card":
+            query = "308/432";
+            width = 308;
+            height = 432;
+            break;
+        default:
+            return null; //TODO handle error somehow
+    }
+
+    return { draw };
+}
+
+function random() {
+    let num = Math.random(1) * 2000;
+    return num;
+}
+
+//TODO extra note - the 'types' rely on "deck" restrictions
+//...or, i allow it, and keep 'types' as means of separation when summoning in objects :shrug:
 //mock factory js, temporarily hard coded for testing
 const makeCard = function(type) {
     let img = new Image;
@@ -9,9 +57,14 @@ const makeCard = function(type) {
     let id = gameState.getID();
     let touchStyle = gameState.idToRGB(id);
     //TODO: temporary measure for demonstration
-    let coord = {x: Math.random(1) * 2000, y: Math.random(1) * 2000};
+    let coord = {x: random(), y: random()};
     let width;
     let height;
+
+    let dragStart = {
+        x: 0,
+        y: 0
+    };
 
     //states
     //only draws 'touchStyle' if reads true, else disabled. examples: card is in a deck, hand, midDrag
@@ -58,7 +111,12 @@ const makeCard = function(type) {
         return coord.y;
     }
 
-    return {type, id, img, backImg, touchStyle, enabled, coord, flipped, rotation, getX, getY, width, height, selected};
+    function setStart() {
+        dragStart.x = getX();
+        dragStart.y = getY();
+    }
+
+    return {type, id, img, backImg, touchStyle, enabled, coord, flipped, rotation, getX, getY, width, height, selected, setStart, dragStart};
 }
 
 //hardcoded for testing item summon
