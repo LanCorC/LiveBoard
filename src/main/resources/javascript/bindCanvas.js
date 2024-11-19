@@ -76,6 +76,7 @@ import tapIcon from "./assets.js";
         }
 
         //TODO: abstract away 'item' properties by implementing 'draw' on the images themselves
+        //method will likely be under gameState() and to sort depending on card type
         //key reasons: different items, different draws; some do not have 'alternate' imgs
         int.fillStyle = item.touchStyle;
         int.fillRect(x, y, item.width, item.height);
@@ -90,9 +91,9 @@ import tapIcon from "./assets.js";
         drawImage.call(vis, !item.flipped ? item.img : item.backImg, x, y);
         if(item.selected) {
             vis.shadowBlur = 0;
-            drawImage.call(vis, tapIcon, x + item.width/2 - 50, y + item.height/2 - 50);
+            //TODO - move this import to the asset objs
+            drawImage.call(vis, tapIcon, x + item.width/2 - tapIcon.width/2, y + item.height/2 - tapIcon.height/2);
         }
-
 
     }
 
