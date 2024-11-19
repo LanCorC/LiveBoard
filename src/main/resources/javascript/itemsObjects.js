@@ -67,11 +67,12 @@ const makeCard = function(type) {
     };
 
     //states
-    //only draws 'touchStyle' if reads true, else disabled. examples: card is in a deck, hand, midDrag
+    //'enabled' only draws 'touchStyle' if reads true, else disabled. examples: card is in a deck, hand, midDrag
     let enabled = true;
     let flipped = false; //determines if backImg,img is rendered
     let rotation = false; //set to radians
-    let selected = false;
+    let selected = false; //likely placeholder for "lock";
+    //client will check if in selected[], else call server for 'permission'
 
     //Set image
     let query;
@@ -111,12 +112,8 @@ const makeCard = function(type) {
         return coord.y;
     }
 
-    function setStart() {
-        dragStart.x = getX();
-        dragStart.y = getY();
-    }
-
-    return {type, id, img, backImg, touchStyle, enabled, coord, flipped, rotation, getX, getY, width, height, selected, setStart, dragStart};
+    return {type, id, img, backImg, touchStyle, enabled, coord, flipped, rotation,
+        getX, getY, width, height, selected, dragStart};
 }
 
 //hardcoded for testing item summon

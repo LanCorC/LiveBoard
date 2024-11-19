@@ -5,7 +5,7 @@ import main from "./itemsObjects.js";
 //Variables
 const board = document.getElementById("gameBoard");
 const touch = document.getElementById("touchBoard");
-const table = new Image();
+//const table = new Image();
 const background = new Image();
 let selected = [];
 let itemFocus; //current item of "mousedown"; added to 'selected' if mouseUp successful
@@ -19,36 +19,6 @@ window.onload = function() {
     board.setHeight(window.innerHeight);
     board.setWidth(window.innerWidth);
 
-    const redraw = function() {
-        //Clear
-        context.save();
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.clearRect(0,0,board.width,board.height);
-        //background
-        //            context.drawImage(background, 0, 0);
-        context.restore();
-
-        //Repaint -- default object
-        context.drawImage(table, 0, 0);
-//        console.log("redrawn!");
-
-        //draw all items in gameState
-        for (const [type, list] of Object.entries(gameState.items)) {
-//            if(list.length == 0) {
-//                continue;
-//            }
-//            console.log(type);
-//            console.log(list.length);
-            list.forEach((item) => {
-                if(item) {
-//                    console.log(item);
-                    //TODO: streamline - implement drawImage() on the item themselves
-                    context.drawImage(item, item.getX(), item.getY());
-                }
-            });
-        }
-    };
-    redraw();
     //mouse tracking
     let mouse = {
         x: board.width,
@@ -58,7 +28,23 @@ window.onload = function() {
     let startPoint;
     let dragging = false;
 
+    const redraw = function() {
+        //Clear
+        context.save();
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.clearRect(0,0,board.width,board.height);
+        context.restore();
+
+        gameState.drawItems(itemFocus, dragging, context, context2);
+    };
+    redraw();
+
     touch.addEventListener("mousemove", function(event) {
+
+        //TODO: below commented is required to determine 'drag-to-deck' or hand<->board
+//        let data = touch.getContext("2d").getImageData(mouse.x, mouse.y, 1, 1).data;
+//        let { 0: r, 1: g, 2: b, 3: t }  = data;
+//        console.log(`${r}${g}${b}`);
 
         //console.log("mousemove");
 
@@ -178,7 +164,7 @@ window.onload = function() {
                 break;
             default:
                 //invalid key, skip processing
-                console.log("invalid key");
+//                console.log("invalid key");
                 return;
         }
 
@@ -231,7 +217,7 @@ window.onload = function() {
     redraw();
 }
 
-table.src = `https://picsum.photos/50/200`;
+//table.src = `https://picsum.photos/50/200`;
 board.style.backgroundImage = "url(../Images/backgrounds/flat-mountains.svg)"; //credits: svgbackgrounds.com
 
 function purgeSelected() {

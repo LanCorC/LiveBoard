@@ -1,8 +1,10 @@
+import tapIcon from "./assets.js";
+
 const gameState = (function() {
     //in order to render
     const items = {
         playMats: [],
-        decks: [], //decks and cards could be merged; making either an extension of the other
+        decks: [], //decks and cards could be merged;
         cards: [],
         tokens: [], //dice, etc
         players: [] //mouse, etc
@@ -119,7 +121,6 @@ const gameState = (function() {
                 default:
                     console.log("Invalid type!");
             }
-
         });
     }
 
@@ -145,20 +146,78 @@ const gameState = (function() {
         return items[0].flipped;
     }
 
+    //private function - track relative start, for item dragging tracking
+    function setStart(items) {
+        items.forEach((item) => {
+            item.dragStart.x = item.coord.x;
+            item.dragStart.y = item.coord.y;
+        })
+    }
+
     function dragItems(dx, dy, items, correct) {
         if(!Array.isArray(items)) items = new Array(items);
 
-        items.forEach((item) => {
-            //each item's relative start point must be recorded
-            if(!correct) {
-                item.setStart();
-                forward(items);
-            }
+        //each item's relative start point must be recorded
+        if(!correct) {
+            setStart(items)
+            forward(items);
+        }
 
+        items.forEach((item) => {
             item.coord.x = dx + item.dragStart.x;
             item.coord.y = dy + item.dragStart.y;
-
         });
+    }
+
+    //'selected' for clarity, (game-wide)
+    //'focus' and 'dragging' (client-side) for drag-to-deck functionality
+    function drawItems(focus, dragging, visual, interactive) {
+        for (const [type, list] of Object.entries(items)) {
+
+            list.forEach((item) => {
+                let x = item.coord.x;
+                let y = item.coord.y;
+                let width = item.width;
+                let height = item.height;
+
+                //fill the visual
+                //**decks will require additional
+                if(item.selected) {
+                    //server-wide clarity
+                    //TODO: choose a color for each character, store characterID in obj,
+                    //TODO: each character has a color in gameState = way to differentiate
+                    //TODO: color likely stores a modified svg for each character, where
+                    //TODO the fill of svg pointer = color;
+                    visual.shadowColor = "white";
+                    visual.shadowBlur = 100;
+
+                    //fill the interactive
+                    //**decks will require additional
+                    if(!dragging) {
+                        interactive.fillStyle = item.touchStyle;
+                        interactive.fillRect(x , y, width, height);
+                        interactive.fill();
+                    }
+                } else {
+                    //fill the interactive
+                    //**decks will require additional
+                    interactive.fillStyle = item.touchStyle;
+                    interactive.fillRect(x , y, width, height);
+                    interactive.fill();
+                }
+
+                //TODO: item specific, e.g. card flips, mats cycle,
+                visual.drawImage(!item.flipped? item.img : item.backImg, x, y);
+
+                if(item.selected) {
+                    //client-side clarity TODO: likely better applied globally
+                    visual.drawImage(tapIcon, x + width/2 - tapIcon.width/2,
+                        y + height/2 - tapIcon.height/2);
+                    visual.shadowBlur = 0;
+                }
+
+            });
+        }
     }
 
     return {
@@ -171,7 +230,8 @@ const gameState = (function() {
         select,
         deselect,
         flip,
-        dragItems
+        dragItems,
+        drawItems
     }
 })();
 

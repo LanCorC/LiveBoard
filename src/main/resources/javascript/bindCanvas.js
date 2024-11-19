@@ -1,4 +1,4 @@
-import tapIcon from "./assets.js";
+//import tapIcon from "./assets.js";
 
 //Introduces canvas.setHeight(y), canvas.setWidth(x)
 //Introduces context.transformPoint(x, y)
@@ -62,6 +62,8 @@ import tapIcon from "./assets.js";
         return clearRect.call(vis, x, y, width, height);
     }
 
+
+    /*
     let drawImage = vis.drawImage;
     vis.drawImage = function(item, x, y) {
         //TODO: below is 'default image' for testing, this is not an interactable obj
@@ -94,8 +96,8 @@ import tapIcon from "./assets.js";
             //TODO - move this import to the asset objs
             drawImage.call(vis, tapIcon, x + item.width/2 - tapIcon.width/2, y + item.height/2 - tapIcon.height/2);
         }
-
     }
+    */
 
     //converts on-screen client.x,client.y to true canvas position (post transform)
     let point = new DOMPoint();
