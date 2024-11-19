@@ -1,3 +1,5 @@
+import tapIcon from "./assets.js";
+
 //Introduces canvas.setHeight(y), canvas.setWidth(x)
 //Introduces context.transformPoint(x, y)
  function bindCanvas(visual, interact) {
@@ -86,7 +88,11 @@
             vis.shadowBlur = 100;
         }
         drawImage.call(vis, !item.flipped ? item.img : item.backImg, x, y);
-        vis.shadowBlur = 0;
+        if(item.selected) {
+            vis.shadowBlur = 0;
+            drawImage.call(vis, tapIcon, x + item.width/2 - 50, y + item.height/2 - 50);
+        }
+
 
     }
 
