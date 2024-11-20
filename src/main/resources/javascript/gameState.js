@@ -1,4 +1,4 @@
-import tapIcon from "./assets.js";
+import assets from "./assets.js";
 
 const gameState = (function() {
     //in order to render
@@ -8,7 +8,7 @@ const gameState = (function() {
         cards: [],
         tokens: [], //dice, etc
         players: [] //mouse, etc
-    }
+    };
 
     let itemCount = 0;
 
@@ -38,7 +38,6 @@ const gameState = (function() {
         if(item = list.find(({id}) => id === number)) {
             return item;
         }
-        return;
     }
 
     //private, internal function
@@ -64,6 +63,7 @@ const gameState = (function() {
     function findByRGB(r, g, b) {
         let id = r + g*255 + b*255*255;
         let item;
+//        console.log("i'm beggin youUoUou");
         for(const [key, list] of Object.entries(items)) {
             if(item = findItem(id, list)) return item;
         }
@@ -87,7 +87,7 @@ const gameState = (function() {
         checks.forEach((list) => {
             let original = []; //copy of original state
             let pop = []; //array to bring "forward"
-            console.log(list);
+//            console.log(list);
 
             //sort each item in each list into buckets: original, currentSelected
             list.forEach((item) => {
@@ -131,6 +131,7 @@ const gameState = (function() {
             item.selected = true;
         });
     }
+
     function deselect(items) {
         if(!Array.isArray(items)) items = new Array(items);
         if(items[0] == undefined) return;
@@ -139,7 +140,7 @@ const gameState = (function() {
         });
     }
 
-    //to accept array
+    //TODO: replace to 'tap' binary 0* rotation or 90*
     function flip(items) {
         if(!Array.isArray(items)) items = new Array(items);
         items.forEach((item) => item.flipped = !item.flipped);
@@ -151,7 +152,7 @@ const gameState = (function() {
         items.forEach((item) => {
             item.dragStart.x = item.coord.x;
             item.dragStart.y = item.coord.y;
-        })
+        });
     }
 
     function dragItems(dx, dy, items, correct) {
@@ -159,7 +160,7 @@ const gameState = (function() {
 
         //each item's relative start point must be recorded
         if(!correct) {
-            setStart(items)
+            setStart(items);
             forward(items);
         }
 
@@ -169,12 +170,45 @@ const gameState = (function() {
         });
     }
 
+    function getImage(item) {
+        if(item.type == "Deck") {
+            item = item.cards.at(-1);
+        }
+
+        return item.images[item.index];
+    }
+
+    //to replace 'flip' function
+    function cycleImage(items, modifier) {
+        //negative sends the index back one, falsey/null increments+1, else index = modifier
+        if(!Array.isArray(items)) items = new Array(items);
+
+        items.forEach((item) => {
+            if(!modifier) {
+                item.index++;
+                item.index %= item.images.length;
+                return;
+            }
+
+            //catch all for greater negatives defaults to -1
+            if(modifier <= -1) {
+                if(--item.index < 0) item.index = item.images.length-1;
+            } else {
+                item.index = modifier;
+                //error checking
+                item.index %= item.images.length;
+            }
+        });
+
+    }
+
     //'selected' for clarity, (game-wide)
     //'focus' and 'dragging' (client-side) for drag-to-deck functionality
     function drawItems(focus, dragging, visual, interactive) {
         for (const [type, list] of Object.entries(items)) {
 
             list.forEach((item) => {
+//                if(!item) return;
                 let x = item.coord.x;
                 let y = item.coord.y;
                 let width = item.width;
@@ -204,15 +238,23 @@ const gameState = (function() {
                     interactive.fillStyle = item.touchStyle;
                     interactive.fillRect(x , y, width, height);
                     interactive.fill();
+//                    console.log(`so it's over ${interactive.fillStyle} ${x} ${y} ${width} ${height}`);
                 }
 
-                //TODO: item specific, e.g. card flips, mats cycle,
-                visual.drawImage(!item.flipped? item.img : item.backImg, x, y);
+                let itemImg = getImage(item);
+                if(itemImg instanceof HTMLImageElement) {
+                    visual.drawImage(itemImg, x, y);
+                } else {
+                    console.log("error!");
+                }
 
                 if(item.selected) {
+                    let img = assets.tapIcon;
+//                    let img = tapIcon;
+
                     //client-side clarity TODO: likely better applied globally
-                    visual.drawImage(tapIcon, x + width/2 - tapIcon.width/2,
-                        y + height/2 - tapIcon.height/2);
+                    visual.drawImage(img, x + width/2 - img.width/2,
+                        y + height/2 - img.height/2);
                     visual.shadowBlur = 0;
                 }
 
@@ -230,9 +272,10 @@ const gameState = (function() {
         select,
         deselect,
         flip,
+        cycleImage,
         dragItems,
         drawItems
-    }
+    };
 })();
 
 export default gameState;

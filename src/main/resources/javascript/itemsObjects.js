@@ -1,46 +1,8 @@
+//TODO - ship all item creation to 'assets', e.g. gameState.getID() and .idToRGB()
 import gameState from "./gameState.js";
+import assets from "./assets.js";
 
-const makeDrawFunction = function(type) {
-    //hard coded methods here
-    //cardDraw (flip, and or tap)
-    function cardDraw(visual, touch) {
-
-    }
-    //deck (from bottom of list)
-
-    //gameMat, playMat cycling
-
-    //selection here
-    let draw;
-    switch(type) {
-        case "Leader":
-        case "Monster":
-            query = "338/583";
-            width = 338;
-            height = 583;
-            break;
-        case "playMat":
-            query = "2475/975";
-            width = 2475;
-            height = 975;
-            break;
-        case "gameMat":
-            query = "2475/1500";
-            width = 2475;
-            height = 1500;
-            break;
-        case "Card":
-            query = "308/432";
-            width = 308;
-            height = 432;
-            break;
-        default:
-            return null; //TODO handle error somehow
-    }
-
-    return { draw };
-}
-
+//TODO: TEMPORARY
 function random() {
     let num = Math.random(1) * 2000;
     return num;
@@ -50,16 +12,14 @@ function random() {
 //...or, i allow it, and keep 'types' as means of separation when summoning in objects :shrug:
 //mock factory js, temporarily hard coded for testing
 const makeCard = function(type) {
-    let img = new Image;
-    let backImg = new Image;
+    let index = 0; //0 is frontImage, 1 is 'back' image, else cycle
+    let { width, height, images } = assets.getImagesAndDimensions(type);
 
     //properties
     let id = gameState.getID();
     let touchStyle = gameState.idToRGB(id);
     //TODO: temporary measure for demonstration
     let coord = {x: random(), y: random()};
-    let width;
-    let height;
 
     let dragStart = {
         x: 0,
@@ -69,41 +29,11 @@ const makeCard = function(type) {
     //states
     //'enabled' only draws 'touchStyle' if reads true, else disabled. examples: card is in a deck, hand, midDrag
     let enabled = true;
+    //TODO replace - 0*,90* binary; play around with image rotation in canvas (try rotate within center of card)
     let flipped = false; //determines if backImg,img is rendered
-    let rotation = false; //set to radians
+    let rotation = false; //set to radians, unused
     let selected = false; //likely placeholder for "lock";
     //client will check if in selected[], else call server for 'permission'
-
-    //Set image
-    let query;
-    switch(type) {
-        case "Leader":
-        case "Monster":
-            query = "338/583";
-            width = 338;
-            height = 583;
-            break;
-        case "playMat":
-            query = "2475/975";
-            width = 2475;
-            height = 975;
-            break;
-        case "gameMat":
-            query = "2475/1500";
-            width = 2475;
-            height = 1500;
-            break;
-        case "Card":
-            query = "308/432";
-            width = 308;
-            height = 432;
-            break;
-        default:
-            return null; //TODO handle error somehow
-    }
-    img.src = `https://picsum.photos/${query}`;
-    //"id" query added for sake of loose ensuranec that front and back image is different
-    backImg.src = `https://picsum.photos/id/${id}/${query}`;
 
     function getX() {
         return coord.x;
@@ -112,12 +42,13 @@ const makeCard = function(type) {
         return coord.y;
     }
 
-    return {type, id, img, backImg, touchStyle, enabled, coord, flipped, rotation,
+    return {type, id, index, images, touchStyle, enabled, coord, flipped, rotation,
         getX, getY, width, height, selected, dragStart};
 }
 
 //hardcoded for testing item summon
 export default function main() {
+
     let array = [
         makeCard("playMat"),
         makeCard("gameMat"),
@@ -127,8 +58,9 @@ export default function main() {
     ];
 
     array.forEach((card)=>{
-        console.log(card);
         gameState.push(card);
+        console.log(card);
     });
+
 }
 

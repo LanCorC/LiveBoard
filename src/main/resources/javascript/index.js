@@ -1,6 +1,8 @@
 import bindCanvas from "./bindCanvas.js";
 import gameState from "./gameState.js";
 import main from "./itemsObjects.js";
+import assets from "./assets.js";
+
 
 //Variables
 const board = document.getElementById("gameBoard");
@@ -11,6 +13,8 @@ let selected = [];
 let itemFocus; //current item of "mousedown"; added to 'selected' if mouseUp successful
 
 window.onload = function() {
+//    console.log("im begging");
+
     //Load all event interactions, draws,
     const context = board.getContext("2d");
     const context2  = touch.getContext("2d", {willReadFrequently : true});
@@ -35,6 +39,7 @@ window.onload = function() {
         context.clearRect(0,0,board.width,board.height);
         context.restore();
 
+        //redraw
         gameState.drawItems(itemFocus, dragging, context, context2);
     };
     redraw();
@@ -89,8 +94,7 @@ window.onload = function() {
         //on mousedown, if valid item, select and redraw
         if(itemFocus = gameState.findByRGB(r,g,b)) {
             gameState.select(itemFocus);
-//            //this inner 'if' is purely cosmetic -- it doesnt work?
-//            if(!selected.includes(itemFocus) && !event.ctrlKey) purgeSelected();
+
             redraw();
         }
 
@@ -132,8 +136,9 @@ window.onload = function() {
         //NODRAG noCtrl
 
             purgeSelected();
-            gameState.flip(itemFocus);
+            gameState.cycleImage(itemFocus);
             selected.push(itemFocus);
+            console.log("tap!");
 
             //if item was already in 'selected', it needs to be reconfirmed
             gameState.select(itemFocus);
@@ -141,7 +146,7 @@ window.onload = function() {
 
         itemFocus = null;
         dragging = false;
-        console.log(selected);
+//        console.log(selected);
         redraw();
     }, false);
 
@@ -187,7 +192,6 @@ window.onload = function() {
         context.translate(-pt.x, -pt.y);
         redraw();
 
-        console.log()
     };
 
     const scroll = function(event) {

@@ -62,43 +62,6 @@
         return clearRect.call(vis, x, y, width, height);
     }
 
-
-    /*
-    let drawImage = vis.drawImage;
-    vis.drawImage = function(item, x, y) {
-        //TODO: below is 'default image' for testing, this is not an interactable obj
-        if (item instanceof Element) {
-            int.fillStyle = "black";
-            int.fillRect(x, y, item.width, item.height);
-            int.fill();
-
-            //* fillStytle will be filled by item's unique RGB, then reverse-engineered on itemDrag, itemFlip,
-            //itemRotate
-            return drawImage.call(vis, item, x, y);
-        }
-
-        //TODO: abstract away 'item' properties by implementing 'draw' on the images themselves
-        //method will likely be under gameState() and to sort depending on card type
-        //key reasons: different items, different draws; some do not have 'alternate' imgs
-        int.fillStyle = item.touchStyle;
-        int.fillRect(x, y, item.width, item.height);
-        int.fill();
-
-//        return drawImage.call(vis, !item.flipped ? item.img : item.backImg, x, y);
-
-        if(item.selected) {
-            vis.shadowColor = "white";
-            vis.shadowBlur = 100;
-        }
-        drawImage.call(vis, !item.flipped ? item.img : item.backImg, x, y);
-        if(item.selected) {
-            vis.shadowBlur = 0;
-            //TODO - move this import to the asset objs
-            drawImage.call(vis, tapIcon, x + item.width/2 - tapIcon.width/2, y + item.height/2 - tapIcon.height/2);
-        }
-    }
-    */
-
     //converts on-screen client.x,client.y to true canvas position (post transform)
     let point = new DOMPoint();
     vis.transformPoint = function(x, y) {
