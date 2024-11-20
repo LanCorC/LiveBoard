@@ -57,6 +57,8 @@ const assets = (function() {
     //above 'populate' is single call. does not seem to work nested IFFE
 
     //public, for
+    let i = 0; //testing variety
+    let seed = `seed/`;
     function getImagesAndDimensions(type) {
         let image = new Image();
         let images = [];
@@ -70,13 +72,13 @@ const assets = (function() {
                 break;
             case "Monster":
                 ({height, width} = sizes.medium);
-                image.src = `${baseUrl}${width}/${height}`;
+                image.src = `${baseUrl}${seed}${i++}/${width}/${height}`;
                 images.push(image);
                 images.push(backImgMedium2);
                 break;
             case "Card":
                 ({height, width} = sizes.small);
-                image.src = `${baseUrl}${width}/${height}`;
+                image.src = `${baseUrl}${seed}${i++}/${width}/${height}`;
                 images.push(image);
                 images.push(backImgSmall);
                 break;

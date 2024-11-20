@@ -53,7 +53,18 @@ export default function main() {
         makeCard("playMat"),
         makeCard("gameMat"),
         makeCard("Leader"),
+        makeCard("Leader"),
+        makeCard("Leader"),
         makeCard("Monster"),
+        makeCard("Monster"),
+        makeCard("Monster"),
+        makeCard("Card"),
+        makeCard("Card"),
+        makeCard("Card"),
+        makeCard("Card"),
+        makeCard("Card"),
+        makeCard("Card"),
+        makeCard("Card"),
         makeCard("Card")
     ];
 
