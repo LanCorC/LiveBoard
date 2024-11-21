@@ -27,7 +27,7 @@ const makeCard = function(type) {
     };
 
     //states
-    //'enabled' only draws 'touchStyle' if reads true, else disabled. examples: card is in a deck, hand, midDrag
+    //true placeholder for "lock"; apply for: adding to 'selected'
     let enabled = true;
     //TODO replace - 0*,90* binary; play around with image rotation in canvas (try rotate within center of card)
     let flipped = false; //determines if backImg,img is rendered

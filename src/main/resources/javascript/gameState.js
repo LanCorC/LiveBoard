@@ -129,6 +129,8 @@ const gameState = (function() {
         if(items[0] == undefined) return;
         items.forEach((item) => {
             item.selected = true;
+            //TODO: ask server for permission; if denied, do not add to 'selected'
+            setEnableItems(item, false);
         });
     }
 
@@ -137,6 +139,8 @@ const gameState = (function() {
         if(items[0] == undefined) return;
         items.forEach((item) => {
             item.selected = false;
+            //TODO: notify server release of 'lock';
+            setEnableItems(item, true);
         });
     }
 
@@ -155,13 +159,29 @@ const gameState = (function() {
         });
     }
 
+    //relies on querying server for permission to lock the card, property: "enabled"
+    function setEnableItems(items, boolean) {
+        if(!Array.isArray(items)) items = new Array(items);
+        //'true' allows 'touch' to be drawn
+        //'false' disallows this
+        items.forEach((item) => {
+            item.enabled = boolean;
+        });
+
+        //Uses: onDragStart, onDragEnd
+        //application - items being dragged are
+    }
+
     function dragItems(dx, dy, items, correct) {
         if(!Array.isArray(items)) items = new Array(items);
 
-        //each item's relative start point must be recorded
+        //onDragStart, each item's relative start point must be recorded
         if(!correct) {
             setStart(items);
             forward(items);
+            //TODO: on drag start, prevent 'touch' from being rendered
+            //actually... likely cancel. we want other users still able to hover for "tooltip"
+//            setEnableItems(items, false);
         }
 
         items.forEach((item) => {

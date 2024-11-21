@@ -67,20 +67,20 @@ const assets = (function() {
             case "Leader":
                 ({height, width} = sizes.medium);
                 image.src = `${baseUrl}${width}/${height}`;
-                images.push(image);
                 images.push(backImgMedium1);
+                images.push(image);
                 break;
             case "Monster":
                 ({height, width} = sizes.medium);
                 image.src = `${baseUrl}${seed}${i++}/${width}/${height}`;
-                images.push(image);
                 images.push(backImgMedium2);
+                images.push(image);
                 break;
             case "Card":
                 ({height, width} = sizes.small);
                 image.src = `${baseUrl}${seed}${i++}/${width}/${height}`;
-                images.push(image);
                 images.push(backImgSmall);
+                images.push(image);
                 break;
             case "playMat":
                 ({height, width} = sizes.large2);

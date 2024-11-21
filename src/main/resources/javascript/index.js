@@ -1,8 +1,6 @@
 import bindCanvas from "./bindCanvas.js";
 import gameState from "./gameState.js";
 import main from "./itemsObjects.js";
-import assets from "./assets.js";
-
 
 //Variables
 const board = document.getElementById("gameBoard");
@@ -93,9 +91,13 @@ window.onload = function() {
 
         //on mousedown, if valid item, select and redraw
         if(itemFocus = gameState.findByRGB(r,g,b)) {
-            gameState.select(itemFocus);
-
-            redraw();
+            if(itemFocus.enabled) {
+                gameState.select(itemFocus);
+                redraw();
+            } else if (!selected.includes(itemFocus)){
+                //todo: notify that card is currently disabled (in-use)
+                console.log("Item currently in use");
+            }
         }
 
     }, false);
