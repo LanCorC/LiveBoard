@@ -83,6 +83,17 @@ window.onload = function() {
             return;
         }
 
+        //centered
+//        let x = Math.min(mouse.x - inspectImage.width/2,
+//            window.innerWidth - inspectImage.width);
+//        let y = Math.min(mouse.y - inspectImage.height/2,
+//            window.innerHeight - inspectImage.height);
+        //bottom right
+        let x = Math.min(mouse.x, window.innerWidth - inspectImage.width);
+        let y = Math.min(mouse.y, window.innerHeight - inspectImage.height);
+        inspectImage.style.top = `${y}px`;
+        inspectImage.style.left = `${x}px`;
+
         let ele = document.elementFromPoint(mouse.x, mouse.y);
         //assumes the game board
         if(ele instanceof HTMLCanvasElement && inspectMode) {
