@@ -9,6 +9,8 @@ const touch = document.getElementById("touchBoard");
 const background = new Image();
 let selected = [];
 let itemFocus; //current item of "mousedown"; added to 'selected' if mouseUp successful
+let inspectMode = true; //toggle for InspectMode
+let inspectImage = document.getElementById("inspectImage");
 
 window.onload = function() {
 //    console.log("im begging");
@@ -40,57 +42,134 @@ window.onload = function() {
         //redraw
         gameState.drawItems(itemFocus, dragging, context, context2);
     };
-    redraw();
 
-    touch.addEventListener("mousemove", function(event) {
+    const itemFromRGB = function() {
+        let data = touch.getContext("2d").getImageData(mouse.x, mouse.y, 1, 1).data;
+        let { 0: r, 1: g, 2: b, 3: t }  = data;
+        return gameState.findByRGB(r, g, b);
+    }
 
-        //TODO: below commented is required to determine 'drag-to-deck' or hand<->board
-//        let data = touch.getContext("2d").getImageData(mouse.x, mouse.y, 1, 1).data;
-//        let { 0: r, 1: g, 2: b, 3: t }  = data;
-//        console.log(`${r}${g}${b}`);
+    const insertInspectImage = function(item) {
+        if(!item) {
+            inspectImage.style.visibility = `hidden`;
+            return;
+        }
+        let image = gameState.getImage(item);
 
-        //console.log("mousemove");
+        inspectImage.style.visibility = `visible`;
+        inspectImage.height = image.height;
+        inspectImage.width = image.width;
+        inspectImage.src = image.src;
+    }
 
+    const toggleTooltip = function() {
+        if(inspectMode) {
+            inspectMode = false;
+            //hide
+            //send to abyss?
+            inspectImage.style.visibility = `hidden`;
+        } else {
+            inspectMode = true;
+            //show
+            inspectImage.style.visibility = `visible`;
+        }
+    }
+    //turn on, default, leave item hidden
+    insertInspectImage();
+
+    const handleImageTooltip = function(event) {
+        //determine what element has been selected
+        if(!inspectMode) {
+            return;
+        }
+
+        let ele = document.elementFromPoint(mouse.x, mouse.y);
+        //assumes the game board
+        if(ele instanceof HTMLCanvasElement && inspectMode) {
+            //for purposes of: looking at items on board
+
+            let item = itemFromRGB();
+
+            //if valid, assign image to tooltip
+            if(item) {
+                switch(item.type) {
+                    case "playMat":
+                    case "gameMat":
+                        console.log("i see, but i ignore");
+                        break;
+                    default:
+                        insertInspectImage(item);
+                        console.log("i see you!");
+                        return;
+                }
+            }
+        } else if (ele instanceof HTMLImageElement || !inspectMode) {
+            //for purposes of: looking at hand, or preview
+            //grab the id, or its parent div, or its special attribute 'id' of card
+            //then use gameState to find the image
+            console.log("Image element found or missing info");
+        }
+
+        insertInspectImage();
+    }
+
+    //which way - create image at spot of mouse? probably
+    //TODO - for later
+    const initializeImage = function(newImageElement) {
+        //Purpose - 'pinning' an inspection 'img';
+            //this image can be dragged, but should be skipped by tooltip (via attribute?)
+
+    }
+
+    const handleDrag = function(event) {
+        //TODO: will be adapted to read currentElement, for hand<->canvas transitions
+        //TODO: as well as dragToDeck visual queues
+        if(!startPoint) {
+            return;
+        }
+
+        let point = context.transformPoint(mouse.x, mouse.y);
+        let dx = point.x - startPoint.x;
+        let dy = point.y - startPoint.y;
+        if(itemFocus) {
+            //in group, move all items
+            if(selected.includes(itemFocus)) {
+                //move all items
+                gameState.dragItems(dx, dy, selected, dragging);
+            } else {
+                //not in the group, deselect group, move just the item
+                purgeSelected();
+                gameState.dragItems(dx, dy, itemFocus, dragging);
+            }
+        } else {
+            context.translate(point.x-startPoint.x, point.y-startPoint.y);
+        }
+
+        //Placed here, as means to determine (see .dragItems()) whether this is the first
+        dragging = true;
+        redraw();
+    }
+
+    window.addEventListener("mousemove", function(event) {
+        //track mouse
         mouse.x = event.offsetX;
         mouse.y = event.offsetY;
 
+        //handle tooltip hover
+        handleImageTooltip();
+
         //check for click-hold-drag
-        if(startPoint) {
-            let point = context.transformPoint(mouse.x, mouse.y);
-            let dx = point.x - startPoint.x;
-            let dy = point.y - startPoint.y;
-            if(itemFocus) {
-                //TODO: see how this feels. ctrl, without, group,solo, outside group,
-                //in group, move all items
-                if(selected.includes(itemFocus)) {
-                    //move all items
-                    gameState.dragItems(dx, dy, selected, dragging);
-                } else {
-                //not in the group, deselect group, move just the item
-                    purgeSelected();
-                    gameState.dragItems(dx, dy, itemFocus, dragging);
-                }
-
-            } else {
-                context.translate(point.x-startPoint.x, point.y-startPoint.y);
-            }
-
-            //Placed here, as means to determine (see .dragItems()) whether this is the first
-            dragging = true;
-            redraw();
-        }
+        handleDrag(event);
     },false);
 
     touch.addEventListener("mousedown", function(event) {
         startPoint = context.transformPoint(mouse.x, mouse.y);
         dragging = false;
 
-        let data = touch.getContext("2d").getImageData(mouse.x, mouse.y, 1, 1).data;
-        let { 0: r, 1: g, 2: b, 3: t }  = data;
-        let itemNo = r + g*255 + b*255*255;
+        itemFocus = itemFromRGB();
 
         //on mousedown, if valid item, select and redraw
-        if(itemFocus = gameState.findByRGB(r,g,b)) {
+        if(itemFocus) {
             if(itemFocus.enabled) {
                 gameState.select(itemFocus);
                 redraw();
@@ -101,6 +180,7 @@ window.onload = function() {
         }
 
     }, false);
+
     touch.addEventListener("mouseup", function(event) {
         startPoint = null;
 
@@ -139,6 +219,7 @@ window.onload = function() {
 
             purgeSelected();
             gameState.cycleImage(itemFocus);
+            handleImageTooltip(itemFocus);
             selected.push(itemFocus);
             console.log("tap!");
 
@@ -148,7 +229,6 @@ window.onload = function() {
 
         itemFocus = null;
         dragging = false;
-//        console.log(selected);
         redraw();
     }, false);
 
@@ -158,29 +238,35 @@ window.onload = function() {
     let rotateIncrement = 30;
     let radians = rotateIncrement * Math.PI / 180;
 
+    //TODO: feels it should be global, e.g. center of screen, not mouse
+    const handleBoardRotate = function(pos) {
+        let point = context.transformPoint(mouse.x, mouse.y);
+        context.translate(+point.x, +point.y);
+        context.rotate(pos ? radians : -radians);
+        context.translate(-point.x, -point.y);
+
+        redraw();
+    }
+
     window.addEventListener("keydown", function(event){
         let ele = document.elementFromPoint(mouse.x, mouse.y);
+        //to disable where not relevant, e.g. chat, inserting character name,; ele = inputTxt
         let key = ele == touch ? event.code : null;
-        let rotate;
         switch(key) {
             case "KeyA":
-                rotate = () => context.rotate(-radians);
+                handleBoardRotate(false);
                 break;
             case "KeyD":
-                rotate = () => context.rotate(radians);
+                handleBoardRotate(true);
                 break;
+            case "KeyI":
+                toggleTooltip();
+                return;
             default:
                 //invalid key, skip processing
 //                console.log("invalid key");
                 return;
         }
-
-        let point = context.transformPoint(mouse.x, mouse.y);
-        context.translate(+point.x, +point.y);
-        rotate();
-        context.translate(-point.x, -point.y);
-
-        redraw();
     }, false);
 
     //scroll responsiveness multiplier
@@ -197,16 +283,18 @@ window.onload = function() {
     };
 
     const scroll = function(event) {
-        if(event.ctrlKey) event.preventDefault();
+        //if ctrl is on + scrolling, prevent canvas scroll
+        if(event.ctrlKey) {
+            return;
+        } else {
+            zoom(event.deltaY < 0 ? 1 : -1);
+        }
         //Positive deltaY is scrolling down, or 'zooming out', thus smaller scale
-        zoom(event.deltaY < 0 ? 1 : -1);
     };
 
-//    touch.addEventListener("wheel", scroll, {passive: true});
-    touch.addEventListener("wheel", scroll);
+    touch.addEventListener("wheel", scroll, {passive: true});
+//    touch.addEventListener("wheel", scroll);
 
-    //Window resizing -- works
-    //this is something to import, so it does not clog; like a library
     window.addEventListener('resize', function(event) {
         const vp = document.getElementById("viewport");
         vp.style.height = '100vh';

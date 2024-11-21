@@ -27,6 +27,19 @@
 /*            opacity: 0.1;*/
             opacity: 0.05;
         }
+
+/*        #inspectImgContainer {*/
+/*            position: absolute;*/
+/*            visibility: visible;*/
+/*            background-color: white;*/
+/*        }*/
+
+        #inspectImage {
+            position: absolute;
+            user-select: none;
+            pointer-events: none;
+            border: 5px solid white;
+        }
     </style>
     <script type="module" src="../javascript/index.js"></script>
 <!--    <script type="module" src="../javascript/assets.js"></script>-->
@@ -39,6 +52,9 @@
     <body id="viewport">
         <canvas id="gameBoard"></canvas>
         <canvas id="touchBoard"></canvas>
+<!--        <div id="inspectImageContainer">-->
+            <img id="inspectImage" alt="tooltipimage" src="">
+<!--        </div>-->
     </body>
 
 </html>

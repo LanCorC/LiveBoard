@@ -179,9 +179,8 @@ const gameState = (function() {
         if(!correct) {
             setStart(items);
             forward(items);
-            //TODO: on drag start, prevent 'touch' from being rendered
-            //actually... likely cancel. we want other users still able to hover for "tooltip"
-//            setEnableItems(items, false);
+            //we want other users still able to hover for "tooltip" on an item someone is
+            //actively dragging - no additional
         }
 
         items.forEach((item) => {
@@ -200,10 +199,10 @@ const gameState = (function() {
 
     //to replace 'flip' function
     function cycleImage(items, modifier) {
-        //negative sends the index back one, falsey/null increments+1, else index = modifier
         if(!Array.isArray(items)) items = new Array(items);
 
         items.forEach((item) => {
+            //default increments +1
             if(!modifier) {
                 item.index++;
                 item.index %= item.images.length;
@@ -214,8 +213,8 @@ const gameState = (function() {
             if(modifier <= -1) {
                 if(--item.index < 0) item.index = item.images.length-1;
             } else {
+                //anything else applies
                 item.index = modifier;
-                //error checking
                 item.index %= item.images.length;
             }
         });
@@ -228,7 +227,6 @@ const gameState = (function() {
         for (const [type, list] of Object.entries(items)) {
 
             list.forEach((item) => {
-//                if(!item) return;
                 let x = item.coord.x;
                 let y = item.coord.y;
                 let width = item.width;
@@ -270,14 +268,12 @@ const gameState = (function() {
 
                 if(item.selected) {
                     let img = assets.tapIcon;
-//                    let img = tapIcon;
 
-                    //client-side clarity TODO: likely better applied globally
+                    //global clarity - this item is 'occupied'
                     visual.drawImage(img, x + width/2 - img.width/2,
                         y + height/2 - img.height/2);
                     visual.shadowBlur = 0;
                 }
-
             });
         }
     }
@@ -294,7 +290,8 @@ const gameState = (function() {
         flip,
         cycleImage,
         dragItems,
-        drawItems
+        drawItems,
+        getImage
     };
 })();
 
