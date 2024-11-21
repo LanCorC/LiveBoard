@@ -133,7 +133,9 @@ window.onload = function() {
     }
 
     let borderProximity = 0.05; //border lenience, percentage
-    let panRate = 10; //speed
+    let panRate = 15; //speed
+    let recallTime = 10;
+    let handleEdgePanlooping = false;
 
     const handleEdgePan = function() {
         let {a: modifier} = context.getTransform().inverse();
@@ -160,7 +162,13 @@ window.onload = function() {
             console.log("bottom");
         }
         //redrawing twice? see: called by handleDrag
-//        redraw();
+        if(dragging){
+            window.setTimeout(handleEdgePan, recallTime);
+            handleEdgePanlooping = true;
+            redraw();
+        } else {
+            handleEdgePanlooping = false;
+        }
     }
 
     const handleDrag = function(event) {
@@ -169,8 +177,6 @@ window.onload = function() {
         if(!startPoint) {
             return;
         }
-
-        handleEdgePan();
 
         let point = context.transformPoint(mouse.x, mouse.y);
         let dx = point.x - startPoint.x;
@@ -184,6 +190,9 @@ window.onload = function() {
                 //not in the group, deselect group, move just the item
                 purgeSelected();
                 gameState.dragItems(dx, dy, itemFocus, dragging);
+            }
+            if(!handleEdgePanlooping) {
+                handleEdgePan();
             }
         } else {
             context.translate(point.x-startPoint.x, point.y-startPoint.y);
