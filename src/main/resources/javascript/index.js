@@ -132,6 +132,37 @@ window.onload = function() {
 
     }
 
+    let borderProximity = 0.05; //border lenience, percentage
+    let panRate = 10; //speed
+
+    const handleEdgePan = function() {
+        let {a: modifier} = context.getTransform().inverse();
+        let value = panRate * modifier;
+
+        if(mouse.x < window.innerWidth * borderProximity) {
+            //pan left
+            console.log("left");
+            context.translate(value, 0);
+        }
+        if(mouse.x > window.innerWidth * (1 - borderProximity)) {
+            //pan right
+            context.translate(-value, 0);
+            console.log("right");
+        }
+        if(mouse.y < window.innerHeight * borderProximity) {
+            //pan top
+//            context.translate(0, point.y);
+            context.translate(0, value);
+            console.log("top");
+        }
+        if(mouse.y > window.innerHeight * (1 - borderProximity)) {
+            context.translate(0, -value);
+            console.log("bottom");
+        }
+        //redrawing twice? see: called by handleDrag
+//        redraw();
+    }
+
     const handleDrag = function(event) {
         //TODO: will be adapted to read currentElement, for hand<->canvas transitions
         //TODO: as well as dragToDeck visual queues
@@ -139,10 +170,12 @@ window.onload = function() {
             return;
         }
 
+        handleEdgePan();
+
         let point = context.transformPoint(mouse.x, mouse.y);
         let dx = point.x - startPoint.x;
         let dy = point.y - startPoint.y;
-        if(itemFocus) {
+        if(itemFocus && !event.ctrlKey) {
             //in group, move all items
             if(selected.includes(itemFocus)) {
                 //move all items
@@ -171,6 +204,7 @@ window.onload = function() {
 
         //check for click-hold-drag
         handleDrag(event);
+
     },false);
 
     touch.addEventListener("mousedown", function(event) {
