@@ -49,6 +49,18 @@ window.onload = function() {
         return gameState.findByRGB(r, g, b);
     }
 
+    let inspectImgSize = 1;
+    let iISizeMin = 0.2;
+    let iISizeMax = 2;
+    const increaseInspectSize = function() {
+        inspectImgSize = Math.min(iISizeMax, inspectImgSize + 0.1);
+        handleImageTooltip();
+    }
+    const decreaseInspectSize = function() {
+        inspectImgSize = Math.max(iISizeMin, inspectImgSize - 0.1);
+        handleImageTooltip();
+    }
+
     const insertInspectImage = function(item) {
         if(!item) {
             inspectImage.style.visibility = `hidden`;
@@ -57,8 +69,8 @@ window.onload = function() {
         let image = gameState.getImage(item);
 
         inspectImage.style.visibility = `visible`;
-        inspectImage.height = image.height;
-        inspectImage.width = image.width;
+        inspectImage.height = image.height * inspectImgSize;
+        inspectImage.width = image.width * inspectImgSize;
         inspectImage.src = image.src;
     }
 
@@ -91,6 +103,13 @@ window.onload = function() {
         //bottom right
         let x = Math.min(mouse.x, window.innerWidth - inspectImage.width);
         let y = Math.min(mouse.y, window.innerHeight - inspectImage.height);
+
+        //when cornered, go opaque to grant visibility
+        if(mouse.x > window.innerWidth - inspectImage.width && mouse.y > window.innerHeight - inspectImage.height) {
+            inspectImage.style.opacity = `0.5`;
+        } else {
+            inspectImage.style.opacity = ``;
+        }
         inspectImage.style.top = `${y}px`;
         inspectImage.style.left = `${x}px`;
 
@@ -312,6 +331,13 @@ window.onload = function() {
                 break;
             case "KeyD":
                 handleBoardRotate(true);
+                break;
+            //TODO: inspect size is not final; to move to buttons
+            case "KeyZ":
+                increaseInspectSize();
+                break;
+            case "KeyX":
+                decreaseInspectSize();
                 break;
             case "KeyI":
                 toggleTooltip();
