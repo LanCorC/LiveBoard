@@ -11,6 +11,7 @@ let selected = [];
 let itemFocus; //current item of "mousedown"; added to 'selected' if mouseUp successful
 let inspectMode = true; //toggle for InspectMode
 let inspectImage = document.getElementById("inspectImage");
+let rightClick = false;
 
 window.onload = function() {
 //    console.log("im begging");
@@ -52,11 +53,26 @@ window.onload = function() {
     let inspectImgSize = 1;
     let iISizeMin = 0.2;
     let iISizeMax = 2;
+    //Uses of hoverElement: detecting player hand, etc
+    let hoverElement = null;
+    //keep above 1.0 to be effective
+    let inspectEleResizeFactor = 1.1;
+
     const increaseInspectSize = function() {
+        if(hoverElement.className == "floating-inspect") {
+            hoverElement.height *= inspectEleResizeFactor;
+            hoverElement.width *= inspectEleResizeFactor;
+            return;
+        }
         inspectImgSize = Math.min(iISizeMax, inspectImgSize + 0.1);
         handleImageTooltip();
     }
     const decreaseInspectSize = function() {
+        if(hoverElement.className == "floating-inspect") {
+            hoverElement.height /= inspectEleResizeFactor;
+            hoverElement.width /= inspectEleResizeFactor;
+            return;
+        }
         inspectImgSize = Math.max(iISizeMin, inspectImgSize - 0.1);
         handleImageTooltip();
     }
@@ -95,27 +111,22 @@ window.onload = function() {
             return;
         }
 
-        //centered
-//        let x = Math.min(mouse.x - inspectImage.width/2,
-//            window.innerWidth - inspectImage.width);
-//        let y = Math.min(mouse.y - inspectImage.height/2,
-//            window.innerHeight - inspectImage.height);
-        //bottom right
-        let x = Math.min(mouse.x, window.innerWidth - inspectImage.width);
-        let y = Math.min(mouse.y, window.innerHeight - inspectImage.height);
+        let x, y;
 
-        //when cornered, go opaque to grant visibility
+        //topLeft of mouse; when cornered
         if(mouse.x > window.innerWidth - inspectImage.width && mouse.y > window.innerHeight - inspectImage.height) {
-            inspectImage.style.opacity = `0.5`;
+            y = mouse.y - inspectImage.height;
+            x = mouse.x - inspectImage.width;
         } else {
-            inspectImage.style.opacity = ``;
+        //default: bottomRight of mouse; 'min' reduces content overflow
+            x = Math.min(mouse.x, window.innerWidth - inspectImage.width);
+            y = Math.min(mouse.y, window.innerHeight - inspectImage.height);
         }
         inspectImage.style.top = `${y}px`;
         inspectImage.style.left = `${x}px`;
 
-        let ele = document.elementFromPoint(mouse.x, mouse.y);
         //assumes the game board
-        if(ele instanceof HTMLCanvasElement && inspectMode) {
+        if(hoverElement instanceof HTMLCanvasElement && inspectMode) {
             //for purposes of: looking at items on board
 
             let item = itemFromRGB();
@@ -125,15 +136,15 @@ window.onload = function() {
                 switch(item.type) {
                     case "playMat":
                     case "gameMat":
-                        console.log("i see, but i ignore");
+//                        console.log("i see, but i ignore");
                         break;
                     default:
                         insertInspectImage(item);
-                        console.log("i see you!");
+//                        console.log("i see you!");
                         return;
                 }
             }
-        } else if (ele instanceof HTMLImageElement || !inspectMode) {
+        } else if (hoverElement instanceof HTMLImageElement || !inspectMode) {
             //for purposes of: looking at hand, or preview
             //grab the id, or its parent div, or its special attribute 'id' of card
             //then use gameState to find the image
@@ -143,12 +154,65 @@ window.onload = function() {
         insertInspectImage();
     }
 
-    //which way - create image at spot of mouse? probably
-    //TODO - for later
-    const initializeImage = function(newImageElement) {
-        //Purpose - 'pinning' an inspection 'img';
-            //this image can be dragged, but should be skipped by tooltip (via attribute?)
+    let elementStartPoint = null;
+    //generic 'dragElement'
+    const dragElement = function(event, element) {
 
+        let dx = mouse.x - startPoint.x;
+        let dy = mouse.y - startPoint.y;
+
+        //Math.min, .max ensures item never goes outside client screen
+        element.style.top =
+        `${Math.min(Math.max(elementStartPoint.y + dy, 0), window.innerHeight - element.height)}px`;
+        element.style.left =
+        `${Math.min(Math.max(elementStartPoint.x + dx, 0), window.innerWidth - element.width)}px`;
+    }
+
+    //Uses: specific prevent rightclick
+    const preventRightClickDefault = function() {
+        document.addEventListener("contextmenu", preventDefault, false);
+    }
+    const enableRightClickDefault = function() {
+        document.removeEventListener("contextmenu", preventDefault, false);
+    }
+    const preventDefault = function(event) {
+        event.preventDefault();
+    }
+
+    const pinInspect = function(event) {
+        //Purpose - 'pinning' an inspection 'img' for an image ref
+
+        if(inspectImage.style.visibility == "hidden") {
+            //check for img to delete
+            if(hoverElement.className == "floating-inspect") {
+                hoverElement.remove();
+                hoverElement = null;
+                preventRightClickDefault();
+                rightClick = false;
+            } else {
+                enableRightClickDefault();
+            }
+            return;
+        }
+        preventRightClickDefault();
+
+        //same dimensions, image
+        let detachedToolTip = new Image(inspectImage.width, inspectImage.height);
+        detachedToolTip.style.top = inspectImage.style.top;
+        detachedToolTip.style.left = inspectImage.style.left;
+        detachedToolTip.style.border = `5px solid white`;
+
+        detachedToolTip.style.position = `absolute`;
+        detachedToolTip.style.zIndex = `2`;
+        detachedToolTip.style.userSelect = `none`;
+        detachedToolTip.classList.add("floating-inspect");
+        detachedToolTip.setAttribute("draggable", false);
+//        detachedToolTip.setAttribute("inspect-tooltip", "Left: Drag, Right: Close");
+
+        //image
+        detachedToolTip.onload = document.getElementById("container")
+            .appendChild(detachedToolTip);
+        detachedToolTip.src = inspectImage.src;
     }
 
     let borderProximity = 0.05; //border lenience, percentage
@@ -172,7 +236,6 @@ window.onload = function() {
         }
         if(mouse.y < window.innerHeight * borderProximity) {
             //pan top
-//            context.translate(0, point.y);
             context.translate(0, value);
             console.log("top");
         }
@@ -197,10 +260,15 @@ window.onload = function() {
             return;
         }
 
+        //Drag item or canvas
         let point = context.transformPoint(mouse.x, mouse.y);
         let dx = point.x - startPoint.x;
         let dy = point.y - startPoint.y;
         if(itemFocus && !event.ctrlKey) {
+
+            if(itemFocus instanceof HTMLImageElement) {
+                dragElement(event, itemFocus);
+            } else
             //in group, move all items
             if(selected.includes(itemFocus)) {
                 //move all items
@@ -210,6 +278,7 @@ window.onload = function() {
                 purgeSelected();
                 gameState.dragItems(dx, dy, itemFocus, dragging);
             }
+
             if(!handleEdgePanlooping) {
                 handleEdgePan();
             }
@@ -224,8 +293,12 @@ window.onload = function() {
 
     window.addEventListener("mousemove", function(event) {
         //track mouse
-        mouse.x = event.offsetX;
-        mouse.y = event.offsetY;
+//        mouse.x = event.offsetX;
+//        mouse.y = event.offsetY;
+        mouse.x = event.pageX;
+        mouse.y = event.pageY;
+
+        hoverElement = document.elementFromPoint(mouse.x, mouse.y);
 
         //handle tooltip hover
         handleImageTooltip();
@@ -235,9 +308,39 @@ window.onload = function() {
 
     },false);
 
-    touch.addEventListener("mousedown", function(event) {
-        startPoint = context.transformPoint(mouse.x, mouse.y);
+    window.addEventListener("mousedown", function(event) {
+
+
+        //rightclick detected - create 'detached' inspect image
+        if(event.buttons == 2) {
+            rightClick = true;
+
+            pinInspect(event);
+
+            return;
+        //if coming from rightclick, keep startPoint null
+        } else if (rightClick) {
+            startPoint = null;
+        } else {
+            startPoint = context.transformPoint(mouse.x, mouse.y);
+        }
+
+        rightClick = false;
         dragging = false;
+
+        if((itemFocus = hoverElement)
+            instanceof HTMLImageElement) {
+
+            purgeSelected(selected);
+
+            //element, thus keep startPoint untransformed
+            startPoint = { x: mouse.x, y: mouse.y };
+            elementStartPoint = {
+                x: parseInt(itemFocus.style.left),
+                y: parseInt(itemFocus.style.top),
+            };
+            return;
+        }
 
         itemFocus = itemFromRGB();
 
@@ -254,10 +357,11 @@ window.onload = function() {
 
     }, false);
 
-    touch.addEventListener("mouseup", function(event) {
+    window.addEventListener("mouseup", function(event) {
         startPoint = null;
 
-        if(!itemFocus) {
+        //TODO - below is 'canvasItem' route; make the other routes (HTMLImageElement)
+        if(!itemFocus || itemFocus instanceof HTMLImageElement) {
         //INVALID - ctrl ? nothing : purge
             if(!event.ctrlKey) purgeSelected();
 
@@ -313,7 +417,10 @@ window.onload = function() {
 
     //TODO: feels it should be global, e.g. center of screen, not mouse
     const handleBoardRotate = function(pos) {
-        let point = context.transformPoint(mouse.x, mouse.y);
+        //centeredOnMouse
+//        let point = context.transformPoint(mouse.x, mouse.y);
+        //centeredOnScreen
+        let point = context.transformPoint(window.innerWidth/2, window.innerHeight/2);
         context.translate(+point.x, +point.y);
         context.rotate(pos ? radians : -radians);
         context.translate(-point.x, -point.y);
@@ -322,9 +429,8 @@ window.onload = function() {
     }
 
     window.addEventListener("keydown", function(event){
-        let ele = document.elementFromPoint(mouse.x, mouse.y);
-        //to disable where not relevant, e.g. chat, inserting character name,; ele = inputTxt
-        let key = ele == touch ? event.code : null;
+        //TODO - future, if chatbox or input box, send null
+        let key = hoverElement instanceof HTMLInputElement ? null : event.code;
         switch(key) {
             case "KeyA":
                 handleBoardRotate(false);
@@ -349,7 +455,7 @@ window.onload = function() {
         }
     }, false);
 
-    //scroll responsiveness multiplier
+    //scrollResize responsiveness multiplier
     let scale = 1.1;
 
     const zoom = function(val) {

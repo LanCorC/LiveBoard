@@ -17,7 +17,7 @@
             background-color: white;
             background-image: none;
             position: absolute;
-/*            opacity: 0.05;*/
+/*            opacity: 0.10;    */
         }
 
         #touchBoard {
@@ -25,13 +25,14 @@
 /*            background-color: none;*/
             position: absolute;
 /*            opacity: 0.1;*/
-            opacity: 0.05;
+            opacity: 0.10;
+/*            visibility: hidden;*/
         }
 
-/*        #inspectImgContainer {*/
-/*            position: absolute;*/
-/*            visibility: visible;*/
-/*            background-color: white;*/
+/*        #container {*/
+/*            background-position: center;*/
+/*            max-height: 100vh;*/
+/*            max-width: 100vw;*/
 /*        }*/
 
         #inspectImage {
@@ -40,7 +41,32 @@
             pointer-events: none;
 /*            color likely bound to user color */
             border: 5px solid white;
+            z-index: 5;
         }
+
+/*        .floatingInspect:hover {*/
+/*            box-shadow:*/
+/*            0 4px 8px 0 rgba(0, 0, 0, 0.2),*/
+/*            0 6px 20px 0 rgba(0, 0, 0, 0.19);*/
+/*            cursor: grab;*/
+/*        }*/
+/*        .floatingInspect:active {*/
+/*            cursor: grabbing;*/
+/*        }*/
+        [inspect-tooltip]::before {
+/*            content: attr(inspect-tooltip);*/
+/*            position: absolute;*/
+/*            opacity: 0;*/
+/*            z-index: 6;*/
+        }
+
+        [inspect-tooltip]:hover::before {
+/*            opacity: 1;*/
+
+/*            margin-top: 50px;*/
+/*            margin-left: 20px;*/
+        }
+
     </style>
     <script type="module" src="../javascript/index.js"></script>
 <!--    <script type="module" src="../javascript/assets.js"></script>-->
@@ -51,13 +77,15 @@
     <!--    <script-->
 </head>
     <body id="viewport">
-        <canvas id="gameBoard"></canvas>
-        <canvas id="touchBoard"></canvas>
-<!--        <div id="inspectImageContainer">-->
-            <img id="inspectImage" >
-<!--                 alt="tooltipimage" -->
-<!--                 src="">-->
-<!--        </div>-->
+        <div id="container" style="">
+            <canvas id="gameBoard"></canvas>
+            <canvas id="touchBoard"></canvas>
+    <!--        <div id="inspectImageContainer">-->
+                <img id="inspectImage" >
+    <!--                 alt="tooltipimage" -->
+    <!--                 src="">-->
+    <!--        </div>-->
+        </div>
     </body>
 
 </html>
