@@ -3,29 +3,31 @@
 // example: card21.png has 2 copies in deckCards of expansion BaseDeck
 
 //store here: sizes of images too
+
+const sizes = {
+    small: { //card
+        width: 308,
+        height: 432
+    },
+    medium: { //monster, leader
+        width: 338,
+        height: 583
+    },
+    large: { //gamemat
+        width: 2475,
+        height: 975
+    },
+    large2: { //playmat
+        width: 2475,
+        height: 1500
+    }
+};
+
 const assets = (function() {
     const tapIcon = new Image();
     tapIcon.src = `../Images/Tokens/hand-tap-svgrepo-com.svg`;
 
     //TBD tokens? or predetermined (in-image property)
-    const sizes = {
-        small: { //card
-            width: 308,
-            height: 432
-        },
-        medium: { //monster, leader
-            width: 338,
-            height: 583
-        },
-        large: { //gamemat
-            width: 2475,
-            height: 975
-        },
-        large2: { //playmat
-            width: 2475,
-            height: 1500
-        }
-    };
 
     //temporary format?
     let backImgSmall = new Image(); //cards
@@ -103,7 +105,212 @@ const assets = (function() {
 
 })();
 
-//export const tapIcon = new Image();
-//tapIcon.src = `../Images/Tokens/hand-tap-svgrepo-com.svg`;
+//is a hashmap better?
+let mockRefExpansions = {
+    "Base Deck": {
+        cards: [],
+        leaders: [],
+        monsters: []
+    },
+    "Berserkers and Necromancers Expansion": {
+        cards: [],
+        leaders: [],
+        monsters: []
+    },
+    "Dragon Sorcerer Expansion": {
+        cards: [],
+        leaders: [],
+        monsters: []
+    },
+    "Exclusive": {
+        cards: [],
+        leaders: [],
+        monsters: []
+    },
+    "Monster Expansion": {
+        cards: [],
+        leaders: [],
+        monsters: []
+    },
+    "Warrior and Druid Expansion": {
+        cards: [],
+        leaders: [],
+        monsters: []
+    }
+}
 
-export default assets;
+//store in hashmap - key is the image file directory, value is prefix to use on the images
+const expansionProperties = new Map();
+
+//Placed in method to encapsulate function:
+function populateProperties() {
+    //Include the expansion name (key), and file prefix and duplicates (value)
+    expansionProperties.set("Base Deck",
+        { prefix: "HtS-PnP-Base-",
+            duplicates: new Map()
+        });
+    expansionProperties.set("Warrior and Druid Expansion",
+        { prefix: "HtS-WarDruid-",
+            duplicates: new Map()
+        });
+    expansionProperties.set("Monster Expansion",
+        { prefix: "HtS-PnP-Mon-",
+            duplicates: new Map()
+        });
+    expansionProperties.set("Berserkers and Necromancers Expansion",
+        { prefix: "HtS-BersNecr-",
+            duplicates: new Map()
+        });
+    expansionProperties.set("Dragon Sorcerer Expansion",
+        { prefix: "HtS-PnP-Drag-",
+            duplicates: new Map()
+        });
+    expansionProperties.set("Exclusive",
+        { prefix: "HtS-ConCard-",
+            duplicates: new Map()
+        });
+
+    //Expansions without duplicates: WarDruids, Monsters, Exclusive, Dragon
+    //Expansions with duplicates: Base Deck, BersNecr
+    //key: number 'identifier', value: amount of cards in deck; default to 1 if not found
+    expansionProperties.get("Base Deck").duplicates
+        .set("002", 2) //Curse of the Snake's Eyes (item)
+        .set("010", 2) //Really Big Ring (item)
+        .set("011", 2) //Particularly Rusty Coin (item)
+        .set("013", 2) //Enchanted Spell (magic)
+        .set("015", 2) //Entangling Trap (magic)
+        .set("016", 2) //Winds of Change (magic)
+        .set("017", 2) //Critical Boost (magic)
+        .set("018", 2) //Destructive Spell (magic)
+        .set("021", 9) //+2/-2 (modifier)
+        .set("022", 4) //-4 (modifier)
+        .set("023", 4) //+4 (modifier)
+        .set("024", 4) //+1/-3 (modifier)
+        .set("025", 4) //+3/-1 (modifier)
+        .set("026", 14) //CHALLENGE (challenge)
+    ;
+    expansionProperties.get("Berserkers and Necromancers Expansion").duplicates
+        .set("021", 2) //Lightning Labrys (magic)
+        .set("022", 2) //Mass Sacrifice (magic)
+    ;
+}
+populateProperties();
+//console.log(expansionProperties);
+
+let padHundred = function(number) {
+    if(!number instanceof Number) {
+        console.log("Not a number! - 141 assets.js");
+    }
+
+    let result = "";
+    if(number < 100) {
+        result += "0";
+    }
+
+    if(number < 10) {
+        result += "0";
+    }
+
+    return result + number.toString();
+}
+
+//TODO - have this update an html view to update the user
+function directoryTest() {
+    let x = "Base Deck";
+    let y = "leaders";
+    console.log(mockRefExpansions[x]);
+    expansionProperties.forEach( (value, key, map) => {
+        console.log(`Unpacking ${key}...`);
+
+        //kickstart recursion
+        loadExpansionCards(1, key, value.prefix);
+    });
+
+    console.log("Expect a few 'GET 404's (necessary) while we set this up...");
+}
+
+let baseAddress = "../Images/Game";
+let itemCount = {
+    "Base Deck": 0,
+    "Berserkers and Necromancers Expansion": 0,
+    "Dragon Sorcerer Expansion": 0,
+    "Exclusive": 0,
+    "Monster Expansion": 0,
+    "Warrior and Druid Expansion": 0
+}
+let countsToGo = 6;
+
+function loadExpansionCards(number, folderName, prefix) {
+    //'magicId' required as reference for recursion
+    const card = new Image();
+    card.magicId = number;
+
+    //propagage recursion along 'bucket'
+    card.onload = () => {
+        loadExpansionCards(card.magicId + 1, folderName, prefix);
+        itemCount[folderName]++;
+
+        pushRefObject(card, folderName);
+    };
+
+    card.onerror = () => {
+        //transition to next bucket, X01
+        //0XX is 'cards', 1XX is 'leaders', 2XX is 'monsters'
+        switch(Math.floor(card.magicId / 100)) {
+            case 0:
+                loadExpansionCards(101, folderName, prefix);
+                break;
+            case 1:
+                loadExpansionCards(201, folderName, prefix);
+                break;
+            default:
+                if(--countsToGo == 0) {
+                    console.log("Finished loading all expansions");
+                    console.log(Object.entries(mockRefExpansions));
+                }
+                return;
+        }
+    };
+
+    card.src = `${baseAddress}/${folderName}/${prefix}${padHundred(number)}.png`;
+}
+
+//needs the card; (card's id),
+function pushRefObject(card, expansion) {
+    //TODO - see if image size can be applied 'after' the source. likely; - determined when rendered
+        //particularly, notice that the newer expansions have greater image height,width (src)
+        //see if they are all drawn 'equally' on canvas
+    let size;
+    let type;
+    switch(Math.floor(card.magicId/100)) {
+        case 0: //cards
+            size = "small";
+            type = "cards";
+            break;
+        case 1: //leaders
+            size = "medium";
+            type = "leaders";
+            break;
+        case 2: //monsters
+            size = "medium";
+            type = "monsters";
+            break;
+        default:
+            console.log("number too big!");
+            break;
+    }
+
+    card.width = sizes[size].width;
+    card.height = sizes[size].height;
+
+    //retrieve from 'duplicates'
+    let quantity = expansionProperties.get(expansion)
+        .duplicates.get(padHundred(card.magicId));
+    if(!quantity) quantity = 1; //if 'undefined' was returned, set default = 1
+    mockRefExpansions[expansion][type].push(
+        { img: card, count: quantity }
+    );
+}
+
+//export default {assets as assets, directoryTest};
+export {assets, directoryTest};

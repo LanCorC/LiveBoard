@@ -1,6 +1,6 @@
 //TODO - ship all item creation to 'assets', e.g. gameState.getID() and .idToRGB()
 import gameState from "./gameState.js";
-import assets from "./assets.js";
+import {assets} from "./assets.js";
 
 //TODO: TEMPORARY
 function random() {
@@ -70,7 +70,7 @@ export default function main() {
 
     array.forEach((card)=>{
         gameState.push(card);
-        console.log(card);
+//        console.log(card);
     });
 
 }

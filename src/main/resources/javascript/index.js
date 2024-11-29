@@ -1,6 +1,7 @@
 import bindCanvas from "./bindCanvas.js";
 import gameState from "./gameState.js";
 import main from "./itemsObjects.js";
+import { directoryTest } from "./assets.js";
 
 //Variables
 const board = document.getElementById("gameBoard");
@@ -12,6 +13,9 @@ let itemFocus; //current item of "mousedown"; added to 'selected' if mouseUp suc
 let inspectMode = true; //toggle for InspectMode
 let inspectImage = document.getElementById("inspectImage");
 let rightClick = false;
+
+//console.log(a);
+directoryTest();
 
 window.onload = function() {
 //    console.log("im begging");

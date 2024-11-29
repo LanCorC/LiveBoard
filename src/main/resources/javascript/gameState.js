@@ -1,4 +1,4 @@
-import assets from "./assets.js";
+import {assets, directoryTest} from "./assets.js";
 
 const gameState = (function() {
     //in order to render
