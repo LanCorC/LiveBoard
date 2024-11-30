@@ -106,7 +106,7 @@ const assets = (function() {
 })();
 
 //is a hashmap better?
-let mockRefExpansions = {
+let refExpansionCards = {
     "Base Deck": {
         cards: [],
         leaders: [],
@@ -218,7 +218,7 @@ let padHundred = function(number) {
 function directoryTest() {
     let x = "Base Deck";
     let y = "leaders";
-    console.log(mockRefExpansions[x]);
+    console.log(refExpansionCards[x]);
     expansionProperties.forEach( (value, key, map) => {
         console.log(`Unpacking ${key}...`);
 
@@ -229,14 +229,15 @@ function directoryTest() {
     console.log("Expect a few 'GET 404's (necessary) while we set this up...");
 }
 
-let baseAddress = "../Images/Game";
+let baseAddress = "../Images";
 let itemCount = {
     "Base Deck": 0,
     "Berserkers and Necromancers Expansion": 0,
     "Dragon Sorcerer Expansion": 0,
     "Exclusive": 0,
     "Monster Expansion": 0,
-    "Warrior and Druid Expansion": 0
+    "Warrior and Druid Expansion": 0,
+    "PlayMats": 0
 }
 let countsToGo = 6;
 
@@ -250,7 +251,7 @@ function loadExpansionCards(number, folderName, prefix) {
         loadExpansionCards(card.magicId + 1, folderName, prefix);
         itemCount[folderName]++;
 
-        pushRefObject(card, folderName);
+        processRefCard(card, folderName);
     };
 
     card.onerror = () => {
@@ -266,17 +267,17 @@ function loadExpansionCards(number, folderName, prefix) {
             default:
                 if(--countsToGo == 0) {
                     console.log("Finished loading all expansions");
-                    console.log(Object.entries(mockRefExpansions));
+                    console.log(Object.entries(refExpansionCards));
                 }
                 return;
         }
     };
 
-    card.src = `${baseAddress}/${folderName}/${prefix}${padHundred(number)}.png`;
+    card.src = `${baseAddress}/Game/${folderName}/${prefix}${padHundred(number)}.png`;
 }
 
 //needs the card; (card's id),
-function pushRefObject(card, expansion) {
+function processRefCard(card, expansion) {
     //TODO - see if image size can be applied 'after' the source. likely; - determined when rendered
         //particularly, notice that the newer expansions have greater image height,width (src)
         //see if they are all drawn 'equally' on canvas
@@ -307,9 +308,83 @@ function pushRefObject(card, expansion) {
     let quantity = expansionProperties.get(expansion)
         .duplicates.get(padHundred(card.magicId));
     if(!quantity) quantity = 1; //if 'undefined' was returned, set default = 1
-    mockRefExpansions[expansion][type].push(
+    refExpansionCards[expansion][type].push(
         { img: card, count: quantity }
     );
+}
+
+//load miscAssets - rules, cardBack, playmats,
+//rules: []
+//cardBack1: []
+const miscRef = new Map([
+    ["rules", {
+        "general": null,
+        "full": null
+    }], //key, value
+    ["back", {
+        "backCard": null,
+        "backLeader": null,
+        "backMonster": null
+    }],
+    ["playMats", []],
+    ["gameMats", []]
+]);
+//example: miscRef["rules"]["general"]
+//example: miscRef["back"]["backCard"]
+
+//some duplicate code, but modularized for clarity
+function loadGameMats(number, folderName) {
+    //'magicId' required as reference for recursion
+    const card = new Image();
+    card.magicId = number;
+
+    //propagage recursion along 'bucket'
+    card.onload = () => {
+        loadGameMats(card.magicId + 1, folderName);
+        itemCount[folderName]++; //"PlayMats" folderName
+
+        processPlayMat(card);
+    };
+
+    card.onerror = () => {
+        //transition to next bucket, X01
+        //0XX is gameMat, 1XX is playmat
+        if(card.MagicId < 100) {
+            loadGameMats(101, folderName);
+            return;
+        }
+
+        //terminate
+        //TODO sort the playmat,gamemat arrays based on name (if possible), then print to check
+        console.log(Object.entries(miscRef["playMats"]));
+        console.log(Object.entries(miscRef["gameMats"]));
+    };
+
+    card.src = `${baseAddress}/${folderName}/${padHundred(number)}.png`;
+}
+
+//use card's Magic ID to distinguish from gameMat, playMat
+function processPlayMat(card) {
+    let size;
+    let type;
+    switch(Math.floor(card.magicId/100)) {
+        case 0: //gameMat
+            size = "large";
+            type = "gameMats";
+            break;
+        case 1: //playMat
+            size = "large2";
+            type = "playMats";
+            break;
+        default:
+            console.log("number too big!");
+            break;
+    }
+
+    card.width = sizes[size].width;
+    card.height = sizes[size].height;
+
+    miscRef[type].push(card);
 }
 
 //export default {assets as assets, directoryTest};
