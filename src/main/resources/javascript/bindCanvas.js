@@ -20,17 +20,18 @@
      //-- TODO - tie userColor to make it clear which user has selected what
      //*optional, as the user's mouse will be tracked too
 
-    let save = vis.save;
-    vis.save = function() {
-        int.save();
-        return save.call(vis);
-    }
+     //removed for sake of 'clip()' clarity; tradeoff: duplicate code, readable
+//    let save = vis.save;
+//    vis.save = function() {
+//        int.save();
+//        return save.call(vis);
+//    }
 
-    let restore = vis.restore;
-    vis.restore = function() {
-        int.restore();
-        return restore.call(vis);
-    }
+//    let restore = vis.restore;
+//    vis.restore = function() {
+//        int.restore();
+//        return restore.call(vis);
+//    }
 
     let translate = vis.translate;
     vis.translate = function(x, y) {
@@ -61,6 +62,27 @@
         int.clearRect(x, y, width, height);
         return clearRect.call(vis, x, y, width, height);
     }
+
+     //rounds the object; use .clip() but .save() prior and .restore() after
+     let radius = 50; //TODO - maximise this for aesthetic feel when all images are integrated
+//     const roundedImage = function(x,y,width,height,radius){
+     const roundedImage = function(x,y,width,height){
+        let ctx = this;
+         ctx.beginPath();
+         ctx.moveTo(x + radius, y);
+         ctx.lineTo(x + width - radius, y);
+         ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+         ctx.lineTo(x + width, y + height - radius);
+         ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+         ctx.lineTo(x + radius, y + height);
+         ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+         ctx.lineTo(x, y + radius);
+         ctx.quadraticCurveTo(x, y, x + radius, y);
+
+         ctx.clip();
+     }
+     int.roundedImage = roundedImage;
+     vis.roundedImage = roundedImage;
 
     //converts on-screen client.x,client.y to true canvas position (post transform)
     let point = new DOMPoint();

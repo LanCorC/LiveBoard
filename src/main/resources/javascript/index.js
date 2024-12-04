@@ -40,17 +40,21 @@ window.onload = function() {
     const redraw = function() {
         //Clear
         context.save();
+        context2.save();
         context.setTransform(1, 0, 0, 1, 0, 0);
         context.clearRect(0,0,board.width,board.height);
         context.restore();
+        context2.restore();
 
         //redraw
-        gameState.drawItems(itemFocus, dragging, context, context2);
+//        gameState.drawItems(itemFocus, dragging, context, context2);
+        gameState.drawItems(dragging, context, context2);
     };
 
     const itemFromRGB = function() {
         let data = touch.getContext("2d").getImageData(mouse.x, mouse.y, 1, 1).data;
         let { 0: r, 1: g, 2: b, 3: t }  = data;
+//        console.log(`${r} ${g} ${b}`);
         return gameState.findByRGB(r, g, b);
     }
 
@@ -82,7 +86,8 @@ window.onload = function() {
     }
 
     const insertInspectImage = function(item) {
-        if(!item) {
+        //if this is 'back' image, do not display
+        if(!item || item.index == 0) {
             inspectImage.style.visibility = `hidden`;
             return;
         }
@@ -140,11 +145,9 @@ window.onload = function() {
                 switch(item.type) {
                     case "playMat":
                     case "gameMat":
-//                        console.log("i see, but i ignore");
                         break;
                     default:
                         insertInspectImage(item);
-//                        console.log("i see you!");
                         return;
                 }
             }
@@ -303,6 +306,7 @@ window.onload = function() {
         mouse.y = event.pageY;
 
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
+//        console.log(hoverElement);
 
         //handle tooltip hover
         handleImageTooltip();
@@ -402,7 +406,7 @@ window.onload = function() {
             gameState.cycleImage(itemFocus);
             handleImageTooltip(itemFocus);
             selected.push(itemFocus);
-            console.log("tap!");
+//            console.log("tap!" + ` ${itemFocus.touchStyle}`);
 
             //if item was already in 'selected', it needs to be reconfirmed
             gameState.select(itemFocus);

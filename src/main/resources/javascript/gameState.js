@@ -61,9 +61,8 @@ const gameState = (function() {
 
     //test works
     function findByRGB(r, g, b) {
-        let id = r + g*255 + b*255*255;
+        let id = rgbToID(r, g, b);
         let item;
-//        console.log("i'm beggin youUoUou");
         for(const [key, list] of Object.entries(items)) {
             if(item = findItem(id, list)) return item;
         }
@@ -87,7 +86,6 @@ const gameState = (function() {
         checks.forEach((list) => {
             let original = []; //copy of original state
             let pop = []; //array to bring "forward"
-//            console.log(list);
 
             //sort each item in each list into buckets: original, currentSelected
             list.forEach((item) => {
@@ -223,7 +221,9 @@ const gameState = (function() {
 
     //'selected' for clarity, (game-wide)
     //'focus' and 'dragging' (client-side) for drag-to-deck functionality
-    function drawItems(focus, dragging, visual, interactive) {
+//    function drawItems(focus, dragging, visual, interactive) {
+    function drawItems(dragging, visual, interactive) {
+
         for (const [type, list] of Object.entries(items)) {
 
             list.forEach((item) => {
@@ -240,28 +240,53 @@ const gameState = (function() {
                     //TODO: each character has a color in gameState = way to differentiate
                     //TODO: color likely stores a modified svg for each character, where
                     //TODO the fill of svg pointer = color;
+
+                    //Note: currently disabled due to 'clip()'
                     visual.shadowColor = "white";
                     visual.shadowBlur = 100;
 
                     //fill the interactive
                     //**decks will require additional
                     if(!dragging) {
+                        interactive.save();
+
+                        interactive.roundedImage(x, y, width, height);
+
                         interactive.fillStyle = item.touchStyle;
                         interactive.fillRect(x , y, width, height);
                         interactive.fill();
+
+                        interactive.restore();
                     }
                 } else {
                     //fill the interactive
                     //**decks will require additional
+
+//                  Make rounded
+                    interactive.save();
+
+                    interactive.roundedImage(x, y, width, height);
+
                     interactive.fillStyle = item.touchStyle;
                     interactive.fillRect(x , y, width, height);
                     interactive.fill();
+
+                    interactive.restore();
 //                    console.log(`so it's over ${interactive.fillStyle} ${x} ${y} ${width} ${height}`);
                 }
 
                 let itemImg = getImage(item);
                 if(itemImg instanceof HTMLImageElement) {
-                    visual.drawImage(itemImg, x, y);
+
+                    //Make rounded
+                    visual.save();
+
+                    visual.roundedImage(x, y, width, height);
+                    visual.clip();
+
+                    visual.drawImage(itemImg, x, y, itemImg.width, itemImg.height);
+
+                    visual.restore();
                 } else {
                     console.log("error!");
                 }
@@ -281,7 +306,6 @@ const gameState = (function() {
     return {
         getID,
         idToRGB,
-        rgbToID,
         items,
         push,
         findByRGB,

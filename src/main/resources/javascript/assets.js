@@ -37,13 +37,22 @@ const assets = (function() {
     let gameMats = []; //
     let backImgLarge = new Image(); //placeholder, unused
 
+    backImgSmall.width = sizes.small.width;
+    backImgSmall.height = sizes.small.height;
+    backImgMedium1.width = sizes.medium.width;
+    backImgMedium1.height = sizes.medium.height;
+    backImgMedium2.width = sizes.medium.width;
+    backImgMedium2.height = sizes.medium.height;
     //populate backImgs - grabbing images for this demo
     const baseUrl = `https://picsum.photos/`;
     let populate = function() {
 //        let number = 1;
-        backImgSmall.src = `${baseUrl}id/10/${sizes.small.width}/${sizes.small.height}`;
-        backImgMedium1.src = `${baseUrl}id/100/${sizes.medium.width}/${sizes.medium.height}`;
-        backImgMedium2.src = `${baseUrl}id/400/${sizes.medium.width}/${sizes.medium.height}`;
+        backImgSmall.src = `../Images/Misc/backCard.jpg`;
+//        backImgSmall.style.borderRadius = `15px`;
+//        console.log(backImgSmall.style.borderRadius);
+        backImgMedium1.src = `../Images/Misc/backLeader.jpg`;
+        backImgMedium2.src = `../Images/Misc/backMonster.jpg`;
+
         //backImgLarge.src = `${baseUrl}/${number++}/${sizes.large.width}/${sizes.large.height}`;
         for(let i = 0; i < 4; i++) {
             let image = new Image();
@@ -86,7 +95,7 @@ const assets = (function() {
                 break;
             case "playMat":
                 ({height, width} = sizes.large2);
-                playMats.forEach((mat) => images.push(mat));
+                miscRef.get("playMats").forEach(x=>images.push(x));
                 break;
             case "gameMat":
                 ({height, width} = sizes.large);
@@ -218,13 +227,18 @@ let padHundred = function(number) {
 function directoryTest() {
     let x = "Base Deck";
     let y = "leaders";
-    console.log(refExpansionCards[x]);
+//    console.log(refExpansionCards[x]);
     expansionProperties.forEach( (value, key, map) => {
         console.log(`Unpacking ${key}...`);
 
-        //kickstart recursion
+        //kickstart card recursion
         loadExpansionCards(1, key, value.prefix);
     });
+
+
+    console.log(`Unpacking PlayMats...`);
+    //kickstart playmat recursion
+    loadGameMats(1, "PlayMats");
 
     console.log("Expect a few 'GET 404's (necessary) while we set this up...");
 }
@@ -338,11 +352,10 @@ function loadGameMats(number, folderName) {
     const card = new Image();
     card.magicId = number;
 
-    //propagage recursion along 'bucket'
+    //propagate recursion along 'bucket'
     card.onload = () => {
         loadGameMats(card.magicId + 1, folderName);
         itemCount[folderName]++; //"PlayMats" folderName
-
         processPlayMat(card);
     };
 
@@ -355,9 +368,10 @@ function loadGameMats(number, folderName) {
         }
 
         //terminate
-        //TODO sort the playmat,gamemat arrays based on name (if possible), then print to check
-        console.log(Object.entries(miscRef["playMats"]));
-        console.log(Object.entries(miscRef["gameMats"]));
+
+        //TBD if needed- this already sorts itself;
+        miscRef.get("playMats").sort();
+        miscRef.get("gameMats").sort();
     };
 
     card.src = `${baseAddress}/${folderName}/${padHundred(number)}.png`;
@@ -384,7 +398,7 @@ function processPlayMat(card) {
     card.width = sizes[size].width;
     card.height = sizes[size].height;
 
-    miscRef[type].push(card);
+    miscRef.get(type).push(card);
 }
 
 //export default {assets as assets, directoryTest};

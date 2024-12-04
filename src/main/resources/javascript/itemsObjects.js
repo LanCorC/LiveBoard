@@ -2,7 +2,8 @@
 import gameState from "./gameState.js";
 import {assets} from "./assets.js";
 
-//TODO: TEMPORARY
+//TODO: TEMPORARY - replaced with pre-determined coordinates e.g. playmats side by side,
+//starting decks inside the mats, etc
 function random() {
     let num = Math.random(1) * 2000;
     return num;
@@ -70,7 +71,6 @@ export default function main() {
 
     array.forEach((card)=>{
         gameState.push(card);
-//        console.log(card);
     });
 
 }
