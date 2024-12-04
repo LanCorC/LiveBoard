@@ -362,7 +362,7 @@ function loadGameMats(number, folderName) {
     card.onerror = () => {
         //transition to next bucket, X01
         //0XX is gameMat, 1XX is playmat
-        if(card.MagicId < 100) {
+        if(card.magicId < 100) {
             loadGameMats(101, folderName);
             return;
         }
