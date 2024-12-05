@@ -23,49 +23,12 @@ const sizes = {
     }
 };
 
+//Purpose: to return object dimensions and images
 const assets = (function() {
     const tapIcon = new Image();
     tapIcon.src = `../Images/Tokens/hand-tap-svgrepo-com.svg`;
 
-    //TBD tokens? or predetermined (in-image property)
-
-    //temporary format?
-    let backImgSmall = new Image(); //cards
-    let backImgMedium1 = new Image(); //leaders,monsters
-    let backImgMedium2 = new Image(); //leaders,monsters
-    let playMats = []; //
-    let gameMats = []; //
-    let backImgLarge = new Image(); //placeholder, unused
-
-    backImgSmall.width = sizes.small.width;
-    backImgSmall.height = sizes.small.height;
-    backImgMedium1.width = sizes.medium.width;
-    backImgMedium1.height = sizes.medium.height;
-    backImgMedium2.width = sizes.medium.width;
-    backImgMedium2.height = sizes.medium.height;
-    //populate backImgs - grabbing images for this demo
     const baseUrl = `https://picsum.photos/`;
-    let populate = function() {
-//        let number = 1;
-        backImgSmall.src = `../Images/Misc/backCard.jpg`;
-//        backImgSmall.style.borderRadius = `15px`;
-//        console.log(backImgSmall.style.borderRadius);
-        backImgMedium1.src = `../Images/Misc/backLeader.jpg`;
-        backImgMedium2.src = `../Images/Misc/backMonster.jpg`;
-
-        //backImgLarge.src = `${baseUrl}/${number++}/${sizes.large.width}/${sizes.large.height}`;
-        for(let i = 0; i < 4; i++) {
-            let image = new Image();
-            image.src = `${baseUrl}id/${100+i*30}/${sizes.large.width}/${sizes.large.height}`;
-            gameMats.push(image);
-            //TBD: does this work? does it not override prev?
-            let image2 = new Image();
-            image2.src = `${baseUrl}id/${1+i*20}/${sizes.large2.width}/${sizes.large2.height}`;
-            playMats.push(image2);
-        }
-    };
-    populate();
-    //above 'populate' is single call. does not seem to work nested IFFE
 
     //public, for
     let i = 0; //testing variety
@@ -78,19 +41,19 @@ const assets = (function() {
             case "Leader":
                 ({height, width} = sizes.medium);
                 image.src = `${baseUrl}${width}/${height}`;
-                images.push(backImgMedium1);
+                images.push(miscRef.get("back")["backLeader"]);
                 images.push(image);
                 break;
             case "Monster":
                 ({height, width} = sizes.medium);
                 image.src = `${baseUrl}${seed}${i++}/${width}/${height}`;
-                images.push(backImgMedium2);
+                images.push(miscRef.get("back")["backMonster"]);
                 images.push(image);
                 break;
             case "Card":
                 ({height, width} = sizes.small);
                 image.src = `${baseUrl}${seed}${i++}/${width}/${height}`;
-                images.push(backImgSmall);
+                images.push(miscRef.get("back")["backCard"]);
                 images.push(image);
                 break;
             case "playMat":
@@ -99,7 +62,7 @@ const assets = (function() {
                 break;
             case "gameMat":
                 ({height, width} = sizes.large);
-                gameMats.forEach((mat) => images.push(mat));
+                miscRef.get("gameMats").forEach(x=>images.push(x));
                 break;
             default:
                 console.log("error in the assets department!");
@@ -107,8 +70,6 @@ const assets = (function() {
         }
         return { images, height, width };
     };
-
-
 
     return { tapIcon, getImagesAndDimensions };
 
@@ -206,6 +167,22 @@ function populateProperties() {
 populateProperties();
 //console.log(expansionProperties);
 
+//load miscAssets - rules, cardBack, playmats,
+const miscRef = new Map([
+    ["rules", {
+        "general": null,
+        "full": null
+    }], //key, value
+    ["back", {
+        "backCard": null,
+        "backLeader": null,
+        "backMonster": null
+    }],
+    ["playMats", []],
+    ["gameMats", []],
+    ["", ] //TODO: tapicon? tokens?
+]);
+
 let padHundred = function(number) {
     if(!number instanceof Number) {
         console.log("Not a number! - 141 assets.js");
@@ -223,6 +200,7 @@ let padHundred = function(number) {
     return result + number.toString();
 }
 
+let baseAddress = "../Images";
 //TODO - have this update an html view to update the user
 function directoryTest() {
     let x = "Base Deck";
@@ -231,19 +209,28 @@ function directoryTest() {
     expansionProperties.forEach( (value, key, map) => {
         console.log(`Unpacking ${key}...`);
 
-        //kickstart card recursion
         loadExpansionCards(1, key, value.prefix);
     });
 
 
     console.log(`Unpacking PlayMats...`);
-    //kickstart playmat recursion
     loadGameMats(1, "PlayMats");
 
     console.log("Expect a few 'GET 404's (necessary) while we set this up...");
+
+    //load miscellaneous, hardcoded: tokens, image backs
+    let image = new Image(sizes.small.width, sizes.small.height);
+    image.src = `${baseAddress}/Misc/backCard.jpg`;
+    miscRef.get("back")["backCard"] = image;
+
+    image = new Image(sizes.medium.width, sizes.medium.height);
+    image.src = `${baseAddress}/Misc/backLeader.jpg`;
+    miscRef.get("back")["backLeader"] = image;
+
+    image.src = `${baseAddress}/Misc/backMonster.jpg`;
+    miscRef.get("back")["backMonster"] = image;
 }
 
-let baseAddress = "../Images";
 let itemCount = {
     "Base Deck": 0,
     "Berserkers and Necromancers Expansion": 0,
@@ -326,25 +313,6 @@ function processRefCard(card, expansion) {
         { img: card, count: quantity }
     );
 }
-
-//load miscAssets - rules, cardBack, playmats,
-//rules: []
-//cardBack1: []
-const miscRef = new Map([
-    ["rules", {
-        "general": null,
-        "full": null
-    }], //key, value
-    ["back", {
-        "backCard": null,
-        "backLeader": null,
-        "backMonster": null
-    }],
-    ["playMats", []],
-    ["gameMats", []]
-]);
-//example: miscRef["rules"]["general"]
-//example: miscRef["back"]["backCard"]
 
 //some duplicate code, but modularized for clarity
 function loadGameMats(number, folderName) {

@@ -10,6 +10,8 @@ const gameState = (function() {
         players: [] //mouse, etc
     };
 
+    const players = new Map();
+
     let itemCount = 0;
 
     function getID() {
@@ -38,6 +40,16 @@ const gameState = (function() {
         if(item = list.find(({id}) => id === number)) {
             return item;
         }
+    }
+
+    function addPlayer(user) {
+        players.set(user.id, user);
+    }
+
+    //on disconnect, 'deactivate' player? - set all 'selected' on player to null
+    function removePlayer(user) {
+//        players.push(user);
+        //TODO
     }
 
     //private, internal function
@@ -122,11 +134,11 @@ const gameState = (function() {
         });
     }
 
-    function select(items) {
+    function select(items, user) {
         if(!Array.isArray(items)) items = new Array(items);
         if(items[0] == undefined) return;
         items.forEach((item) => {
-            item.selected = true;
+            item.selected = user.id;
             //TODO: ask server for permission; if denied, do not add to 'selected'
             setEnableItems(item, false);
         });
@@ -243,7 +255,7 @@ const gameState = (function() {
 
                     //Note: currently disabled due to 'clip()'
                     visual.shadowColor = "white";
-                    visual.shadowBlur = 100;
+                    visual.shadowBlur = 25;
 
                     //fill the interactive
                     //**decks will require additional
@@ -291,14 +303,36 @@ const gameState = (function() {
                     console.log("error!");
                 }
 
-                if(item.selected) {
-                    let img = assets.tapIcon;
+            });
+        }
 
-                    //global clarity - this item is 'occupied'
-                    visual.drawImage(img, x + width/2 - img.width/2,
-                        y + height/2 - img.height/2);
-                    visual.shadowBlur = 0;
-                }
+        //for now is load 'tapIcon'- separate from 'float' the visual tokens to the front
+        //TODO - in the future, use this to load.. other visual tokens as well?
+        for (const [type, list] of Object.entries(items)) {
+
+            list.forEach((item) => {
+                if(!item.selected) return;
+
+                let x = item.coord.x;
+                let y = item.coord.y;
+                let width = item.width;
+                let height = item.height;
+
+                let img = assets.tapIcon;
+
+                visual.save();
+
+                visual.filter = "blur(10px)";
+                visual.fillStyle = players.get(item.selected)["color"];
+                visual.beginPath();
+                visual.arc(x + width/2, y + height/2, img.height/2,//radius
+                    0, 2* Math.PI);
+                visual.fill();
+
+                visual.restore();
+
+                visual.drawImage(img, x + width/2 - img.width/2,
+                    y + height/2 - img.height/2);
             });
         }
     }
@@ -307,6 +341,8 @@ const gameState = (function() {
         getID,
         idToRGB,
         items,
+        addPlayer,
+        removePlayer,
         push,
         findByRGB,
         select,

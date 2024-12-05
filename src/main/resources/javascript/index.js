@@ -18,7 +18,16 @@ let rightClick = false;
 directoryTest();
 
 window.onload = function() {
-//    console.log("im begging");
+
+    //TODO - create ID, check server (if server, add to server, retrieve gameState; else create gameState)
+    const user = {
+        id: Date.now(),
+        //TODO - UI to choose own color
+        color: "white",
+        //TODO - UI to choose own name
+        name: "Player1"
+    };
+    gameState.addPlayer(user);
 
     //Load all event interactions, draws,
     const context = board.getContext("2d");
@@ -355,7 +364,7 @@ window.onload = function() {
         //on mousedown, if valid item, select and redraw
         if(itemFocus) {
             if(itemFocus.enabled) {
-                gameState.select(itemFocus);
+                gameState.select(itemFocus, user);
                 redraw();
             } else if (!selected.includes(itemFocus)){
                 //todo: notify that card is currently disabled (in-use)
@@ -409,7 +418,7 @@ window.onload = function() {
 //            console.log("tap!" + ` ${itemFocus.touchStyle}`);
 
             //if item was already in 'selected', it needs to be reconfirmed
-            gameState.select(itemFocus);
+            gameState.select(itemFocus, user);
         }
 
         itemFocus = null;
