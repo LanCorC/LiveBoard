@@ -58,11 +58,11 @@ const assets = (function() {
                 break;
             case "playMat":
                 ({height, width} = sizes.large2);
-                miscRef.get("playMats").forEach(x=>images.push(x));
+                miscRef.get("playMat").forEach(x=>images.push(x));
                 break;
             case "gameMat":
                 ({height, width} = sizes.large);
-                miscRef.get("gameMats").forEach(x=>images.push(x));
+                miscRef.get("gameMat").forEach(x=>images.push(x));
                 break;
             default:
                 console.log("error in the assets department!");
@@ -72,8 +72,15 @@ const assets = (function() {
     };
 
     return { tapIcon, getImagesAndDimensions };
-
 })();
+
+function getMiscImages(type) {
+    return miscRef.get(type);
+}
+
+function getRefImages(expansion) {
+
+}
 
 //is a hashmap better?
 let refExpansionCards = {
@@ -178,8 +185,8 @@ const miscRef = new Map([
         "backLeader": null,
         "backMonster": null
     }],
-    ["playMats", []],
-    ["gameMats", []],
+    ["playMat", []],
+    ["gameMat", []],
     ["", ] //TODO: tapicon? tokens?
 ]);
 
@@ -338,8 +345,8 @@ function loadGameMats(number, folderName) {
         //terminate
 
         //TBD if needed- this already sorts itself;
-        miscRef.get("playMats").sort();
-        miscRef.get("gameMats").sort();
+        miscRef.get("playMat").sort();
+        miscRef.get("gameMat").sort();
     };
 
     card.src = `${baseAddress}/${folderName}/${padHundred(number)}.png`;
@@ -352,11 +359,11 @@ function processPlayMat(card) {
     switch(Math.floor(card.magicId/100)) {
         case 0: //gameMat
             size = "large";
-            type = "gameMats";
+            type = "gameMat";
             break;
         case 1: //playMat
             size = "large2";
-            type = "playMats";
+            type = "playMat";
             break;
         default:
             console.log("number too big!");
@@ -370,4 +377,4 @@ function processPlayMat(card) {
 }
 
 //export default {assets as assets, directoryTest};
-export {assets, directoryTest};
+export {assets, directoryTest, getMiscImages};

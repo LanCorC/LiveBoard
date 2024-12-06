@@ -1,4 +1,5 @@
 import {assets, directoryTest} from "./assets.js";
+import { } from "./itemFactory.js";
 
 const gameState = (function() {
     //in order to render
@@ -164,8 +165,8 @@ const gameState = (function() {
     //private function - track relative start, for item dragging tracking
     function setStart(items) {
         items.forEach((item) => {
-            item.dragStart.x = item.coord.x;
-            item.dragStart.y = item.coord.y;
+            item.dragStart.x = item.getX();
+            item.dragStart.y = item.getY();
         });
     }
 
@@ -205,6 +206,8 @@ const gameState = (function() {
         }
 
         return item.images[item.index];
+
+        //TODO: to become item.getImage() under 'genericFactory'
     }
 
     //to replace 'flip' function
@@ -212,6 +215,7 @@ const gameState = (function() {
         if(!Array.isArray(items)) items = new Array(items);
 
         items.forEach((item) => {
+            //TODO - to be made item.cycleImage(mod);
             //default increments +1
             if(!modifier) {
                 item.index++;
@@ -313,8 +317,7 @@ const gameState = (function() {
             list.forEach((item) => {
                 if(!item.selected) return;
 
-                let x = item.coord.x;
-                let y = item.coord.y;
+                let { x, y } = item.coord;
                 let width = item.width;
                 let height = item.height;
 
@@ -337,6 +340,17 @@ const gameState = (function() {
         }
     }
 
+    //TODO - checks 'persist' storage if gameState 'items' already exists to load from
+    function loadBoard(expansions) {
+        //todo - from objectFactory, in conjunction with assets - hard coded set of objects - mats, dice
+        loadMisc();
+
+        //todo - from objectFactory, in conjunction with assets
+        loadCards(expansions);
+
+        //TODO take all items and 'push' to gameState
+    }
+
     return {
         getID,
         idToRGB,
@@ -351,7 +365,8 @@ const gameState = (function() {
         cycleImage,
         dragItems,
         drawItems,
-        getImage
+        getImage,
+        loadBoard
     };
 })();
 

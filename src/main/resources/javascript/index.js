@@ -1,6 +1,6 @@
 import bindCanvas from "./bindCanvas.js";
 import gameState from "./gameState.js";
-import main from "./itemsObjects.js";
+import main from "./itemFactory.js";
 import { directoryTest } from "./assets.js";
 
 //Variables
@@ -100,6 +100,7 @@ window.onload = function() {
             inspectImage.style.visibility = `hidden`;
             return;
         }
+        //TODO to become item.getImage() under 'genericFactory'
         let image = gameState.getImage(item);
 
         inspectImage.style.visibility = `visible`;
