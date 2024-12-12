@@ -1,5 +1,5 @@
 import {assets, directoryTest} from "./assets.js";
-import { } from "./itemFactory.js";
+import {loadCards, loadMisc} from "./itemFactory.js";
 
 const gameState = (function() {
     //in order to render
@@ -20,18 +20,21 @@ const gameState = (function() {
     }
 
     //may be best for controller to hold
-    function idToRGB(id) {
+    function idToRGB(id, special) {
         let r = id % 255;
         id /= 255;
         let g = Math.floor(id%255);
-        id /= 255;
-        let b = Math.floor(id%255);
+
+        //special not provided, 'Blue' value is 0
+        //special provided, 'Blue' value is 1
+        //special indicates: "topOfCard" boolean
+        let b = special ? 255 : 0; //255 is for testing visuals
         return `rgb(${r} ${g} ${b} / 100%)`;
     }
 
     //may be best for controller to hold
     function rgbToID(r, g, b) {
-        return r + g*255 + b*255*255;
+        return (b == 0 ? 1 : -1) * (r + g*255);
     }
 
     //private, internal function
@@ -68,18 +71,32 @@ const gameState = (function() {
             case "player":
                 return gameState.items.players;
             default:
+                console.log(type);
+                console.log("error?");
                 return null; //TODO handle error somehow
         }
     }
 
-    //test works
-    function findByRGB(r, g, b) {
-        let id = rgbToID(r, g, b);
+    function itemFromRGB(touch, mouse) {
+        let data = touch.getImageData(mouse.x, mouse.y, 1, 1).data;
+        let { 0: r, 1: g, 2: b, 3: t }  = data;
+        let trueId = rgbToID(r, g, b);
+        let id = Math.max(trueId, trueId * -1); // |absoluteValue|
         let item;
         for(const [key, list] of Object.entries(items)) {
-            if(item = findItem(id, list)) return item;
+            if(item = findItem(id, list)) {
+                //Purpose: detecting 'topOfCard' of a deck
+                if(trueId != id) {
+                    let deck = item;
+                    item = item.images[0]; //top of deck
+//                    item.deck = deck; //for onDrag decoupling
+//                    console.log("top of deck spotted");
+                }
+                return item;
+            };
         }
     }
+
 
     //turn to array input at some stage, for sake of 'deck'
     function push(item) {
@@ -139,9 +156,18 @@ const gameState = (function() {
         if(!Array.isArray(items)) items = new Array(items);
         if(items[0] == undefined) return;
         items.forEach((item) => {
-            item.selected = user.id;
             //TODO: ask server for permission; if denied, do not add to 'selected'
-            setEnableItems(item, false);
+            item.selected = user.id;
+
+            //TODO - try make this work
+            //additional: if 'topcard' was selected,
+            //the deck will visually be selected
+//            if(item.deck) item.deck.selected = user.id;
+//            if(item.deck) console.log(item.deck);
+
+
+
+            //            setEnableItems(item, user.id);
         });
     }
 
@@ -149,9 +175,17 @@ const gameState = (function() {
         if(!Array.isArray(items)) items = new Array(items);
         if(items[0] == undefined) return;
         items.forEach((item) => {
-            item.selected = false;
             //TODO: notify server release of 'lock';
-            setEnableItems(item, true);
+            item.selected = false;
+            console.log(item.selected);
+//            setEnableItems(item, true);
+
+            //additional: if 'topcard' was selected,
+            //the deck will visually be selected
+//            if(item.deck) {
+//                item.deck.selected = false;
+//                console.log(item.deck.selected);
+//            }
         });
     }
 
@@ -183,26 +217,51 @@ const gameState = (function() {
         //application - items being dragged are
     }
 
-    function dragItems(dx, dy, items, correct) {
-        if(!Array.isArray(items)) items = new Array(items);
+    function dragItems(dx, dy, dragItems, correct) {
+        if(!Array.isArray(dragItems)) dragItems = new Array(dragItems);
 
         //onDragStart, each item's relative start point must be recorded
         if(!correct) {
-            setStart(items);
-            forward(items);
+            //as well as, for cards on top of deck to 'detach'
+//            items.forEach((item) => {
+//                if(item.deck) {
+                    //TODO- will have to base coordinates based off mouse
+                    //example: dragging from deck(viewDiv)/viewHand
+//                    takeFromTop(item.deck);
+//                    deselect(item.deck);
+//                    delete item.deck; //fully decouple
+//                }
+//            });
+
+            //TODO - temporary attempt - free the card from the deck
+            dragItems.forEach((card) => card.enabled = true); // set all drag
+            //currently placeholder for 'in a deck'
+            items.decks.forEach((deck) => {
+                deck.images.forEach((card) => {
+                    if(card.enabled) {
+//                        takeFromTop(deck);
+                        //temporary, set coords off deck
+                        card.coord = deck.coord;
+                    }
+                });
+            });//if set, take top off;
+
+            setStart(dragItems);
+            forward(dragItems);
             //we want other users still able to hover for "tooltip" on an item someone is
-            //actively dragging - no additional
+            //actidragItems dragging - no additional
         }
 
-        items.forEach((item) => {
+        dragItems.forEach((item) => {
             item.coord.x = dx + item.dragStart.x;
             item.coord.y = dy + item.dragStart.y;
         });
     }
 
     function getImage(item) {
-        if(item.type == "Deck") {
-            item = item.cards.at(-1);
+        if(item == undefined) console.log("undefined?");
+        if(item.type == "deck") {
+            return item.getImage();
         }
 
         return item.images[item.index];
@@ -238,11 +297,14 @@ const gameState = (function() {
     //'selected' for clarity, (game-wide)
     //'focus' and 'dragging' (client-side) for drag-to-deck functionality
 //    function drawItems(focus, dragging, visual, interactive) {
+    //TODO - special draw for 'deck' (dongle) and 'topOfDeck'
     function drawItems(dragging, visual, interactive) {
 
         for (const [type, list] of Object.entries(items)) {
 
             list.forEach((item) => {
+                if(!item.enabled) return;
+
                 let x = item.coord.x;
                 let y = item.coord.y;
                 let width = item.width;
@@ -252,47 +314,57 @@ const gameState = (function() {
                 //**decks will require additional
                 if(item.selected) {
                     //server-wide clarity
-                    //TODO: choose a color for each character, store characterID in obj,
-                    //TODO: each character has a color in gameState = way to differentiate
-                    //TODO: color likely stores a modified svg for each character, where
-                    //TODO the fill of svg pointer = color;
 
                     //Note: currently disabled due to 'clip()'
                     visual.shadowColor = "white";
                     visual.shadowBlur = 25;
-
-                    //fill the interactive
-                    //**decks will require additional
-                    if(!dragging) {
-                        interactive.save();
-
-                        interactive.roundedImage(x, y, width, height);
-
-                        interactive.fillStyle = item.touchStyle;
-                        interactive.fillRect(x , y, width, height);
-                        interactive.fill();
-
-                        interactive.restore();
-                    }
                 } else {
-                    //fill the interactive
-                    //**decks will require additional
+                    visual.shadowBlur = 0;
+                }
 
-//                  Make rounded
+                //TODO: extra deck 'dongle'
+                if(item.type == "deck") {
+                    visual.fillStyle = "grey";
+                    visual.beginPath();
+                    visual.arc(x, y, 40, 0, 2 * Math.PI);
+                    visual.fill();
+                    visual.fillStyle = "black"; //set to default
+
+//                    console.log(item.fillStyle);
+                    interactive.fillStyle = item.touchStyle;
+                    interactive.beginPath();
+                    interactive.arc(x, y, 40, 0, 2 * Math.PI);
+                    interactive.fill();
+                    interactive.fillStyle = "black"; //set to default
+                }
+
+                //purpose: allow client to see hover 'below' whilst mid-drag
+                if(item.selected && dragging) {
+                    //do not render touch
+                } else {
                     interactive.save();
 
                     interactive.roundedImage(x, y, width, height);
 
-                    interactive.fillStyle = item.touchStyle;
+                    //purpose: to detect 'TopOfCard'
+                    if(item.type == "deck") {
+                        interactive.fillStyle = idToRGB(item.id, true);
+                    } else {
+                        interactive.fillStyle = item.touchStyle;
+                    }
+
                     interactive.fillRect(x , y, width, height);
                     interactive.fill();
 
                     interactive.restore();
-//                    console.log(`so it's over ${interactive.fillStyle} ${x} ${y} ${width} ${height}`);
                 }
 
                 let itemImg = getImage(item);
                 if(itemImg instanceof HTMLImageElement) {
+//                    if(item.type == "deck") {
+//                        console.log(`ohhh mama ${x} ${y} ${itemImg}
+//                        ${width} ${height}`);
+//                    }
 
                     //Make rounded
                     visual.save();
@@ -315,7 +387,7 @@ const gameState = (function() {
         for (const [type, list] of Object.entries(items)) {
 
             list.forEach((item) => {
-                if(!item.selected) return;
+                if(!item.selected || !item.enabled) return;
 
                 let { x, y } = item.coord;
                 let width = item.width;
@@ -343,22 +415,56 @@ const gameState = (function() {
     //TODO - checks 'persist' storage if gameState 'items' already exists to load from
     function loadBoard(expansions) {
         //todo - from objectFactory, in conjunction with assets - hard coded set of objects - mats, dice
-        loadMisc();
+        console.log(loadMisc());
+        loadMisc().forEach((misc)=> push(misc));
+
 
         //todo - from objectFactory, in conjunction with assets
-        loadCards(expansions);
+        let freshCards = loadCards(expansions);
 
         //TODO take all items and 'push' to gameState
+        for(const value of Object.values(freshCards)) {
+            value.forEach((item) => push(item));
+        }
+
+        //then, finally load in cards?
+    }
+
+    //TODO - create decks dynamically
+    //TODO - merge decks (incl non decks)-
+    //restrict to all card types, and segragate
+    function addToDeck(donor, recipient) {
+        //if two decks merge, 'purge' one of them from gameState
+        //check hoverObject (recipient) - turn into deck if necessary
+        //check selected (donor) - turn into deck if necessary
+    }
+
+    //TODO see how this feels
+    //to only trigger where, onDragStart, a card.enabled = false was  found
+    //**only possible where itemFromRGB returns images[0] of a deck
+    //TODO -- specific touch render + rework 'itemFromRGB', R G B, B = topOfCard boolean
+    function takeFromTop(deck) {
+//        let card = deck.images.splice(0, 1);
+//        if (card.length == 0) console.log("error!");
+//        setEnableItems(card, true);
+
+        //TODO pending... more to do here? - if deck remaining only 1 card,
+        //enable last card, card.coords=deck.coords, remove deck from gameState
+
+
+        //temporary for now:
+        let card = deck.images.splice(0,1);
+        return card;
     }
 
     return {
         getID,
         idToRGB,
+        itemFromRGB,
         items,
         addPlayer,
         removePlayer,
         push,
-        findByRGB,
         select,
         deselect,
         flip,

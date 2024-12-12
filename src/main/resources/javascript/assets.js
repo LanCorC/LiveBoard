@@ -209,6 +209,7 @@ let padHundred = function(number) {
 
 let baseAddress = "../Images";
 //TODO - have this update an html view to update the user
+//purpose: load all assets
 function directoryTest() {
     let x = "Base Deck";
     let y = "leaders";
@@ -218,7 +219,6 @@ function directoryTest() {
 
         loadExpansionCards(1, key, value.prefix);
     });
-
 
     console.log(`Unpacking PlayMats...`);
     loadGameMats(1, "PlayMats");
@@ -234,8 +234,31 @@ function directoryTest() {
     image.src = `${baseAddress}/Misc/backLeader.jpg`;
     miscRef.get("back")["backLeader"] = image;
 
+    image = new Image(sizes.medium.width, sizes.medium.height);
     image.src = `${baseAddress}/Misc/backMonster.jpg`;
     miscRef.get("back")["backMonster"] = image;
+}
+
+function getBack(type) {
+    let img;
+    switch(type) {
+        case "cards":
+        case "Card":
+            img = miscRef.get("back")["backCard"];
+            break;
+        case "leaders":
+        case "Leader":
+            img = miscRef.get("back")["backLeader"];
+            break;
+        case "monsters":
+        case "Monster":
+            img = miscRef.get("back")["backMonster"];
+            break;
+        default:
+            console.log(`backImage for type not found! ${type}`);
+    }
+
+    return img;
 }
 
 let itemCount = {
@@ -376,5 +399,68 @@ function processPlayMat(card) {
     miscRef.get(type).push(card);
 }
 
+//takes expansions, spits out 'preCards/Leaders/Monsters', i.e. basis of a card
+//*iterating through expansions here, thus also check quantity;
+//alternatively, repeat images as per 'quantity' found
+function prepareImages(expansions) {
+    //prepare lists
+    const preItems = {
+        preCards: [],
+        preLeaders: [],
+        preMonsters: []
+    }
+
+    //default to all items
+    if(!expansions) {
+        expansions = Object.keys(refExpansionCards); //returns array
+    }
+
+    //iterate through expansions
+    //* add a default?
+    expansions.forEach((expansion) => { //each expansion
+
+        //*key='type' cards, leaders, monsters
+        //*value='items' array of obj { img(HTMLImageElement), count(integer) }
+        for (const [type, items] of Object.entries(refExpansionCards[expansion])) {
+            //back image for the deck
+            let backImg = getBack(type);
+            if(!backImg) return;
+
+            let arrayName;
+            switch(type) {
+                case "cards":
+                    arrayName = "preCards";
+                    break;
+                case "leaders":
+                    arrayName = "preLeaders";
+                    break;
+                case "monsters":
+                    arrayName = "preMonsters";
+                    break;
+                default:
+                    console.log(`${type} not found!`);
+            }
+
+            items.forEach((card) => {
+                //*default all cards, img[0], as 'backImg'-
+                //or manipulate 'index' on cardProperty
+
+                for(let i = 0; i < card.count; i++){
+                    let images = [];
+                    images.push(backImg);
+                    images.push(card.img);
+
+                    preItems[arrayName].push(images);
+                }
+            })
+
+            console.log(`${expansion} has ${preItems[arrayName].length}
+            cards in deck ${type}`);
+        }
+    });
+
+    return preItems;
+}
+
 //export default {assets as assets, directoryTest};
-export {assets, directoryTest, getMiscImages};
+export {assets, directoryTest, getMiscImages, prepareImages};

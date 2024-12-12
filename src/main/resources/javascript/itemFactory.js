@@ -1,6 +1,6 @@
 //TODO - ship all item creation to 'assets', e.g. gameState.getID() and .idToRGB()
 import gameState from "./gameState.js";
-import {assets, getMiscImages} from "./assets.js";
+import {assets, getMiscImages, prepareImages} from "./assets.js";
 
 //TODO: TEMPORARY - replaced with pre-determined coordinates e.g. playmats side by side,
 //starting decks inside the mats, etc
@@ -77,11 +77,48 @@ function cycleDeckImage(mod) {
 //dice roll (random)
 function cycleDiceImage() {
     let dice = this;
-    dice.index = getRandomInt(dice.images.length);
+    dice.index = Math.floor(Math.random() *dice.images.length);
+    console.log(`rolled: ${dice.index}`);
+}
+
+//shuffle deck [in-place]
+//accept list of 'cards'
+function shuffleDeck(units) {
+    //pick number from 0 -> m, where m<=n and shrinking each iter
+    for(let i = units.length -1; i >= 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        let temp = units[i];
+        units[i] = units[j];
+        units[j] = temp;
+    }
+}
+
+//reverse deck order [in-place]
+function reverseDeck() {
+    let deck = this;
+    for(let i = 0, j = deck.images.length - 1; i < j; i++, j--) {
+        let temp = deck.images[i];
+        deck.images[i] = deck.images[j];
+        deck.images[j] = temp;
+    }
+}
+//flip deck (flip all cards and reverse order) TODO-test
+//effect of "turning an entire pile over" physically
+function flipDeck() {
+    let deck = this;
+    deck.images.forEach((card) => card.cycleImage());
+    reverseDeck.call(deck);
+}
+
+//TODO- see if this is all that takes
+function rearrangeDeck(newDeck) {
+    let deck = this;
+    deck.images = newDeck;
 }
 
 //Empty images - misc generic object: dice, playmats;
 //Specific images - specific object: card, leader, monster
+//Specific images cont.d - 'images'[] full of card objects for creating decks
 const genericFactory = function(type, images, coord) {
     let index = 0;
     if(!images) { //empty, call assets
@@ -95,7 +132,21 @@ const genericFactory = function(type, images, coord) {
 
     //TODO temporary - to be hardcoded
     if(!coord) {
-        coord = {x: random(), y: random()};
+//        coord = {x: random(), y: random()};
+        coord = {x: 1500, y: 1500};
+
+    }
+
+    //TODO - same for merging cards/decks
+    //TODO - this causes snap-backing?
+    if(type=="deck") {
+        images.forEach((image) => {
+//            image.coord.x = coord.x;
+//            image.coord.y = coord.y;
+            image.coord.x = 100;
+            image.coord.y = 100;
+            image.enabled = false;
+        });
     }
 
     function getX() {
@@ -121,32 +172,41 @@ const genericFactory = function(type, images, coord) {
         return images[item.index];
     }
 
-    //TODO - deck shuffle, flip, reverseOrder, 'rearrange',
-
     switch(type) {
         case "Card":
         case "Leader":
         case "Monster":
             return {type, id, touchStyle, index, images, height, width, coord,
-                dragStart, getX, getY, getImage, cycleImage: cycleCardImage};
+                dragStart, getX, getY, getImage, enabled, cycleImage: cycleCardImage,
+                selected};
         case "playMat":
         case "gameMat":
             //TODO - implement 'anchored', equivalent of non-draggable
             //if itemFocus is 'anchored: true', drag board
             //else not itemFocus, does not change coord at any stag
             return {type, id, touchStyle, index, images, height, width, coord,
-                dragStart, getX, getY, getImage, cycleImage: cycleCardImage,
-                anchored: false};
+                dragStart, getX, getY, getImage, enabled,cycleImage: cycleCardImage,
+                anchored: false, selected};
         case "dice":
             return {type, id, touchStyle, index, images, height, width, coord,
-                dragStart, getX, getY, getImage, cycleImage: cycleDiceImage};
+                dragStart, getX, getY, getImage, enabled, cycleImage: cycleDiceImage,
+                selected};
         case "deck":
             return {type, id, touchStyle, index, images, height, width, coord,
-                dragStart, getX, getY,
+                dragStart, getX, getY, enabled, selected,
+                browsing: false, //TODO set to userID when being browsed, false when finish
+                //if(browsing), overrides 'selected' visual cue, instead renders an eye
                 getImage: function() {
                     let item = images[0];
                     return item.images[item.index];
                 },
+                shuffle: () => shuffleDeck(images),
+                flipDeck: () => flipDeck(),
+                rearrange: (newArray) => reverseDeck(newArray),
+                //              //TODO: likely send 'meta' functions to gameState
+                //example: adding, removing, 'cancelling' a deck
+                //                takeTop: () => {return images.splice(0, 1)}, //returns array containing removed
+                //                takeRandom: () => console.log(),
                 cycleImage: cycleDeckImage};
         default:
             console.log(`type not found for this card! ${type}`);
@@ -156,6 +216,8 @@ const genericFactory = function(type, images, coord) {
 
 //TODO
 const loadMisc = function() {
+    //Hard-code x,y positioning here
+
     let misc = [];
     //TODO- load 6 playmats [2 for now?], 1x gamemat
     let mats = [
@@ -176,42 +238,57 @@ const loadMisc = function() {
 
 //TODO - loads all cards into their respective decks
 const loadCards = function(expansions) {
-    //TODO - function in assets.js that iterates through expansions
-    let { preCards, preLeaders, preMonsters } = prepareImages(expansions);
+    let preItems = prepareImages(expansions);
 
-    //TODO - intermediary function that sends preCards to genericFactory
     //TODO-TODO: send all these into their respective decks
-    return { cards, leaders, monsters } =
-    createCards(preCards, preLeaders, preMonsters);
+    return createCards(preItems);
+}
+
+//accepts 'preImages' (array basis for the cards) of all three types: cards, leaders, monsters
+function createCards(preImages) {
+    let items = {
+        cards: [],
+        leaders: [],
+        monsters: []
+    }
+
+    //TODO- clean up redundancy to allow recycling,e.g. Card cards
+    //pass to item maker
+    for(const [key, value] of Object.entries(preImages)) {
+        let arrayName;
+        let type;
+        switch(key) {
+            case "preCards":
+                arrayName = "cards";
+                type = "Card";
+                break;
+            case "preLeaders":
+                arrayName = "leaders";
+                type = "Leader";
+                break;
+            case "preMonsters":
+                arrayName = "monsters";
+                type = "Monster";
+                break;
+            default:
+                console.log(`${key} not found!`);
+        }
+
+        value.forEach((preItem) => {
+            items[arrayName].push(genericFactory(type, preItem));
+        })
+
+        console.log(`${arrayName} has ${items[arrayName].length}
+            cards in deck ${type}`);
+    }
+
+    console.log(items);
+    return items;
 }
 
 //hardcoded for testing item summon
-export default function main() {
-
-    let array = [
-//        makeCard("playMat"),
-//        makeCard("gameMat"),
-        makeCard("Leader"),
-        makeCard("Leader"),
-        makeCard("Leader"),
-        makeCard("Monster"),
-        makeCard("Monster"),
-        makeCard("Monster"),
-        makeCard("Card"),
-        makeCard("Card"),
-        makeCard("Card"),
-        makeCard("Card"),
-        makeCard("Card"),
-        makeCard("Card"),
-        makeCard("Card"),
-        makeCard("Card"),
-        genericFactory("playMat"),
-        genericFactory("gameMat")
-    ];
-
-    array.forEach((card)=>{
-        gameState.push(card);
-    });
+function main() {
 
 }
 
+export {main as default, loadCards, loadMisc};

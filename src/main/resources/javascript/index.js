@@ -13,11 +13,13 @@ let itemFocus; //current item of "mousedown"; added to 'selected' if mouseUp suc
 let inspectMode = true; //toggle for InspectMode
 let inspectImage = document.getElementById("inspectImage");
 let rightClick = false;
-
+let strictDragMode = false;
 //console.log(a);
 directoryTest();
 
 window.onload = function() {
+    //temporary
+    gameState.loadBoard(["Base Deck"]);
 
     //TODO - create ID, check server (if server, add to server, retrieve gameState; else create gameState)
     const user = {
@@ -30,8 +32,8 @@ window.onload = function() {
     gameState.addPlayer(user);
 
     //Load all event interactions, draws,
-    const context = board.getContext("2d");
-    const context2  = touch.getContext("2d", {willReadFrequently : true});
+    const contextVis = board.getContext("2d");
+    const contextTouch  = touch.getContext("2d", {willReadFrequently : true});
     bindCanvas(board, touch);
 
     board.setHeight(window.innerHeight);
@@ -48,24 +50,17 @@ window.onload = function() {
 
     const redraw = function() {
         //Clear
-        context.save();
-        context2.save();
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.clearRect(0,0,board.width,board.height);
-        context.restore();
-        context2.restore();
+        contextVis.save();
+        contextTouch.save();
+        contextVis.setTransform(1, 0, 0, 1, 0, 0);
+        contextVis.clearRect(0,0,board.width,board.height);
+        contextVis.restore();
+        contextTouch.restore();
 
         //redraw
-//        gameState.drawItems(itemFocus, dragging, context, context2);
-        gameState.drawItems(dragging, context, context2);
+//        gameState.drawItems(itemFocus, dragging, contextVis, contextTouch);
+        gameState.drawItems(dragging, contextVis, contextTouch);
     };
-
-    const itemFromRGB = function() {
-        let data = touch.getContext("2d").getImageData(mouse.x, mouse.y, 1, 1).data;
-        let { 0: r, 1: g, 2: b, 3: t }  = data;
-//        console.log(`${r} ${g} ${b}`);
-        return gameState.findByRGB(r, g, b);
-    }
 
     let inspectImgSize = 1;
     let iISizeMin = 0.2;
@@ -148,7 +143,7 @@ window.onload = function() {
         if(hoverElement instanceof HTMLCanvasElement && inspectMode) {
             //for purposes of: looking at items on board
 
-            let item = itemFromRGB();
+            let item = gameState.itemFromRGB(contextTouch, mouse);
 
             //if valid, assign image to tooltip
             if(item) {
@@ -238,26 +233,26 @@ window.onload = function() {
     let handleEdgePanlooping = false;
 
     const handleEdgePan = function() {
-        let {a: modifier} = context.getTransform().inverse();
+        let {a: modifier} = contextVis.getTransform().inverse();
         let value = panRate * modifier;
 
         if(mouse.x < window.innerWidth * borderProximity) {
             //pan left
             console.log("left");
-            context.translate(value, 0);
+            contextVis.translate(value, 0);
         }
         if(mouse.x > window.innerWidth * (1 - borderProximity)) {
             //pan right
-            context.translate(-value, 0);
+            contextVis.translate(-value, 0);
             console.log("right");
         }
         if(mouse.y < window.innerHeight * borderProximity) {
             //pan top
-            context.translate(0, value);
+            contextVis.translate(0, value);
             console.log("top");
         }
         if(mouse.y > window.innerHeight * (1 - borderProximity)) {
-            context.translate(0, -value);
+            contextVis.translate(0, -value);
             console.log("bottom");
         }
         //redrawing twice? see: called by handleDrag
@@ -278,10 +273,11 @@ window.onload = function() {
         }
 
         //Drag item or canvas
-        let point = context.transformPoint(mouse.x, mouse.y);
+        let point = contextVis.transformPoint(mouse.x, mouse.y);
         let dx = point.x - startPoint.x;
         let dy = point.y - startPoint.y;
-        if(itemFocus && !event.ctrlKey) {
+        //TODO - send .anchored check to gameState
+        if(itemFocus && !itemFocus.anchored && !strictDragMode) {
 
             if(itemFocus instanceof HTMLImageElement) {
                 dragElement(event, itemFocus);
@@ -300,7 +296,8 @@ window.onload = function() {
                 handleEdgePan();
             }
         } else {
-            context.translate(point.x-startPoint.x, point.y-startPoint.y);
+            //move the board
+            contextVis.translate(point.x-startPoint.x, point.y-startPoint.y);
         }
 
         //Placed here, as means to determine (see .dragItems()) whether this is the first
@@ -314,6 +311,11 @@ window.onload = function() {
 //        mouse.y = event.offsetY;
         mouse.x = event.pageX;
         mouse.y = event.pageY;
+
+        //TODO-temporary
+        let data = contextTouch.getImageData(mouse.x, mouse.y, 1, 1).data;
+        let { 0: r, 1: g, 2: b, 3: t }  = data;
+        console.log(`${r} ${g} ${b}`);
 
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
 //        console.log(hoverElement);
@@ -340,7 +342,7 @@ window.onload = function() {
         } else if (rightClick) {
             startPoint = null;
         } else {
-            startPoint = context.transformPoint(mouse.x, mouse.y);
+            startPoint = contextVis.transformPoint(mouse.x, mouse.y);
         }
 
         rightClick = false;
@@ -360,17 +362,20 @@ window.onload = function() {
             return;
         }
 
-        itemFocus = itemFromRGB();
+        //TODO - specify for canvas
+        itemFocus = gameState.itemFromRGB(contextTouch, mouse);
 
-        //on mousedown, if valid item, select and redraw
+        //on mousedown, if available, valid item, select and redraw
         if(itemFocus) {
-            if(itemFocus.enabled) {
+            if(!itemFocus.selected) {
                 gameState.select(itemFocus, user);
                 redraw();
-            } else if (!selected.includes(itemFocus)){
-                //todo: notify that card is currently disabled (in-use)
+            //else- already claimed by us, de-select
+            } else if (itemFocus.selected != user.id) {
                 console.log("Item currently in use");
             }
+            //where .selected == user.id:
+            //handled in 'mouseup', for cases where dragStart
         }
 
     }, false);
@@ -381,26 +386,25 @@ window.onload = function() {
         //TODO - below is 'canvasItem' route; make the other routes (HTMLImageElement)
         if(!itemFocus || itemFocus instanceof HTMLImageElement) {
         //INVALID - ctrl ? nothing : purge
-            if(!event.ctrlKey) purgeSelected();
+            if(!strictDragMode) purgeSelected();
 
-        } else if(dragging && event.ctrlKey) {
-        //DRAG ctrlkey
+        } else if(dragging && strictDragMode) {
 
             if(!selected.includes(itemFocus)) {
                 gameState.deselect(itemFocus);
             }
             //else, user only panned across board. all else preserved
 
-        } else if(dragging && !event.ctrlKey) {
-        //DRAG noCtrl
+        } else if(dragging && !strictDragMode) {
+
             if(!selected.includes(itemFocus)) {
                 purgeSelected();
                 gameState.deselect(itemFocus);
             }
             //else, items were all dragged and all else preserved
 
-        } else if (event.ctrlKey){
-        //NODRAG Ctrl
+        } else if (strictDragMode) {
+        //NODRAG
 
             if(selected.includes(itemFocus)) {
                 let index = selected.indexOf(itemFocus);
@@ -436,12 +440,12 @@ window.onload = function() {
     //TODO: feels it should be global, e.g. center of screen, not mouse
     const handleBoardRotate = function(pos) {
         //centeredOnMouse
-//        let point = context.transformPoint(mouse.x, mouse.y);
+//        let point = contextVis.transformPoint(mouse.x, mouse.y);
         //centeredOnScreen
-        let point = context.transformPoint(window.innerWidth/2, window.innerHeight/2);
-        context.translate(+point.x, +point.y);
-        context.rotate(pos ? radians : -radians);
-        context.translate(-point.x, -point.y);
+        let point = contextVis.transformPoint(window.innerWidth/2, window.innerHeight/2);
+        contextVis.translate(+point.x, +point.y);
+        contextVis.rotate(pos ? radians : -radians);
+        contextVis.translate(-point.x, -point.y);
 
         redraw();
     }
@@ -466,9 +470,26 @@ window.onload = function() {
             case "KeyI":
                 toggleTooltip();
                 return;
+            case "ControlLeft":
+            case "ControlRight":
+                strictDragMode = true;
             default:
                 //invalid key, skip processing
 //                console.log("invalid key");
+                return;
+        }
+    }, false);
+
+    window.addEventListener("keyup", function(event){
+        //TODO - future, if chatbox or input box, send null
+        let key = hoverElement instanceof HTMLInputElement ? null : event.code;
+        switch(key) {
+            case "ControlLeft":
+            case "ControlRight":
+                strictDragMode = false;
+            default:
+                //invalid key, skip processing
+                //                console.log("invalid key");
                 return;
         }
     }, false);
@@ -478,17 +499,17 @@ window.onload = function() {
 
     const zoom = function(val) {
         let factor = Math.pow(scale, val); //example: scale '2' results in => double (pow2) or half (pow-2 = x0.5)
-        let pt = context.transformPoint(mouse.x, mouse.y);
-        context.translate(pt.x, pt.y);
-        context.scale(factor, factor);
-        context.translate(-pt.x, -pt.y);
+        let pt = contextVis.transformPoint(mouse.x, mouse.y);
+        contextVis.translate(pt.x, pt.y);
+        contextVis.scale(factor, factor);
+        contextVis.translate(-pt.x, -pt.y);
         redraw();
 
     };
 
     const scroll = function(event) {
         //if ctrl is on + scrolling, prevent canvas scroll
-        if(event.ctrlKey) {
+        if(strictDragMode) {
             return;
         } else {
             zoom(event.deltaY < 0 ? 1 : -1);

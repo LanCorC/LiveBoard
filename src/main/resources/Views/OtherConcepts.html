@@ -87,35 +87,75 @@
 //
 //    console.log(readDirectory(FileSystemDirectoryEntry.createReader()));
 
-window.requestFileSystem =
-window.requestFileSystem || window.webkitRequestFileSystem;
-window.directoryEntry = window.directoryEntry || window.webkitDirectoryEntry;
+//window.requestFileSystem =
+//window.requestFileSystem || window.webkitRequestFileSystem;
+//window.directoryEntry = window.directoryEntry || window.webkitDirectoryEntry;
+//
+//let dir;
+//
+//function onFs(fs) {
+////  console.log();
+//  fs.root.getDirectory(
+//    "Documents",
+//    { create: true }
+//    ,
+//    (directoryEntry) => {
+//      console.log(directoryEntry);
+//      dir = directoryEntry;
+//      directoryEntry.isFile === false
+//      directoryEntry.isDirectory === true
+//      directoryEntry.name === 'Documents'
+//      directoryEntry.fullPath === '/Documents'
+//    },
+//  );
+//}
+//
+//// Opening a file system with temporary storage
+//console.log(window.requestFileSystem(TEMPORARY, 1024 * 1024 /*1MB*/, onFs));
+////    console.log(window.requestFileSystem());
+////console.log(window.directoryEntry());
+//console.log(window.sessionStorage);
+//    console.log(dir);
 
-let dir;
+let ref = [0,1,2,3,4];
+let count = [0,0,0,0,0];//tally
+for(let n = 0; n < 1000; n++) {
+  let units = ref;
+  for(let i = units.length -1; i >= 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    let temp = units[i];
+    units[i] = units[j];
+    units[j] = temp;
+  }
+  count[units[0]]++; //tally +1 the first element
+}
+count.forEach((x)=> console.log(x));
+//console.log(Object.entries(count));
 
-function onFs(fs) {
-//  console.log();
-  fs.root.getDirectory(
-    "Documents",
-    { create: true }
-    ,
-    (directoryEntry) => {
-      console.log(directoryEntry);
-      dir = directoryEntry;
-      directoryEntry.isFile === false
-      directoryEntry.isDirectory === true
-      directoryEntry.name === 'Documents'
-      directoryEntry.fullPath === '/Documents'
-    },
-  );
+function shuffleDeck(units) {
+  //pick number from 0 -> m, where m<=n and shrinking
+  for(let i = units.length -1; i >= 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    let temp = units[i];
+    units[i] = units[j];
+    units[j] = temp;
+  }
 }
 
-// Opening a file system with temporary storage
-console.log(window.requestFileSystem(TEMPORARY, 1024 * 1024 /*1MB*/, onFs));
-//    console.log(window.requestFileSystem());
-//console.log(window.directoryEntry());
-console.log(window.sessionStorage);
-    console.log(dir);
+    function reverseDeck() {
+      let deck = this;
+      for(let i = 0, j = deck.images.length - 1; i < j; i++, j--) {
+        let temp = deck.images[i];
+        deck.images[i] = deck.images[j];
+        deck.images[j] = temp;
+      }
+    }
+    let deck1 = { images: [0,1,2,3,4,5,6,7,8,9,10]};
+    console.log(deck1);
+
+    console.log(deck1);
+//    reverseDeck.call(deck1);
+    console.log(deck1);
 
   </script>
 </body>
