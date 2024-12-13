@@ -13,40 +13,40 @@ function random() {
 //...or, i allow it, and keep 'types' as means of separation when summoning in objects :shrug:
 //TODO - make generic enough?
 //TODO - example: return a different selection of properties depending on type
-const makeCard = function(type) {
-    let index = 0; //0 is frontImage, 1 is 'back' image, else cycle
-    let { width, height, images } = assets.getImagesAndDimensions(type);
-
-    //properties
-    let id = gameState.getID();
-    let touchStyle = gameState.idToRGB(id);
-    //TODO: temporary measure for demonstration
-    let coord = {x: random(), y: random()};
-
-    let dragStart = {
-        x: 0,
-        y: 0
-    };
-
-    //states
-    //true placeholder for "lock"; apply for: adding to 'selected'
-    let enabled = true;
-    //TODO replace - 0*,90* binary; play around with image rotation in canvas (try rotate within center of card)
-    let flipped = false; //determines if backImg,img is rendered
-    let rotation = false; //set to radians, unused
-    let selected = false; //likely placeholder for "lock";
-    //client will check if in selected[], else call server for 'permission'
-
-    function getX() {
-        return coord.x;
-    }
-    function getY() {
-        return coord.y;
-    }
-
-    return {type, id, index, images, touchStyle, enabled, coord, flipped, rotation,
-        getX, getY, width, height, selected, dragStart};
-}
+//const makeCard = function(type) {
+//    let index = 0; //0 is frontImage, 1 is 'back' image, else cycle
+//    let { width, height, images } = assets.getImagesAndDimensions(type);
+//
+//    //properties
+//    let id = gameState.getID();
+//    let touchStyle = gameState.idToRGB(id);
+//    //TODO: temporary measure for demonstration
+//    let coord = {x: random(), y: random()};
+//
+//    let dragStart = {
+//        x: 0,
+//        y: 0
+//    };
+//
+//    //states
+//    //true placeholder for "lock"; apply for: adding to 'selected'
+//    let enabled = true;
+//    //TODO replace - 0*,90* binary; play around with image rotation in canvas (try rotate within center of card)
+//    let flipped = false; //determines if backImg,img is rendered
+//    let rotation = false; //set to radians, unused
+//    let selected = false; //likely placeholder for "lock";
+//    //client will check if in selected[], else call server for 'permission'
+//
+//    function getX() {
+//        return coord.x;
+//    }
+//    function getY() {
+//        return coord.y;
+//    }
+//
+//    return {type, id, index, images, touchStyle, enabled, coord, flipped, rotation,
+//        getX, getY, width, height, selected, dragStart};
+//}
 
 function cycleCardImage(mod) {
     let item = this;
@@ -162,6 +162,9 @@ const genericFactory = function(type, images, coord) {
         y: 0
     };
 
+    //true on 'deck'
+    let isDeck = false;
+
     //TODO - implement 'enabled',
     //to render touch/visual or not in canvas - false when in hand or deck
     let enabled = true;
@@ -178,7 +181,7 @@ const genericFactory = function(type, images, coord) {
         case "Monster":
             return {type, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, getImage, enabled, cycleImage: cycleCardImage,
-                selected};
+                selected, isDeck};
         case "playMat":
         case "gameMat":
             //TODO - implement 'anchored', equivalent of non-draggable
@@ -186,16 +189,17 @@ const genericFactory = function(type, images, coord) {
             //else not itemFocus, does not change coord at any stag
             return {type, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, getImage, enabled,cycleImage: cycleCardImage,
-                anchored: false, selected};
+                anchored: false, selected, isDeck};
         case "dice":
             return {type, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, getImage, enabled, cycleImage: cycleDiceImage,
-                selected};
+                selected, isDeck};
         case "deck":
-            return {type, id, touchStyle, index, images, height, width, coord,
+            return {type: images[0].type, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, enabled, selected,
                 browsing: false, //TODO set to userID when being browsed, false when finish
                 //if(browsing), overrides 'selected' visual cue, instead renders an eye
+                isDeck: true,
                 getImage: function() {
                     let item = images[0];
                     return item.images[item.index];
@@ -207,7 +211,8 @@ const genericFactory = function(type, images, coord) {
                 //example: adding, removing, 'cancelling' a deck
                 //                takeTop: () => {return images.splice(0, 1)}, //returns array containing removed
                 //                takeRandom: () => console.log(),
-                cycleImage: cycleDeckImage};
+                cycleImage: cycleDeckImage,
+                specialHover: false}; //for indicating 'validDeckCreate' on hover
         default:
             console.log(`type not found for this card! ${type}`);
     }

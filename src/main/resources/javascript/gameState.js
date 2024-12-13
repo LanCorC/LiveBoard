@@ -12,6 +12,11 @@ const gameState = (function() {
     };
 
     const players = new Map();
+    let clientUser = {
+        id: "0",
+        color: "black",
+        name: "default"
+    };
 
     let itemCount = 0;
 
@@ -48,6 +53,7 @@ const gameState = (function() {
 
     function addPlayer(user) {
         players.set(user.id, user);
+        clientUser = user;
     }
 
     //on disconnect, 'deactivate' player? - set all 'selected' on player to null
@@ -57,7 +63,8 @@ const gameState = (function() {
     }
 
     //private, internal function
-    function findList(type) {
+    function findList(item) {
+        let type = item.isDeck ? "deck" : item.type;
         switch(type) {
             case "Leader":
             case "Monster":
@@ -95,12 +102,13 @@ const gameState = (function() {
                 return item;
             };
         }
+        return null;
     }
 
 
     //turn to array input at some stage, for sake of 'deck'
     function push(item) {
-        return findList(item.type).push(item);
+        return findList(item).push(item);
     }
 
     //to the end of list - accept an array
@@ -110,7 +118,7 @@ const gameState = (function() {
         let checks = new Set();
 
         //check which lists we need to go over, prevent redundancy
-        set.forEach((item) => checks.add(findList(item.type)));
+        set.forEach((item) => checks.add(findList(item)));
 
         //for each list to be sifted
         checks.forEach((list) => {
@@ -217,8 +225,30 @@ const gameState = (function() {
         //application - items being dragged are
     }
 
-    function dragItems(dx, dy, dragItems, correct) {
-        if(!Array.isArray(dragItems)) dragItems = new Array(dragItems);
+    //purpose: tracking if we changed objects
+    let hoverItem = null;
+    //track if type is compatible, between drag + draw methods
+    let hoverCompatible = false;
+
+    function purgeHoverItem() {
+        if(hoverItem == null) return;
+        console.log(hoverItem + ` oh my god`);
+
+        //set default
+        if(hoverItem.isDeck) {
+            deck.specialHover = false;
+        }
+
+        hoverItem.selected = false;
+        hoverItem = null;
+        hoverCompatible = false;
+    }
+
+    function dragItems(dx, dy, dragItem, correct, hoverObject, itemFocus) {
+        if(!Array.isArray(dragItem)) dragItem = new Array(dragItem);
+
+        //is often null
+        console.log(hoverObject);
 
         //onDragStart, each item's relative start point must be recorded
         if(!correct) {
@@ -234,25 +264,49 @@ const gameState = (function() {
 //            });
 
             //TODO - temporary attempt - free the card from the deck
-            dragItems.forEach((card) => card.enabled = true); // set all drag
-            //currently placeholder for 'in a deck'
-            items.decks.forEach((deck) => {
-                deck.images.forEach((card) => {
-                    if(card.enabled) {
-//                        takeFromTop(deck);
-                        //temporary, set coords off deck
-                        card.coord = deck.coord;
-                    }
-                });
-            });//if set, take top off;
+//            dragItems.forEach((card) => card.enabled = true); // set all drag
+//            //currently placeholder for 'in a deck'
+//            items.decks.forEach((deck) => {
+//                deck.images.forEach((card) => {
+//                    if(card.enabled) {
+////                        takeFromTop(deck);
+//                        //temporary, set coords off deck
+//                        card.coord = deck.coord;
+//                    }
+//                });
+//            });//if set, take top off;
 
-            setStart(dragItems);
-            forward(dragItems);
+            setStart(dragItem);
+            forward(dragItem);
             //we want other users still able to hover for "tooltip" on an item someone is
             //actidragItems dragging - no additional
         }
 
-        dragItems.forEach((item) => {
+        //TODO - get 'selected' from server if valid
+        //TODO - purge 'selected'
+        //no longer the same, default, then reassign
+        if(hoverObject != null && hoverItem != hoverObject) {
+
+            purgeHoverItem();
+//            hoverItem.
+
+            console.log(hoverItem);
+
+            hoverItem = hoverObject;
+
+            //validate - if deck + correct types, set visual
+
+            //Keep it simple - if itemFocus is same type, then trigger
+            if(itemFocus.type == hoverItem.type) {
+                if(hoverItem.isDeck) {
+                    hoverItem.specialHover = true;
+                }
+                hoverCompatible = true;
+                hoverItem.selected = clientUser.id;
+            }
+        }
+
+        dragItem.forEach((item) => {
             item.coord.x = dx + item.dragStart.x;
             item.coord.y = dy + item.dragStart.y;
         });
@@ -260,7 +314,7 @@ const gameState = (function() {
 
     function getImage(item) {
         if(item == undefined) console.log("undefined?");
-        if(item.type == "deck") {
+        if(item.isDeck) {
             return item.getImage();
         }
 
@@ -323,7 +377,7 @@ const gameState = (function() {
                 }
 
                 //TODO: extra deck 'dongle'
-                if(item.type == "deck") {
+                if(item.isDeck) {
                     visual.fillStyle = "grey";
                     visual.beginPath();
                     visual.arc(x, y, 40, 0, 2 * Math.PI);
@@ -347,7 +401,7 @@ const gameState = (function() {
                     interactive.roundedImage(x, y, width, height);
 
                     //purpose: to detect 'TopOfCard'
-                    if(item.type == "deck") {
+                    if(item.isDeck) {
                         interactive.fillStyle = idToRGB(item.id, true);
                     } else {
                         interactive.fillStyle = item.touchStyle;
@@ -389,11 +443,18 @@ const gameState = (function() {
             list.forEach((item) => {
                 if(!item.selected || !item.enabled) return;
 
+                //TODO - include path for when 'hoverCompatible = true'
+                //+special route for hoverItem
                 let { x, y } = item.coord;
                 let width = item.width;
                 let height = item.height;
 
-                let img = assets.tapIcon;
+                let img;
+//                if(hoverItem != null && item.type == hoverItem.type) {
+//                    img = assets.deckIcon;
+//                } else {
+                    img = assets.tapIcon;
+//                }
 
                 visual.save();
 

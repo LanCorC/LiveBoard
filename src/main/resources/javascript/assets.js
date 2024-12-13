@@ -27,57 +27,60 @@ const sizes = {
 const assets = (function() {
     const tapIcon = new Image();
     tapIcon.src = `../Images/Tokens/hand-tap-svgrepo-com.svg`;
+    const deckIcon = new Image();
+    deckIcon.src = `../Images/Tokens/down-line-svgrepo-com.svg`;
 
-    const baseUrl = `https://picsum.photos/`;
+//    const baseUrl = `https://picsum.photos/`;
+//
+//    //public, for
+//    let i = 0; //testing variety
+//    let seed = `seed/`;
+//    function getImagesAndDimensions(type) {
+//        let image = new Image();
+//        let images = [];
+//        let height, width;
+//        switch(type) {
+//            case "Leader":
+//                ({height, width} = sizes.medium);
+//                image.src = `${baseUrl}${width}/${height}`;
+//                images.push(miscRef.get("back")["backLeader"]);
+//                images.push(image);
+//                break;
+//            case "Monster":
+//                ({height, width} = sizes.medium);
+//                image.src = `${baseUrl}${seed}${i++}/${width}/${height}`;
+//                images.push(miscRef.get("back")["backMonster"]);
+//                images.push(image);
+//                break;
+//            case "Card":
+//                ({height, width} = sizes.small);
+//                image.src = `${baseUrl}${seed}${i++}/${width}/${height}`;
+//                images.push(miscRef.get("back")["backCard"]);
+//                images.push(image);
+//                break;
+//            case "playMat":
+//                ({height, width} = sizes.large2);
+//                miscRef.get("playMat").forEach(x=>images.push(x));
+//                break;
+//            case "gameMat":
+//                ({height, width} = sizes.large);
+//                miscRef.get("gameMat").forEach(x=>images.push(x));
+//                break;
+//            default:
+//                console.log("error in the assets department!");
+//                return null; //TODO handle error somehow
+//        }
+//        return { images, height, width };
+//    };
 
-    //public, for
-    let i = 0; //testing variety
-    let seed = `seed/`;
-    function getImagesAndDimensions(type) {
-        let image = new Image();
-        let images = [];
-        let height, width;
-        switch(type) {
-            case "Leader":
-                ({height, width} = sizes.medium);
-                image.src = `${baseUrl}${width}/${height}`;
-                images.push(miscRef.get("back")["backLeader"]);
-                images.push(image);
-                break;
-            case "Monster":
-                ({height, width} = sizes.medium);
-                image.src = `${baseUrl}${seed}${i++}/${width}/${height}`;
-                images.push(miscRef.get("back")["backMonster"]);
-                images.push(image);
-                break;
-            case "Card":
-                ({height, width} = sizes.small);
-                image.src = `${baseUrl}${seed}${i++}/${width}/${height}`;
-                images.push(miscRef.get("back")["backCard"]);
-                images.push(image);
-                break;
-            case "playMat":
-                ({height, width} = sizes.large2);
-                miscRef.get("playMat").forEach(x=>images.push(x));
-                break;
-            case "gameMat":
-                ({height, width} = sizes.large);
-                miscRef.get("gameMat").forEach(x=>images.push(x));
-                break;
-            default:
-                console.log("error in the assets department!");
-                return null; //TODO handle error somehow
-        }
-        return { images, height, width };
-    };
-
-    return { tapIcon, getImagesAndDimensions };
+    return { tapIcon, deckIcon };
 })();
 
 function getMiscImages(type) {
     return miscRef.get(type);
 }
 
+//todo ?? see if i trash this
 function getRefImages(expansion) {
 
 }

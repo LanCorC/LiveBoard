@@ -70,6 +70,15 @@ window.onload = function() {
     //keep above 1.0 to be effective
     let inspectEleResizeFactor = 1.1;
 
+    //for purposes of
+    const clearHoverElement = function() {
+        //if canvas + canvas object -> set defaults
+        //defaults: a) relinquish lock (selected)
+        //defaults: b) set null special deck marker
+
+        hoverElement = null;
+    }
+
     const increaseInspectSize = function() {
         if(hoverElement.className == "floating-inspect") {
             hoverElement.height *= inspectEleResizeFactor;
@@ -143,7 +152,10 @@ window.onload = function() {
         if(hoverElement instanceof HTMLCanvasElement && inspectMode) {
             //for purposes of: looking at items on board
 
+            //experimental- item == hoverElement
             let item = gameState.itemFromRGB(contextTouch, mouse);
+            //used in downstream of 'mousemove'
+            hoverElement = item;
 
             //if valid, assign image to tooltip
             if(item) {
@@ -278,18 +290,20 @@ window.onload = function() {
         let dy = point.y - startPoint.y;
         //TODO - send .anchored check to gameState
         if(itemFocus && !itemFocus.anchored && !strictDragMode) {
-
+//            console.log(hoverElement);
             if(itemFocus instanceof HTMLImageElement) {
                 dragElement(event, itemFocus);
             } else
             //in group, move all items
+                    //TODO - include hoverElement in gameState.dragItems() as reference whether to trigger 'deck'
+                    //Keep it simple for now, then see how it feels - only put the special symbol on the 'recipient'
             if(selected.includes(itemFocus)) {
                 //move all items
-                gameState.dragItems(dx, dy, selected, dragging);
+                gameState.dragItems(dx, dy, selected, dragging, hoverElement, itemFocus);
             } else {
                 //not in the group, deselect group, move just the item
                 purgeSelected();
-                gameState.dragItems(dx, dy, itemFocus, dragging);
+                gameState.dragItems(dx, dy, itemFocus, dragging, hoverElement, itemFocus);
             }
 
             if(!handleEdgePanlooping) {
@@ -313,14 +327,14 @@ window.onload = function() {
         mouse.y = event.pageY;
 
         //TODO-temporary
-        let data = contextTouch.getImageData(mouse.x, mouse.y, 1, 1).data;
-        let { 0: r, 1: g, 2: b, 3: t }  = data;
-        console.log(`${r} ${g} ${b}`);
+//        let data = contextTouch.getImageData(mouse.x, mouse.y, 1, 1).data;
+//        let { 0: r, 1: g, 2: b, 3: t }  = data;
+//        console.log(`${r} ${g} ${b}`);
 
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
 //        console.log(hoverElement);
 
-        //handle tooltip hover
+        //handle tooltip hover- if canvas, finds object
         handleImageTooltip();
 
         //check for click-hold-drag
