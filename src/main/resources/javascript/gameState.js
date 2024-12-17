@@ -185,7 +185,7 @@ const gameState = (function() {
         items.forEach((item) => {
             //TODO: notify server release of 'lock';
             item.selected = false;
-            console.log(item.selected);
+//            console.log(item.selected);
 //            setEnableItems(item, true);
 
             //additional: if 'topcard' was selected,
@@ -212,13 +212,13 @@ const gameState = (function() {
         });
     }
 
-    //relies on querying server for permission to lock the card, property: "enabled"
+    //relies on querying server for permission to lock the card, property: "disabled"
     function setEnableItems(items, boolean) {
         if(!Array.isArray(items)) items = new Array(items);
         //'true' allows 'touch' to be drawn
         //'false' disallows this
         items.forEach((item) => {
-            item.enabled = boolean;
+            item.disabled = boolean;
         });
 
         //Uses: onDragStart, onDragEnd
@@ -231,7 +231,7 @@ const gameState = (function() {
     let hoverCompatible = false;
 
     function purgeHoverItem() {
-        if(hoverItem == null) return;
+        if(hoverItem == null) console.log("uhoh");
         console.log(hoverItem + ` oh my god`);
 
         //set default
@@ -240,6 +240,7 @@ const gameState = (function() {
         }
 
         hoverItem.selected = false;
+
         hoverItem = null;
         hoverCompatible = false;
     }
@@ -248,7 +249,9 @@ const gameState = (function() {
         if(!Array.isArray(dragItem)) dragItem = new Array(dragItem);
 
         //is often null
-        console.log(hoverObject);
+        //TODO - important testing
+        //TODO NOTE: causes lots of lag
+//        console.log(hoverObject);
 
         //onDragStart, each item's relative start point must be recorded
         if(!correct) {
@@ -264,11 +267,11 @@ const gameState = (function() {
 //            });
 
             //TODO - temporary attempt - free the card from the deck
-//            dragItems.forEach((card) => card.enabled = true); // set all drag
+//            dragItems.forEach((card) => card.disabled = true); // set all drag
 //            //currently placeholder for 'in a deck'
 //            items.decks.forEach((deck) => {
 //                deck.images.forEach((card) => {
-//                    if(card.enabled) {
+//                    if(card.disabled) {
 ////                        takeFromTop(deck);
 //                        //temporary, set coords off deck
 //                        card.coord = deck.coord;
@@ -285,26 +288,26 @@ const gameState = (function() {
         //TODO - get 'selected' from server if valid
         //TODO - purge 'selected'
         //no longer the same, default, then reassign
-        if(hoverObject != null && hoverItem != hoverObject) {
-
-            purgeHoverItem();
-//            hoverItem.
-
-            console.log(hoverItem);
-
-            hoverItem = hoverObject;
-
-            //validate - if deck + correct types, set visual
-
-            //Keep it simple - if itemFocus is same type, then trigger
-            if(itemFocus.type == hoverItem.type) {
-                if(hoverItem.isDeck) {
-                    hoverItem.specialHover = true;
-                }
-                hoverCompatible = true;
-                hoverItem.selected = clientUser.id;
-            }
-        }
+//        if(hoverObject != null && hoverItem != hoverObject) {
+//
+//            purgeHoverItem();
+////            hoverItem.
+//
+//            console.log(hoverItem);
+//
+//            hoverItem = hoverObject;
+//
+//            //validate - if deck + correct types, set visual
+//
+//            //Keep it simple - if itemFocus is same type, then trigger
+//            if(itemFocus.type == hoverItem.type) {
+//                if(hoverItem.isDeck) {
+//                    hoverItem.specialHover = true;
+//                }
+//                hoverCompatible = true;
+//                hoverItem.selected = clientUser.id;
+//            }
+//        }
 
         dragItem.forEach((item) => {
             item.coord.x = dx + item.dragStart.x;
@@ -357,7 +360,7 @@ const gameState = (function() {
         for (const [type, list] of Object.entries(items)) {
 
             list.forEach((item) => {
-                if(!item.enabled) return;
+                if(item.disabled) return;
 
                 let x = item.coord.x;
                 let y = item.coord.y;
@@ -441,7 +444,7 @@ const gameState = (function() {
         for (const [type, list] of Object.entries(items)) {
 
             list.forEach((item) => {
-                if(!item.selected || !item.enabled) return;
+                if(!item.selected || item.disabled) return;
 
                 //TODO - include path for when 'hoverCompatible = true'
                 //+special route for hoverItem
@@ -501,7 +504,7 @@ const gameState = (function() {
     }
 
     //TODO see how this feels
-    //to only trigger where, onDragStart, a card.enabled = false was  found
+    //to only trigger where, onDragStart, a card.disabled = false was  found
     //**only possible where itemFromRGB returns images[0] of a deck
     //TODO -- specific touch render + rework 'itemFromRGB', R G B, B = topOfCard boolean
     function takeFromTop(deck) {

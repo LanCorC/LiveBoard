@@ -14,7 +14,6 @@ let inspectMode = true; //toggle for InspectMode
 let inspectImage = document.getElementById("inspectImage");
 let rightClick = false;
 let strictDragMode = false;
-//console.log(a);
 directoryTest();
 
 window.onload = function() {
@@ -152,7 +151,6 @@ window.onload = function() {
         if(hoverElement instanceof HTMLCanvasElement && inspectMode) {
             //for purposes of: looking at items on board
 
-            //experimental- item == hoverElement
             let item = gameState.itemFromRGB(contextTouch, mouse);
             //used in downstream of 'mousemove'
             hoverElement = item;
@@ -173,6 +171,11 @@ window.onload = function() {
             //grab the id, or its parent div, or its special attribute 'id' of card
             //then use gameState to find the image
             console.log("Image element found or missing info");
+        }
+
+        //TODO: experimental- item == hoverElement, for 'detect deck'
+        if(hoverElement instanceof HTMLCanvasElement) {
+            hoverElement = gameState.itemFromRGB(contextTouch, mouse);
         }
 
         insertInspectImage();
