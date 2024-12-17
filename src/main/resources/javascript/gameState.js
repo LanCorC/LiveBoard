@@ -229,6 +229,7 @@ const gameState = (function() {
     let hoverItem = null;
     //track if type is compatible, between drag + draw methods
     let hoverCompatible = false;
+    const validHover = new Set(["Card", "Monster", "Leader"]);
 
     //Likely no longer required
     function purgeHoverItem() {
@@ -303,7 +304,7 @@ const gameState = (function() {
 //                hoverItem.selected = clientUser.id;
 //            }
 
-            if(hoverItem == null || !selectedTypes.has(hoverItem.type)) {
+            if(hoverItem == null || !validHover.has(hoverObject.type) || !selectedTypes.has(hoverItem.type)) {
                 hoverCompatible = false;
                 console.log("incompatible!");
             } else {
