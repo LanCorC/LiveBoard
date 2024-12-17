@@ -14,7 +14,7 @@ const gameState = (function() {
     const players = new Map();
     let clientUser = {
         id: "0",
-        color: "black",
+        color: "white",
         name: "default"
     };
 
@@ -230,21 +230,14 @@ const gameState = (function() {
     //track if type is compatible, between drag + draw methods
     let hoverCompatible = false;
 
+    //Likely no longer required
     function purgeHoverItem() {
-        if(hoverItem == null) console.log("uhoh");
-        console.log(hoverItem + ` oh my god`);
-
-        //set default
-        if(hoverItem.isDeck) {
-            deck.specialHover = false;
-        }
-
-        hoverItem.selected = false;
-
         hoverItem = null;
         hoverCompatible = false;
+        selectedTypes = new Set();
     }
 
+    let selectedTypes = new Set();
     function dragItems(dx, dy, dragItem, correct, hoverObject, itemFocus) {
         if(!Array.isArray(dragItem)) dragItem = new Array(dragItem);
 
@@ -255,6 +248,9 @@ const gameState = (function() {
 
         //onDragStart, each item's relative start point must be recorded
         if(!correct) {
+
+            dragItem.forEach((item) => selectedTypes.add(item.type));
+
             //as well as, for cards on top of deck to 'detach'
 //            items.forEach((item) => {
 //                if(item.deck) {
@@ -287,15 +283,14 @@ const gameState = (function() {
 
         //TODO - get 'selected' from server if valid
         //TODO - purge 'selected'
-        //no longer the same, default, then reassign
-//        if(hoverObject != null && hoverItem != hoverObject) {
-//
+//        no longer the same, default, then reassign
+//        console.log(hoverCompatible);
+        if(hoverItem != hoverObject) {
+//            console.log("aaaaah!");
 //            purgeHoverItem();
 ////            hoverItem.
-//
-//            console.log(hoverItem);
-//
-//            hoverItem = hoverObject;
+////
+            hoverItem = hoverObject;
 //
 //            //validate - if deck + correct types, set visual
 //
@@ -307,7 +302,15 @@ const gameState = (function() {
 //                hoverCompatible = true;
 //                hoverItem.selected = clientUser.id;
 //            }
-//        }
+
+            if(hoverItem == null || !selectedTypes.has(hoverItem.type)) {
+                hoverCompatible = false;
+                console.log("incompatible!");
+            } else {
+                hoverCompatible = true;
+                console.log("compatible!");
+            }
+        }
 
         dragItem.forEach((item) => {
             item.coord.x = dx + item.dragStart.x;
@@ -449,15 +452,16 @@ const gameState = (function() {
                 //TODO - include path for when 'hoverCompatible = true'
                 //+special route for hoverItem
                 let { x, y } = item.coord;
-                let width = item.width;
-                let height = item.height;
+                let { width, height } = item;
 
                 let img;
-//                if(hoverItem != null && item.type == hoverItem.type) {
-//                    img = assets.deckIcon;
-//                } else {
+                if(!hoverCompatible) {
                     img = assets.tapIcon;
-//                }
+                } else if (item.type == hoverItem.type) {
+                    img = assets.moveTo;
+                } else {
+                    img = assets.no;
+                }
 
                 visual.save();
 
@@ -473,6 +477,26 @@ const gameState = (function() {
                 visual.drawImage(img, x + width/2 - img.width/2,
                     y + height/2 - img.height/2);
             });
+        }
+
+        if(hoverCompatible && !hoverItem.selected) {
+            let img = assets.deckIcon;
+            let { x, y } = hoverItem.coord;
+            let { height, width } = hoverItem;
+
+            visual.save();
+
+            visual.filter = "blur(10px)";
+            visual.fillStyle = clientUser.color;
+            visual.beginPath();
+            visual.arc(x + width/2, y + height/2, 50,//radius
+                0, 2* Math.PI);
+            visual.fill();
+
+            visual.restore();
+
+            visual.drawImage(img, x + width/2 - img.width/2,
+                y + height/2 - img.height/2);
         }
     }
 
@@ -536,7 +560,8 @@ const gameState = (function() {
         dragItems,
         drawItems,
         getImage,
-        loadBoard
+        loadBoard,
+        purgeHoverItem
     };
 })();
 

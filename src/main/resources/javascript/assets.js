@@ -28,9 +28,14 @@ const assets = (function() {
     const tapIcon = new Image();
     tapIcon.src = `../Images/Tokens/hand-tap-svgrepo-com.svg`;
     const deckIcon = new Image();
-    deckIcon.src = `../Images/Tokens/down-line-svgrepo-com.svg`;
+    deckIcon.src = `../Images/Tokens/stack-push-svgrepo-com.svg`;
+    const moveTo = new Image();
+    moveTo.src = `../Images/Tokens/send-svgrepo-com.svg`;
+    const no = new Image();
+    no.src = `../Images/Tokens/no-svgrepo-com.svg`;
 
-//    const baseUrl = `https://picsum.photos/`;
+
+    //    const baseUrl = `https://picsum.photos/`;
 //
 //    //public, for
 //    let i = 0; //testing variety
@@ -73,7 +78,7 @@ const assets = (function() {
 //        return { images, height, width };
 //    };
 
-    return { tapIcon, deckIcon };
+    return { tapIcon, deckIcon, moveTo, no };
 })();
 
 function getMiscImages(type) {

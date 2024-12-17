@@ -223,24 +223,29 @@ function createCards(preImages) {
     for(const [key, value] of Object.entries(preImages)) {
         let arrayName;
         let type;
+//        let coord = null; //will set where the cards, as piled, will show
         switch(key) {
             case "preCards":
                 arrayName = "cards";
                 type = "Card";
+//                coord = {x: 0, y: 0};
                 break;
             case "preLeaders":
                 arrayName = "leaders";
                 type = "Leader";
+//                coord = {x: 50, y: 50};
                 break;
             case "preMonsters":
                 arrayName = "monsters";
                 type = "Monster";
+//                coord = {x: 100, y: 100};
                 break;
             default:
                 console.log(`${key} not found!`);
         }
 
         value.forEach((preItem) => {
+//            let coords = coord;
             items[arrayName].push(genericFactory(type, preItem));
         })
 

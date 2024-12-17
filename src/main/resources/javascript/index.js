@@ -107,6 +107,11 @@ window.onload = function() {
         let image = gameState.getImage(item);
 
         inspectImage.style.visibility = `visible`;
+        if(dragging) {
+            inspectImage.style.opacity = `40%`;
+        } else {
+            inspectImage.style.opacity = `90%`;
+        }
         inspectImage.height = image.height * inspectImgSize;
         inspectImage.width = image.width * inspectImgSize;
         inspectImage.src = image.src;
@@ -128,6 +133,11 @@ window.onload = function() {
     insertInspectImage();
 
     const handleImageTooltip = function(event) {
+        //TODO: experimental- item == hoverElement, for 'detect deck'
+        if(hoverElement instanceof HTMLCanvasElement) {
+            hoverElement = gameState.itemFromRGB(contextTouch, mouse);
+        }
+
         //determine what element has been selected
         if(!inspectMode) {
             return;
@@ -148,7 +158,7 @@ window.onload = function() {
         inspectImage.style.left = `${x}px`;
 
         //assumes the game board
-        if(hoverElement instanceof HTMLCanvasElement && inspectMode) {
+        if(document.elementFromPoint(mouse.x, mouse.y) instanceof HTMLCanvasElement && inspectMode) {
             //for purposes of: looking at items on board
 
             let item = gameState.itemFromRGB(contextTouch, mouse);
@@ -171,11 +181,6 @@ window.onload = function() {
             //grab the id, or its parent div, or its special attribute 'id' of card
             //then use gameState to find the image
             console.log("Image element found or missing info");
-        }
-
-        //TODO: experimental- item == hoverElement, for 'detect deck'
-        if(hoverElement instanceof HTMLCanvasElement) {
-            hoverElement = gameState.itemFromRGB(contextTouch, mouse);
         }
 
         insertInspectImage();
@@ -445,6 +450,7 @@ window.onload = function() {
 
         itemFocus = null;
         dragging = false;
+        gameState.purgeHoverItem();
         redraw();
     }, false);
 
