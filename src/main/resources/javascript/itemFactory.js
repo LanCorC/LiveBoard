@@ -98,17 +98,6 @@ const genericFactory = function(type, images, coord) {
 
     }
 
-    //TODO - same for merging cards/decks
-    //TODO - this causes snap-backing?
-    if(type=="deck") {
-        images.forEach((image) => {
-//            image.coord.x = coord.x;
-//            image.coord.y = coord.y;
-            image.coord.x = 100;
-            image.coord.y = 100;
-            image.disabled = false;
-        });
-    }
 
     function getX() {
         return coord.x;
@@ -223,30 +212,32 @@ function createCards(preImages) {
     for(const [key, value] of Object.entries(preImages)) {
         let arrayName;
         let type;
-//        let coord = null; //will set where the cards, as piled, will show
+        let coord = null; //will set where the cards, as piled, will show
         switch(key) {
             case "preCards":
                 arrayName = "cards";
                 type = "Card";
-//                coord = {x: 0, y: 0};
+                coord = {x: 0, y: 0};
                 break;
             case "preLeaders":
                 arrayName = "leaders";
                 type = "Leader";
-//                coord = {x: 50, y: 50};
+                coord = {x: 100, y: 100};
                 break;
             case "preMonsters":
                 arrayName = "monsters";
                 type = "Monster";
-//                coord = {x: 100, y: 100};
+                coord = {x: 200, y: 200};
                 break;
             default:
                 console.log(`${key} not found!`);
         }
 
         value.forEach((preItem) => {
-//            let coords = coord;
-            items[arrayName].push(genericFactory(type, preItem));
+            let {x, y} = coord;
+//            items[arrayName].push(genericFactory(type, preItem));
+            items[arrayName].push(genericFactory(type, preItem, {x, y}));
+
         })
 
         console.log(`${arrayName} has ${items[arrayName].length}

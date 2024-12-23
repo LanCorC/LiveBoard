@@ -514,6 +514,7 @@ const gameState = (function() {
         //TODO take all items and 'push' to gameState
         for(const value of Object.values(freshCards)) {
             value.forEach((item) => push(item));
+            console.log(value);
         }
 
         //then, finally load in cards?
@@ -523,9 +524,17 @@ const gameState = (function() {
     //TODO - merge decks (incl non decks)-
     //restrict to all card types, and segragate
     function addToDeck(donor, recipient) {
-        //if two decks merge, 'purge' one of them from gameState
-        //check hoverObject (recipient) - turn into deck if necessary
-        //check selected (donor) - turn into deck if necessary
+        //TODO- 'hoverElement' is recipient, else find a way to set hoverElement to 'hand'; likely in index.js
+
+        //amongst selected (donor), make an array of type-valid
+        //amongst array of type-valid, make an array extracting all images; i.e. if deck, if card amongst donors
+
+        //if recipient isDeck, isDeck.addCards(allCardsArray) OR isDeck.images.concat ...
+        //else, turn recipient to a deck; push to gamestate; then .addCards()
+        //however, expect .addCards() to also include 'set defaults', like "disabled = true",
+
+        //also... .addCards() is already THIS, isn't it? so do the processing here
+
     }
 
     //TODO see how this feels
