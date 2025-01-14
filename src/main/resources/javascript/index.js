@@ -1,7 +1,7 @@
 import bindCanvas from "./bindCanvas.js";
 import gameState from "./gameState.js";
 import main from "./itemFactory.js";
-import { directoryTest } from "./assets.js";
+import { loadAssets } from "./assets.js";
 
 //Variables
 const board = document.getElementById("gameBoard");
@@ -14,10 +14,10 @@ let inspectMode = true; //toggle for InspectMode
 let inspectImage = document.getElementById("inspectImage");
 let rightClick = false;
 let strictDragMode = false;
-directoryTest();
+loadAssets();
 
 window.onload = function() {
-    //temporary
+    //TODO - temporary
     gameState.loadBoard(["Base Deck"]);
 
     //TODO - create ID, check server (if server, add to server, retrieve gameState; else create gameState)

@@ -1,5 +1,5 @@
-import {assets, directoryTest} from "./assets.js";
-import {loadCards, loadMisc} from "./itemFactory.js";
+import {assets} from "./assets.js";
+import {loadCards, loadMisc, deckify} from "./itemFactory.js";
 
 const gameState = (function() {
     //in order to render
@@ -507,15 +507,40 @@ const gameState = (function() {
         console.log(loadMisc());
         loadMisc().forEach((misc)=> push(misc));
 
-
-        //todo - from objectFactory, in conjunction with assets
         let freshCards = loadCards(expansions);
 
-        //TODO take all items and 'push' to gameState
+        //push cards into gamestate
         for(const value of Object.values(freshCards)) {
             value.forEach((item) => push(item));
-            console.log(value);
         }
+
+        //decks- Card, Leader, Monster -- not hard coded
+        let decks = new Map();
+
+        //add card to corresponding 'pre'-deck
+        Object.values(freshCards).forEach(
+            deck => deck.forEach(
+                card => {
+                let { type } = card;
+
+                //if type not found, insert empty array
+                if(!decks.has(type)) {
+                    decks.set(type, []);
+                }
+
+                //add into array of corresponding type
+                decks.get(type).push(card);
+        }));
+
+        //create decks -
+        console.log(decks);
+        for(const [key, value] of decks) {
+            push(deckify(value));
+        }
+
+        items.decks.forEach(deck => deck.shuffle());
+
+        //TODO: set up player hand (starts empty)
 
         //then, finally load in cards?
     }

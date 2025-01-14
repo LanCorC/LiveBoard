@@ -1,6 +1,6 @@
 //TODO - ship all item creation to 'assets', e.g. gameState.getID() and .idToRGB()
 import gameState from "./gameState.js";
-import {assets, getMiscImages, prepareImages} from "./assets.js";
+import {getMiscImages, prepareImages} from "./assets.js";
 
 //TODO: TEMPORARY - replaced with pre-determined coordinates e.g. playmats side by side,
 //starting decks inside the mats, etc
@@ -82,7 +82,7 @@ function rearrangeDeck(newDeck) {
 //Specific images cont.d - 'images'[] full of card objects for creating decks
 const genericFactory = function(type, images, coord) {
     let index = 0;
-    if(!images) { //empty, call assets
+    if(!images) { //empty, call assets; reserved for misc: mats, dice
         images = getMiscImages(type);
     }
     //take properties refImages - tied to assets.js
@@ -98,6 +98,10 @@ const genericFactory = function(type, images, coord) {
 
     }
 
+    //disable all members if isDeck
+    if(type == "deck") {
+        images.forEach(image => image.disabled = true);
+    }
 
     function getX() {
         return coord.x;
@@ -248,9 +252,47 @@ function createCards(preImages) {
     return items;
 }
 
+//Purpose: merge cards, base into a coherent deck; return the deck object
+//assumes cards, base share the same .type
+//if 'base' is defined, i.e. 'itemHover', base is always a single card.
+//and 'base' 's coords will be used
+//Note: will not use for 'decks'; will use decks functionality
+const deckify = function(cards, base) {
+
+    if(!Array.isArray(cards)) {
+        cards = [cards];
+    }
+
+    let { type } = cards[0];
+
+    //place at 0,0 if default, else let Card,Leader,Monster be pre-set
+    let coord;
+    if(base == undefined) {
+        switch(type) {
+            case "Card":
+                coord = {x: -100, y: -100};
+                break;
+            case "Leader":
+                coord = {x: -200, y: -200};
+                break;
+            case "Monster":
+                coord = {x: -300, y: -300};
+                break;
+            default: coord = { x: 0, y: 0 };
+        }
+    } else {
+        coord = {x, y} = base.coord;
+
+        //add base to 'bottom of pile'
+        cards.push(base);
+    }
+
+    return genericFactory("deck", cards, coord);
+}
+
 //hardcoded for testing item summon
 function main() {
 
 }
 
-export {main as default, loadCards, loadMisc};
+export {main as default, loadCards, loadMisc, deckify};

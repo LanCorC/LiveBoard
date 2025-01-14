@@ -23,7 +23,6 @@ const sizes = {
     }
 };
 
-//Purpose: to return object dimensions and images
 const assets = (function() {
     const tapIcon = new Image();
     tapIcon.src = `../Images/Tokens/hand-tap-svgrepo-com.svg`;
@@ -33,50 +32,6 @@ const assets = (function() {
     moveTo.src = `../Images/Tokens/send-svgrepo-com.svg`;
     const no = new Image();
     no.src = `../Images/Tokens/no-svgrepo-com.svg`;
-
-
-    //    const baseUrl = `https://picsum.photos/`;
-//
-//    //public, for
-//    let i = 0; //testing variety
-//    let seed = `seed/`;
-//    function getImagesAndDimensions(type) {
-//        let image = new Image();
-//        let images = [];
-//        let height, width;
-//        switch(type) {
-//            case "Leader":
-//                ({height, width} = sizes.medium);
-//                image.src = `${baseUrl}${width}/${height}`;
-//                images.push(miscRef.get("back")["backLeader"]);
-//                images.push(image);
-//                break;
-//            case "Monster":
-//                ({height, width} = sizes.medium);
-//                image.src = `${baseUrl}${seed}${i++}/${width}/${height}`;
-//                images.push(miscRef.get("back")["backMonster"]);
-//                images.push(image);
-//                break;
-//            case "Card":
-//                ({height, width} = sizes.small);
-//                image.src = `${baseUrl}${seed}${i++}/${width}/${height}`;
-//                images.push(miscRef.get("back")["backCard"]);
-//                images.push(image);
-//                break;
-//            case "playMat":
-//                ({height, width} = sizes.large2);
-//                miscRef.get("playMat").forEach(x=>images.push(x));
-//                break;
-//            case "gameMat":
-//                ({height, width} = sizes.large);
-//                miscRef.get("gameMat").forEach(x=>images.push(x));
-//                break;
-//            default:
-//                console.log("error in the assets department!");
-//                return null; //TODO handle error somehow
-//        }
-//        return { images, height, width };
-//    };
 
     return { tapIcon, deckIcon, moveTo, no };
 })();
@@ -218,7 +173,7 @@ let padHundred = function(number) {
 let baseAddress = "../Images";
 //TODO - have this update an html view to update the user
 //purpose: load all assets
-function directoryTest() {
+function loadAssets() {
     let x = "Base Deck";
     let y = "leaders";
 //    console.log(refExpansionCards[x]);
@@ -470,5 +425,5 @@ function prepareImages(expansions) {
     return preItems;
 }
 
-//export default {assets as assets, directoryTest};
-export {assets, directoryTest, getMiscImages, prepareImages};
+//export default {assets as assets, loadAssets};
+export {assets, loadAssets, getMiscImages, prepareImages};
