@@ -77,6 +77,11 @@ function rearrangeDeck(newDeck) {
     deck.images = newDeck;
 }
 
+//set all in a deck to back image
+function hideAllInDeck(cards) {
+    cards.forEach(card => card.index = 0);
+}
+
 //Empty images - misc generic object: dice, playmats;
 //Specific images - specific object: card, leader, monster
 //Specific images cont.d - 'images'[] full of card objects for creating decks
@@ -93,9 +98,7 @@ const genericFactory = function(type, images, coord) {
 
     //TODO temporary - to be hardcoded
     if(!coord) {
-//        coord = {x: random(), y: random()};
-        coord = {x: 1500, y: 1500};
-
+        coord = {x: 0, y: 0};
     }
 
     //disable all members if isDeck
@@ -166,6 +169,7 @@ const genericFactory = function(type, images, coord) {
                 //                takeTop: () => {return images.splice(0, 1)}, //returns array containing removed
                 //                takeRandom: () => console.log(),
                 cycleImage: cycleDeckImage,
+                faceDownAll: () => hideAllInDeck(images),
                 specialHover: false}; //for indicating 'validDeckCreate' on hover
         default:
             console.log(`type not found for this card! ${type}`);
@@ -287,7 +291,12 @@ const deckify = function(cards, base) {
         cards.push(base);
     }
 
-    return genericFactory("deck", cards, coord);
+    //required, for deck/hand interactions
+    let deck = genericFactory("deck", cards, coord);
+    deck.images.forEach(card => card.deck = deck);
+    deck.faceDownAll();
+
+    return deck;
 }
 
 //hardcoded for testing item summon

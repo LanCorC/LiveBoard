@@ -96,6 +96,7 @@ const gameState = (function() {
                 if(trueId != id) {
                     let deck = item;
                     item = item.images[0]; //top of deck
+                    //!item.deck here moved to itemFactory, for purposes of deck/hand
 //                    item.deck = deck; //for onDrag decoupling
 //                    console.log("top of deck spotted");
                 }
@@ -170,12 +171,10 @@ const gameState = (function() {
             //TODO - try make this work
             //additional: if 'topcard' was selected,
             //the deck will visually be selected
-//            if(item.deck) item.deck.selected = user.id;
-//            if(item.deck) console.log(item.deck);
+            if(item.deck) item.deck.selected = user.id;
+            if(item.deck) console.log(item.deck);
 
-
-
-            //            setEnableItems(item, user.id);
+//                        setEnableItems(item, user.id);
         });
     }
 
@@ -185,15 +184,14 @@ const gameState = (function() {
         items.forEach((item) => {
             //TODO: notify server release of 'lock';
             item.selected = false;
-//            console.log(item.selected);
 //            setEnableItems(item, true);
 
             //additional: if 'topcard' was selected,
             //the deck will visually be selected
-//            if(item.deck) {
-//                item.deck.selected = false;
-//                console.log(item.deck.selected);
-//            }
+            if(item.deck) {
+                item.deck.selected = false;
+                console.log(item.deck.selected);
+            }
         });
     }
 
@@ -204,9 +202,36 @@ const gameState = (function() {
         return items[0].flipped;
     }
 
+    //for performing accurate to mouse-position drags
+    //in and out of hands/decks/non-canvas-elements
+    let startPoint;
+    let offset;
+    //TODO: link to, perhaps when the client loads in; OR have index.js refer to this
+    //for compartmentalisation, it makes better sense for gameState to RECEIVE this val
+    //from index.js
+    //or, set this imageScale strictly handled by index.js, while
+    //canvas simultaneously handles the 'board' side
+    let imageScale; //e.g. purposes of translating offset to card size
+
     //private function - track relative start, for item dragging tracking
+    //TODO- if card is inside a deck, read mouse offset
+    //TODO 15th Jan 2025- first deal with a top-of-deck removal
+    //>see if deck,
+    //major important TODO: >how do we then know it's topOfDeck?
+    //>>try, boolean: hoverIsCanvas; if select(item, focus) item==single item, check hoverIsCanvas
+    //>>this tells me if i selected it from canvas and not deck/hand
+    //on select(), if single item + item.deck(), check hoverIsCanvas
+    //>>if hoverIsCanvas, add property .fromTopOfDeck = true or whatever
+    //use .fromTopOfDeck to determine setStart() mouse OR deck; true = fromDeck
+    //on de-select, purge .fromTopOfDeck "delete" keyword
     function setStart(items) {
         items.forEach((item) => {
+            if(item.deck) {
+                item.dragStart.x = item.deck.getX();
+                item.dragStart.y = item.deck.getY();
+                //then remove from deck
+
+            }
             item.dragStart.x = item.getX();
             item.dragStart.y = item.getY();
         });
@@ -596,7 +621,9 @@ const gameState = (function() {
         drawItems,
         getImage,
         loadBoard,
-        purgeHoverItem
+        purgeHoverItem,
+        startPoint,
+        offset
     };
 })();
 

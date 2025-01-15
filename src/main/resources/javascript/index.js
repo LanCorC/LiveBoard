@@ -16,6 +16,10 @@ let rightClick = false;
 let strictDragMode = false;
 loadAssets();
 
+//TODO: to be localised; global for now
+//purpose: what to scale 'card size' from boards to 'hand's and 'deckPreview's
+const cardScale = 0.5;
+
 window.onload = function() {
     //TODO - temporary
     gameState.loadBoard(["Base Deck"]);
@@ -167,6 +171,11 @@ window.onload = function() {
 
             //if valid, assign image to tooltip
             if(item) {
+                //prevents hovertooltip on deckDongle
+                if(item.isDeck) {
+                    insertInspectImage();
+                    return;
+                };
                 switch(item.type) {
                     case "playMat":
                     case "gameMat":
@@ -352,7 +361,6 @@ window.onload = function() {
 
     window.addEventListener("mousedown", function(event) {
 
-
         //rightclick detected - create 'detached' inspect image
         if(event.buttons == 2) {
             rightClick = true;
@@ -363,8 +371,17 @@ window.onload = function() {
         //if coming from rightclick, keep startPoint null
         } else if (rightClick) {
             startPoint = null;
+            gameState.startPoint = null;
+            gameState.offset = null;
         } else {
             startPoint = contextVis.transformPoint(mouse.x, mouse.y);
+            gameState.startPoint = startPoint;
+            //divide by cardscale reverses preview distortion added when canvasObj->element
+            gameState.offset = contextVis.transformPoint(
+                event.offsetX/cardScale, event.offsetY/cardScale
+            );
+//            gameState.offset = { x: event.offsetX/cardScale, y: event.offsetY/cardScale};
+            console.log(gameState.offset);
         }
 
         rightClick = false;
