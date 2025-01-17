@@ -387,6 +387,13 @@ window.onload = function() {
         rightClick = false;
         dragging = false;
 
+        //purpose: determine coords to use for canvas render,
+        //dragStart for topOfDeck- to choose deck coords or
+        //translate mouseOffset + element offset (within deck preview)
+        gameState.hoverIsCanvas = document.elementFromPoint(
+            mouse.x, mouse.y) instanceof HTMLCanvasElement;
+        console.log(gameState.hoverIsCanvas);
+
         if((itemFocus = hoverElement)
             instanceof HTMLImageElement) {
 

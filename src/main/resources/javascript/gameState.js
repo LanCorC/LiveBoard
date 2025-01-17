@@ -106,7 +106,6 @@ const gameState = (function() {
         return null;
     }
 
-
     //turn to array input at some stage, for sake of 'deck'
     function push(item) {
         return findList(item).push(item);
@@ -164,6 +163,8 @@ const gameState = (function() {
     function select(items, user) {
         if(!Array.isArray(items)) items = new Array(items);
         if(items[0] == undefined) return;
+
+        let size = items.length;
         items.forEach((item) => {
             //TODO: ask server for permission; if denied, do not add to 'selected'
             item.selected = user.id;
@@ -171,8 +172,13 @@ const gameState = (function() {
             //TODO - try make this work
             //additional: if 'topcard' was selected,
             //the deck will visually be selected
-            if(item.deck) item.deck.selected = user.id;
-            if(item.deck) console.log(item.deck);
+            if(item.deck) {
+                item.deck.selected = user.id;
+
+                //purpose: determine if using deck coords for dragStart
+                item.useDeckCoords = hoverIsCanvas;
+                if(hoverIsCanvas) console.log("hoverIsCanvas!");
+            }
 
 //                        setEnableItems(item, user.id);
         });
@@ -191,7 +197,11 @@ const gameState = (function() {
             if(item.deck) {
                 item.deck.selected = false;
                 console.log(item.deck.selected);
+                delete item.useDeckCoords;
             }
+
+            console.log(item);
+
         });
     }
 
@@ -224,20 +234,36 @@ const gameState = (function() {
     //>>if hoverIsCanvas, add property .fromTopOfDeck = true or whatever
     //use .fromTopOfDeck to determine setStart() mouse OR deck; true = fromDeck
     //on de-select, purge .fromTopOfDeck "delete" keyword
+
+    let hoverIsCanvas = true;
+
     function setStart(items) {
         items.forEach((item) => {
             if(item.deck) {
-                item.dragStart.x = item.deck.getX();
-                item.dragStart.y = item.deck.getY();
-                //then remove from deck
+                console.log(`${item.useDeckCoords} coords`);
 
+                if(item.useDeckCoords) {
+                    item.dragStart.x = item.deck.getX();
+                    item.dragStart.y = item.deck.getY();
+                } else {
+                    //TODO- use mouse/screen translated values
+                    item.dragStart.x = 0;
+                    item.dragStart.y = 0;
+                }
+
+                //then remove from deck
+                takeFromDeck(item);
+
+            } else {
+                item.dragStart.x = item.getX();
+                item.dragStart.y = item.getY();
             }
-            item.dragStart.x = item.getX();
-            item.dragStart.y = item.getY();
+
         });
     }
 
     //relies on querying server for permission to lock the card, property: "disabled"
+    //TODO - unused
     function setEnableItems(items, boolean) {
         if(!Array.isArray(items)) items = new Array(items);
         //'true' allows 'touch' to be drawn
@@ -591,18 +617,36 @@ const gameState = (function() {
     //to only trigger where, onDragStart, a card.disabled = false was  found
     //**only possible where itemFromRGB returns images[0] of a deck
     //TODO -- specific touch render + rework 'itemFromRGB', R G B, B = topOfCard boolean
-    function takeFromTop(deck) {
+    //TODO future - have 'takeFromHand' (random) take a 'hand' object,
+    //TODO future cont. - generate random index 1-n, then pass said
+    //TODO future cont. cont. - card object into takeFromDeck (here)
+    //actually, [random] likely just self inserts into calling person
+    //'s hand
+    function takeFromDeck(card) {
 //        let card = deck.images.splice(0, 1);
-//        if (card.length == 0) console.log("error!");
-//        setEnableItems(card, true);
+        let {id, deck} = card;
+        if(!id) console.log("no id found! takeFromDeck()");
+        if(!deck) console.log("no deck found! takeFromDeck()");
+
+        //deliberate use of 'id', in case other properties may differ
+        let i = -1;
+        while(deck.images[++i].id != card.id);
+        if(i == deck.images.length) console.log("oops, not found! takeFromDeck()");
+
+        //remove sole item
+        deck.images.splice(i, 1);
+
+        //set 'leavingDeck' defaults
+        card.disabled = false; //visuals,touch
+        //TODO- special hover (deck VIEW still open) == keep deck selected
+        deck.selected = false;
+        delete card.useDeckCoords; //ancillary property
+        delete card.deck; //ties
 
         //TODO pending... more to do here? - if deck remaining only 1 card,
-        //enable last card, card.coords=deck.coords, remove deck from gameState
 
-
-        //temporary for now:
-        let card = deck.images.splice(0,1);
-        return card;
+        //to test
+        console.log(card);
     }
 
     return {
@@ -623,7 +667,8 @@ const gameState = (function() {
         loadBoard,
         purgeHoverItem,
         startPoint,
-        offset
+        offset,
+        hoverIsCanvas
     };
 })();
 
