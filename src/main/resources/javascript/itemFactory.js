@@ -293,7 +293,10 @@ const deckify = function(cards, base) {
 
     //required, for deck/hand interactions
     let deck = genericFactory("deck", cards, coord);
-    deck.images.forEach(card => card.deck = deck);
+    deck.images.forEach(card => {
+        card.deck = deck;
+        card.coord = deck.coord; //decouple at dragStart
+    });
     deck.faceDownAll();
 
     return deck;

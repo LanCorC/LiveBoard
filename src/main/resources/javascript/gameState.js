@@ -142,15 +142,19 @@ const gameState = (function() {
                 case "Leader":
                 case "Monster":
                 case "Card":
-                    gameState.items.cards = original;
+                    if(list[0].isDeck) {
+                        gameState.items.decks = original;
+                    } else {
+                        gameState.items.cards = original;
+                    }
                     break;
                 case "playMat":
                 case "gameMat":
                     gameState.items.playMats = original;
                     break;
-                case "deck":
-                    gameState.items.decks = original;
-                    break;
+//                case "deck":
+//                    gameState.items.decks = original;
+//                    break;
                 case "player":
                     gameState.items.players = original;
                     break;
@@ -177,7 +181,6 @@ const gameState = (function() {
 
                 //purpose: determine if using deck coords for dragStart
                 item.useDeckCoords = hoverIsCanvas;
-                if(hoverIsCanvas) console.log("hoverIsCanvas!");
             }
 
 //                        setEnableItems(item, user.id);
@@ -240,13 +243,13 @@ const gameState = (function() {
     function setStart(items) {
         items.forEach((item) => {
             if(item.deck) {
-                console.log(`${item.useDeckCoords} coords`);
 
                 if(item.useDeckCoords) {
                     item.dragStart.x = item.deck.getX();
                     item.dragStart.y = item.deck.getY();
                 } else {
                     //TODO- use mouse/screen translated values
+                    console.log("oh naur");
                     item.dragStart.x = 0;
                     item.dragStart.y = 0;
                 }
@@ -255,8 +258,11 @@ const gameState = (function() {
                 takeFromDeck(item);
 
             } else {
-                item.dragStart.x = item.getX();
-                item.dragStart.y = item.getY();
+                //TODO-refactor? .getX() on a deck-removed item refers to original, primitive coord
+                //drag from deck- works fine. when using .getX/Y(), future dragStarts zip to primitive
+
+                item.dragStart.x = item.coord.x;
+                item.dragStart.y = item.coord.y;
             }
 
         });
@@ -442,12 +448,14 @@ const gameState = (function() {
                     visual.fill();
                     visual.fillStyle = "black"; //set to default
 
-//                    console.log(item.fillStyle);
-                    interactive.fillStyle = item.touchStyle;
-                    interactive.beginPath();
-                    interactive.arc(x, y, 40, 0, 2 * Math.PI);
-                    interactive.fill();
-                    interactive.fillStyle = "black"; //set to default
+                    if(item.selected && dragging) {
+                    } else {
+                        interactive.fillStyle = item.touchStyle;
+                        interactive.beginPath();
+                        interactive.arc(x, y, 40, 0, 2 * Math.PI);
+                        interactive.fill();
+                        interactive.fillStyle = "black"; //set to default
+                    }
                 }
 
                 //purpose: allow client to see hover 'below' whilst mid-drag
@@ -550,6 +558,9 @@ const gameState = (function() {
             visual.drawImage(img, x + width/2 - img.width/2,
                 y + height/2 - img.height/2);
         }
+//
+//        console.log(items);
+//        console.log(items.cards);
     }
 
     //TODO - checks 'persist' storage if gameState 'items' already exists to load from
@@ -623,7 +634,7 @@ const gameState = (function() {
     //actually, [random] likely just self inserts into calling person
     //'s hand
     function takeFromDeck(card) {
-//        let card = deck.images.splice(0, 1);
+        console.log("took from deck");
         let {id, deck} = card;
         if(!id) console.log("no id found! takeFromDeck()");
         if(!deck) console.log("no deck found! takeFromDeck()");
@@ -637,16 +648,35 @@ const gameState = (function() {
         deck.images.splice(i, 1);
 
         //set 'leavingDeck' defaults
-        card.disabled = false; //visuals,touch
+        setCardDefaults(card);
         //TODO- special hover (deck VIEW still open) == keep deck selected
+        //OR: deck view terminates as soon as we takeFrom
         deck.selected = false;
-        delete card.useDeckCoords; //ancillary property
-        delete card.deck; //ties
+
 
         //TODO pending... more to do here? - if deck remaining only 1 card,
+        if(deck.images.length == 1) dissolveDeck(deck);
 
-        //to test
-        console.log(card);
+//        //to test
+//        console.log(card);
+    }
+
+    //used in takeFromDec
+    function dissolveDeck(deck) {
+        console.log("dissolve!");
+        let card = deck.images[0];
+        setCardDefaults(card);
+
+        items.decks.splice(items.decks.findIndex((entry) => entry == deck), 1);
+    }
+
+    function setCardDefaults(card) {
+        let { x, y } = card.deck.coord; //inherit coords, but as a new, unique object
+
+        card.coord = {x, y};
+        card.disabled = false; //visuals,touch
+        delete card.useDeckCoords; //ancillary property
+        delete card.deck; //ties
     }
 
     return {

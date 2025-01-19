@@ -381,7 +381,7 @@ window.onload = function() {
                 event.offsetX/cardScale, event.offsetY/cardScale
             );
 //            gameState.offset = { x: event.offsetX/cardScale, y: event.offsetY/cardScale};
-            console.log(gameState.offset);
+//            console.log(gameState.offset);
         }
 
         rightClick = false;
@@ -392,7 +392,7 @@ window.onload = function() {
         //translate mouseOffset + element offset (within deck preview)
         gameState.hoverIsCanvas = document.elementFromPoint(
             mouse.x, mouse.y) instanceof HTMLCanvasElement;
-        console.log(gameState.hoverIsCanvas);
+//        console.log(gameState.hoverIsCanvas);
 
         if((itemFocus = hoverElement)
             instanceof HTMLImageElement) {
