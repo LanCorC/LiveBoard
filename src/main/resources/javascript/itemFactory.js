@@ -183,17 +183,29 @@ const loadMisc = function() {
 
     let misc = [];
     //TODO- load 6 playmats [2 for now?], 1x gamemat
+    let buffer = 100;
+    let gameMatHeight = 975;
+    let matWidth = 2475;
+    let playMatHeight = 1500;
     let mats = [
         genericFactory("gameMat", false, {x: 0, y: 0}),
-        genericFactory("playMat", false, {x: 1500, y: 1500}),
-        genericFactory("playMat", false, {x: 3000, y: 3000}),
-        genericFactory("playMat", false, {x: 4500, y: 4500})
+        genericFactory("playMat", false, {x: -(matWidth + buffer), y: -(playMatHeight + buffer)}),
+        genericFactory("playMat", false, {x: 0, y: -(playMatHeight + buffer)}),
+        genericFactory("playMat", false, {x: (matWidth + buffer), y: -(playMatHeight + buffer)}),
+        genericFactory("playMat", false, {x: -(matWidth + buffer), y: (gameMatHeight + buffer)}),
+        genericFactory("playMat", false, {x: 0, y: (gameMatHeight + buffer)}),
+        genericFactory("playMat", false, {x: (matWidth + buffer), y: (gameMatHeight + buffer)})
     ];
 
     //TODO load dice
     let dice = [];
 
     mats.forEach(mat => misc.push(mat));
+    let index = 0;
+    mats.forEach(mat => {
+        if(mat.type == "playMat") mat.index = index++;
+    })
+
     dice.forEach(die => misc.push(die));
 
     return misc;
@@ -274,13 +286,13 @@ const deckify = function(cards, base) {
     if(base == undefined) {
         switch(type) {
             case "Card":
-                coord = {x: -100, y: -100};
+                coord = {x: 2037, y: 37};
                 break;
             case "Leader":
-                coord = {x: -200, y: -200};
+                coord = {x: -468, y: 196};
                 break;
             case "Monster":
-                coord = {x: -300, y: -300};
+                coord = {x: 130, y: 196};
                 break;
             default: coord = { x: 0, y: 0 };
         }
