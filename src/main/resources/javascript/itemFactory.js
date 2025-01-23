@@ -181,13 +181,13 @@ const genericFactory = function(type, images, coord) {
 const loadMisc = function() {
     //Hard-code x,y positioning here
 
-    let misc = [];
+    const misc = [];
     //TODO- load 6 playmats [2 for now?], 1x gamemat
-    let buffer = 100;
-    let gameMatHeight = 975;
-    let matWidth = 2475;
-    let playMatHeight = 1500;
-    let mats = [
+    const buffer = 100;
+    const gameMatHeight = 975;
+    const matWidth = 2475;
+    const playMatHeight = 1500;
+    const mats = [
         genericFactory("gameMat", false, {x: 0, y: 0}),
         genericFactory("playMat", false, {x: -(matWidth + buffer), y: -(playMatHeight + buffer)}),
         genericFactory("playMat", false, {x: 0, y: -(playMatHeight + buffer)}),

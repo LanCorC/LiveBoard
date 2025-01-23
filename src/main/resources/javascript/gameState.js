@@ -219,24 +219,10 @@ const gameState = (function() {
     //in and out of hands/decks/non-canvas-elements
     let startPoint;
     let offset;
-    //TODO: link to, perhaps when the client loads in; OR have index.js refer to this
-    //for compartmentalisation, it makes better sense for gameState to RECEIVE this val
-    //from index.js
-    //or, set this imageScale strictly handled by index.js, while
-    //canvas simultaneously handles the 'board' side
     let imageScale; //e.g. purposes of translating offset to card size
 
     //private function - track relative start, for item dragging tracking
     //TODO- if card is inside a deck, read mouse offset
-    //TODO 15th Jan 2025- first deal with a top-of-deck removal
-    //>see if deck,
-    //major important TODO: >how do we then know it's topOfDeck?
-    //>>try, boolean: hoverIsCanvas; if select(item, focus) item==single item, check hoverIsCanvas
-    //>>this tells me if i selected it from canvas and not deck/hand
-    //on select(), if single item + item.deck(), check hoverIsCanvas
-    //>>if hoverIsCanvas, add property .fromTopOfDeck = true or whatever
-    //use .fromTopOfDeck to determine setStart() mouse OR deck; true = fromDeck
-    //on de-select, purge .fromTopOfDeck "delete" keyword
 
     let hoverIsCanvas = true;
 
@@ -308,30 +294,6 @@ const gameState = (function() {
         if(!correct) {
 
             dragItem.forEach((item) => selectedTypes.add(item.type));
-
-            //as well as, for cards on top of deck to 'detach'
-//            items.forEach((item) => {
-//                if(item.deck) {
-                    //TODO- will have to base coordinates based off mouse
-                    //example: dragging from deck(viewDiv)/viewHand
-//                    takeFromTop(item.deck);
-//                    deselect(item.deck);
-//                    delete item.deck; //fully decouple
-//                }
-//            });
-
-            //TODO - temporary attempt - free the card from the deck
-//            dragItems.forEach((card) => card.disabled = true); // set all drag
-//            //currently placeholder for 'in a deck'
-//            items.decks.forEach((deck) => {
-//                deck.images.forEach((card) => {
-//                    if(card.disabled) {
-////                        takeFromTop(deck);
-//                        //temporary, set coords off deck
-//                        card.coord = deck.coord;
-//                    }
-//                });
-//            });//if set, take top off;
 
             setStart(dragItem);
             forward(dragItem);
@@ -515,7 +477,7 @@ const gameState = (function() {
                 let { width, height } = item;
 
                 let img;
-                if(!hoverCompatible) {
+                if(!hoverCompatible || item == hoverItem) {
                     img = assets.tapIcon;
                 } else if (item.type == hoverItem.type) {
                     img = assets.moveTo;
@@ -585,12 +547,10 @@ const gameState = (function() {
                 card => {
                 let { type } = card;
 
-                //if type not found, insert empty array
                 if(!decks.has(type)) {
                     decks.set(type, []);
                 }
 
-                //add into array of corresponding type
                 decks.get(type).push(card);
         }));
 
@@ -626,8 +586,6 @@ const gameState = (function() {
 
     //TODO see how this feels
     //to only trigger where, onDragStart, a card.disabled = false was  found
-    //**only possible where itemFromRGB returns images[0] of a deck
-    //TODO -- specific touch render + rework 'itemFromRGB', R G B, B = topOfCard boolean
     //TODO future - have 'takeFromHand' (random) take a 'hand' object,
     //TODO future cont. - generate random index 1-n, then pass said
     //TODO future cont. cont. - card object into takeFromDeck (here)
