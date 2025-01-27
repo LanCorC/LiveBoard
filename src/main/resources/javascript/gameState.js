@@ -94,15 +94,16 @@ const gameState = (function() {
             if(item = findItem(id, list)) {
                 //Purpose: detecting 'topOfCard' of a deck
                 if(trueId != id) {
-                    console.log("hovering a deck!");
+//                    console.log("hovering a deck!");
                     let deck = item;
                     item = item.images[0]; //top of deck
                     //!item.deck here moved to itemFactory, for purposes of deck/hand
 //                    item.deck = deck; //for onDrag decoupling
 //                    console.log("top of deck spotted");
-                } else {
-                    console.log("hovering a card!");
                 }
+//                else {
+//                    console.log("hovering a card!");
+//                }
                 return item;
             };
         }
@@ -587,12 +588,17 @@ const gameState = (function() {
         //TODO- console: reason for failure, for clarity
 
         if(!Array.isArray(donor)) donor = new Array(donor);
-        if(donor.includes(recipient) || recipient == null || recipient.disabled) {
+        if(donor.includes(recipient) || recipient == null) {
             console.log(`addToDeck error: '${recipient}' null or included in donors`);
             return false;
         }
 
-        if(recipient.deck) recipient = recipient.deck;
+        if(recipient.deck) {
+            recipient = recipient.deck;
+        } else if (recipient.disabled) {
+            console.log(`addToDeck error: '${recipient}' is touch/vis disabled`);
+            return;
+        }
 
         //Collate all 'images' of correct type
         const type = recipient.type;
