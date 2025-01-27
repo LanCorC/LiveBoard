@@ -1,13 +1,5 @@
-//TODO - ship all item creation to 'assets', e.g. gameState.getID() and .idToRGB()
 import gameState from "./gameState.js";
 import {getMiscImages, prepareImages} from "./assets.js";
-
-//TODO: TEMPORARY - replaced with pre-determined coordinates e.g. playmats side by side,
-//starting decks inside the mats, etc
-function random() {
-    let num = Math.random(1) * 2000;
-    return num;
-}
 
 function cycleCardImage(mod) {
     let item = this;
@@ -90,8 +82,7 @@ const genericFactory = function(type, images, coord) {
     if(!images) { //empty, call assets; reserved for misc: mats, dice
         images = getMiscImages(type);
     }
-    //take properties refImages - tied to assets.js
-//    console.log(Object.getPrototypeOf([]));
+
     let { width, height } = images.at(0);
     let id = gameState.getID();
     let touchStyle = gameState.idToRGB(id);
@@ -99,11 +90,6 @@ const genericFactory = function(type, images, coord) {
     //TODO temporary - to be hardcoded
     if(!coord) {
         coord = {x: 0, y: 0};
-    }
-
-    //disable all members if isDeck
-    if(type == "deck") {
-        images.forEach(image => image.disabled = true);
     }
 
     function getX() {
@@ -121,9 +107,6 @@ const genericFactory = function(type, images, coord) {
 
     //true on 'deck'
     let isDeck = false;
-
-    //TODO - implement 'disabled',
-    //to render touch/visual or not in canvas - false when in hand or deck
     let disabled = false;
     //dual purpose: mock-ReentrantLock using userId AND visual marker
     let selected = false;
@@ -158,6 +141,7 @@ const genericFactory = function(type, images, coord) {
                 //if(browsing), overrides 'selected' visual cue, instead renders an eye
                 isDeck: true,
                 getImage: function() {
+                    //TODO- discontinue? see if required outside of canvas
                     let item = images[0];
                     return item.images[item.index];
                 },
@@ -166,7 +150,6 @@ const genericFactory = function(type, images, coord) {
                 rearrange: (newArray) => reverseDeck(newArray),
                 //              //TODO: likely send 'meta' functions to gameState
                 //example: adding, removing, 'cancelling' a deck
-                //                takeTop: () => {return images.splice(0, 1)}, //returns array containing removed
                 //                takeRandom: () => console.log(),
                 cycleImage: cycleDeckImage,
                 faceDownAll: () => hideAllInDeck(images),
@@ -182,7 +165,6 @@ const loadMisc = function() {
     //Hard-code x,y positioning here
 
     const misc = [];
-    //TODO- load 6 playmats [2 for now?], 1x gamemat
     const buffer = 100;
     const gameMatHeight = 975;
     const matWidth = 2475;
@@ -211,11 +193,9 @@ const loadMisc = function() {
     return misc;
 }
 
-//TODO - loads all cards into their respective decks
 const loadCards = function(expansions) {
     let preItems = prepareImages(expansions);
 
-    //TODO-TODO: send all these into their respective decks
     return createCards(preItems);
 }
 
@@ -297,7 +277,8 @@ const deckify = function(cards, base) {
             default: coord = { x: 0, y: 0 };
         }
     } else {
-        coord = {x, y} = base.coord;
+        let {x, y} = base.coord;
+        coord = {x, y};
 
         //add base to 'bottom of pile'
         cards.push(base);
@@ -308,8 +289,11 @@ const deckify = function(cards, base) {
     deck.images.forEach(card => {
         card.deck = deck;
         card.coord = deck.coord; //decouple at dragStart
+        card.disabled = true;
     });
-    deck.faceDownAll();
+
+    //only happens when initiating the board state; also the only time decks facedown
+    if(base == undefined) deck.faceDownAll();
 
     return deck;
 }

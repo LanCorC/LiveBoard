@@ -94,11 +94,14 @@ const gameState = (function() {
             if(item = findItem(id, list)) {
                 //Purpose: detecting 'topOfCard' of a deck
                 if(trueId != id) {
+                    console.log("hovering a deck!");
                     let deck = item;
                     item = item.images[0]; //top of deck
                     //!item.deck here moved to itemFactory, for purposes of deck/hand
 //                    item.deck = deck; //for onDrag decoupling
 //                    console.log("top of deck spotted");
+                } else {
+                    console.log("hovering a card!");
                 }
                 return item;
             };
@@ -341,7 +344,9 @@ const gameState = (function() {
     function getImage(item) {
         if(item == undefined) console.log("undefined?");
         if(item.isDeck) {
-            return item.getImage();
+//            return item.getImage();
+            const card = item.images[0];
+            return card.images[card.index];
         }
 
         return item.images[item.index];
@@ -404,20 +409,26 @@ const gameState = (function() {
 
                 //TODO: extra deck 'dongle'
                 if(item.isDeck) {
-                    visual.fillStyle = "grey";
-                    visual.beginPath();
-                    visual.arc(x, y, 40, 0, 2 * Math.PI);
-                    visual.fill();
-                    visual.fillStyle = "black"; //set to default
+//                    visual.fillStyle = "grey";
+//                    visual.beginPath();
+//                    visual.arc(x, y, 40, 0, 2 * Math.PI);
+//                    visual.fill();
+//
+//                    visual.font = "50px Arial";
+//                    visual.fillStyle = "white";
+//                    visual.fillText(`${item.images.length}`,(x-40),(y+10));
+//
+//                    visual.fillStyle = "black"; //set to default
 
-                    if(item.selected && dragging) {
-                    } else {
-                        interactive.fillStyle = item.touchStyle;
-                        interactive.beginPath();
-                        interactive.arc(x, y, 40, 0, 2 * Math.PI);
-                        interactive.fill();
-                        interactive.fillStyle = "black"; //set to default
-                    }
+
+//                    if(item.selected && dragging) {
+//                    } else {
+//                        interactive.fillStyle = item.touchStyle;
+//                        interactive.beginPath();
+//                        interactive.arc(x, y, 40, 0, 2 * Math.PI);
+//                        interactive.fill();
+//                        interactive.fillStyle = "black"; //set to default
+//                    }
                 }
 
                 //purpose: allow client to see hover 'below' whilst mid-drag
@@ -463,6 +474,29 @@ const gameState = (function() {
 
             });
         }
+
+        items.decks.forEach((deck) => {
+            let {x, y} = deck.coord;
+            visual.fillStyle = "grey";
+            visual.beginPath();
+            visual.arc(x, y, 40, 0, 2 * Math.PI);
+            visual.fill();
+
+            visual.font = "50px Arial";
+            visual.fillStyle = "white";
+            visual.fillText(`${deck.images.length}`,(x-40),(y+10));
+
+            visual.fillStyle = "black"; //set to default
+
+            if(deck.selected && dragging) {
+            } else {
+                interactive.fillStyle = deck.touchStyle;
+                interactive.beginPath();
+                interactive.arc(x, y, 40, 0, 2 * Math.PI);
+                interactive.fill();
+                interactive.fillStyle = "black"; //set to default
+            }
+    });
 
         //for now is load 'tapIcon'- separate from 'float' the visual tokens to the front
         //TODO - in the future, use this to load.. other visual tokens as well?
@@ -567,25 +601,73 @@ const gameState = (function() {
         //then, finally load in cards?
     }
 
-    //TODO - create decks dynamically
-    //TODO - merge decks (incl non decks)-
-    //restrict to all card types, and segragate
-    function addToDeck(donor, recipient) {
+    //returns true: method was successful, proceed to purge selected (index.js)
+    //returns false: "" unsuccessful after 'mouseUp' + 'isDragging'; do not purge
+    //"index" - is nullable, provided when dragged into specific deck/hand preview index;
+    function addToDeck(donor, recipient, index) {
         //TODO- 'hoverElement' is recipient, else find a way to set hoverElement to 'hand'; likely in index.js
+        //TODO- find out if 'lock' is important for race conditions
 
-        //amongst selected (donor), make an array of type-valid
-        //amongst array of type-valid, make an array extracting all images; i.e. if deck, if card amongst donors
+        //TODO- console: reason for failure, for clarity
 
-        //if recipient isDeck, isDeck.addCards(allCardsArray) OR isDeck.images.concat ...
-        //else, turn recipient to a deck; push to gamestate; then .addCards()
-        //however, expect .addCards() to also include 'set defaults', like "disabled = true",
+        console.log("attempt: addToDeck() [gameState.js]");
 
-        //also... .addCards() is already THIS, isn't it? so do the processing here
+        if(!Array.isArray(donor)) donor = new Array(donor);
+        if(donor.includes(recipient) || recipient == null) {
+            console.log(`addToDeck error: '${recipient}' null or included in donors`);
+            return false;
+        }
 
+        if(recipient.deck) recipient = recipient.deck;
+
+        //Collate all 'images' of correct type
+        const type = recipient.type;
+        const typeWhiteList = ["Card", "Leader", "Monster"];
+        if(!typeWhiteList.includes(type)) return false;
+
+        let donorCards = [];
+
+        donor.forEach((item) => {
+            //filter
+            if(item.type != type) return;
+
+            if(item.isDeck) {
+                item.images.forEach((card) => donorCards.push(card));
+                dissolveDeck(item, true);
+            } else {
+                donorCards.push(item);
+            }
+        });
+
+        //no type matches
+        if(donorCards.length == 0) return false;
+
+        //!isDeck only happens in Canvas interaction, no index
+        if(!recipient.isDeck) {
+            push(deckify(donorCards, recipient));
+            return true;
+        }
+
+        donorCards.forEach((card) => {
+            card.deck = recipient;
+            card.coord = recipient.coord;
+            card.disabled = true;
+        });
+
+        //canvas interaction, add all to 'top of deck(aka recipient)'
+        if(index == undefined) {
+            //x.concat(y) adds array 'y' to the bottom
+            recipient.images = donorCards.concat(recipient.images);
+            return true;
+        }
+
+        //TODO - index specific arrangement; low priority?
+        //is this what i'll be using when i clickDrag/rearrange from a hand/deck?
+
+        return false;
     }
 
-    //TODO see how this feels
-    //to only trigger where, onDragStart, a card.disabled = false was  found
+    //to only trigger where, onDragStart, a card.disabled = true was  found
     //TODO future - have 'takeFromHand' (random) take a 'hand' object,
     //TODO future cont. - generate random index 1-n, then pass said
     //TODO future cont. cont. - card object into takeFromDeck (here)
@@ -611,20 +693,19 @@ const gameState = (function() {
         //OR: deck view terminates as soon as we takeFrom
         deck.selected = false;
 
-
-        //TODO pending... more to do here? - if deck remaining only 1 card,
-        if(deck.images.length == 1) dissolveDeck(deck);
+        if(deck.images.length == 1) dissolveDeck(deck, false);
 
 //        //to test
 //        console.log(card);
     }
 
-    //used in takeFromDec
-    function dissolveDeck(deck) {
+    //used in takeFromDec, addToDeck (optional param)
+    function dissolveDeck(deck, isMerging) {
         console.log("dissolve!");
-        let card = deck.images[0];
-        setCardDefaults(card);
-
+        if(!isMerging) {
+            let card = deck.images[0];
+            setCardDefaults(card);
+        }
         items.decks.splice(items.decks.findIndex((entry) => entry == deck), 1);
     }
 
@@ -656,7 +737,8 @@ const gameState = (function() {
         purgeHoverItem,
         startPoint,
         offset,
-        hoverIsCanvas
+        hoverIsCanvas,
+        addToDeck
     };
 })();
 

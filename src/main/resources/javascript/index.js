@@ -13,7 +13,7 @@ let itemFocus; //current item of "mousedown"; added to 'selected' if mouseUp suc
 let inspectMode = true; //toggle for InspectMode
 let inspectImage = document.getElementById("inspectImage");
 let rightClick = false;
-let strictDragMode = false;
+let strictPanMode = false; //hold-CTRL: strict pan mode
 loadAssets();
 
 //TODO: to be localised; global for now
@@ -306,7 +306,7 @@ window.onload = function() {
         let dx = point.x - startPoint.x;
         let dy = point.y - startPoint.y;
         //TODO - send .anchored check to gameState
-        if(itemFocus && !itemFocus.anchored && !strictDragMode) {
+        if(itemFocus && !itemFocus.anchored && !strictPanMode) {
 //            console.log(hoverElement);
             if(itemFocus instanceof HTMLImageElement) {
                 dragElement(event, itemFocus);
@@ -432,24 +432,28 @@ window.onload = function() {
         //TODO - below is 'canvasItem' route; make the other routes (HTMLImageElement)
         if(!itemFocus || itemFocus instanceof HTMLImageElement) {
         //INVALID - ctrl ? nothing : purge
-            if(!strictDragMode) purgeSelected();
+            if(!strictPanMode) purgeSelected();
 
-        } else if(dragging && strictDragMode) {
+        } else if(dragging && strictPanMode) {
 
             if(!selected.includes(itemFocus)) {
                 gameState.deselect(itemFocus);
             }
             //else, user only panned across board. all else preserved
 
-        } else if(dragging && !strictDragMode) {
-
+        } else if(dragging && !strictPanMode) {
+            console.log("mouseup, index.js, dragging");
+            //deselect if: drag not in selected[] or was dragged into a deck
             if(!selected.includes(itemFocus)) {
+                gameState.addToDeck(itemFocus, hoverElement);
                 purgeSelected();
                 gameState.deselect(itemFocus);
+            } else if(gameState.addToDeck(selected, hoverElement)){
+                purgeSelected();
             }
             //else, items were all dragged and all else preserved
 
-        } else if (strictDragMode) {
+        } else if (strictPanMode) {
         //NODRAG
 
             if(selected.includes(itemFocus)) {
@@ -519,7 +523,7 @@ window.onload = function() {
                 return;
             case "ControlLeft":
             case "ControlRight":
-                strictDragMode = true;
+                strictPanMode = true;
             default:
                 //invalid key, skip processing
 //                console.log("invalid key");
@@ -533,7 +537,7 @@ window.onload = function() {
         switch(key) {
             case "ControlLeft":
             case "ControlRight":
-                strictDragMode = false;
+                strictPanMode = false;
             default:
                 //invalid key, skip processing
                 //                console.log("invalid key");
@@ -556,7 +560,7 @@ window.onload = function() {
 
     const scroll = function(event) {
         //if ctrl is on + scrolling, prevent canvas scroll
-        if(strictDragMode) {
+        if(strictPanMode) {
             return;
         } else {
             zoom(event.deltaY < 0 ? 1 : -1);
