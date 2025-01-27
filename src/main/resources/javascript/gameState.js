@@ -381,8 +381,6 @@ const gameState = (function() {
 
     //'selected' for clarity, (game-wide)
     //'focus' and 'dragging' (client-side) for drag-to-deck functionality
-//    function drawItems(focus, dragging, visual, interactive) {
-    //TODO - special draw for 'deck' (dongle) and 'topOfDeck'
     function drawItems(dragging, visual, interactive) {
 
         for (const [type, list] of Object.entries(items)) {
@@ -395,40 +393,13 @@ const gameState = (function() {
                 let width = item.width;
                 let height = item.height;
 
-                //fill the visual
-                //**decks will require additional
                 if(item.selected) {
                     //server-wide clarity
 
-                    //Note: currently disabled due to 'clip()'
                     visual.shadowColor = "white";
                     visual.shadowBlur = 25;
                 } else {
                     visual.shadowBlur = 0;
-                }
-
-                //TODO: extra deck 'dongle'
-                if(item.isDeck) {
-//                    visual.fillStyle = "grey";
-//                    visual.beginPath();
-//                    visual.arc(x, y, 40, 0, 2 * Math.PI);
-//                    visual.fill();
-//
-//                    visual.font = "50px Arial";
-//                    visual.fillStyle = "white";
-//                    visual.fillText(`${item.images.length}`,(x-40),(y+10));
-//
-//                    visual.fillStyle = "black"; //set to default
-
-
-//                    if(item.selected && dragging) {
-//                    } else {
-//                        interactive.fillStyle = item.touchStyle;
-//                        interactive.beginPath();
-//                        interactive.arc(x, y, 40, 0, 2 * Math.PI);
-//                        interactive.fill();
-//                        interactive.fillStyle = "black"; //set to default
-//                    }
                 }
 
                 //purpose: allow client to see hover 'below' whilst mid-drag
@@ -454,10 +425,6 @@ const gameState = (function() {
 
                 let itemImg = getImage(item);
                 if(itemImg instanceof HTMLImageElement) {
-//                    if(item.type == "deck") {
-//                        console.log(`ohhh mama ${x} ${y} ${itemImg}
-//                        ${width} ${height}`);
-//                    }
 
                     //Make rounded
                     visual.save();
@@ -477,6 +444,15 @@ const gameState = (function() {
 
         items.decks.forEach((deck) => {
             let {x, y} = deck.coord;
+
+            if(deck.selected) {
+
+                visual.shadowColor = "white";
+                visual.shadowBlur = 25;
+            } else {
+                visual.shadowBlur = 0;
+            }
+
             visual.fillStyle = "grey";
             visual.beginPath();
             visual.arc(x, y, 40, 0, 2 * Math.PI);
@@ -496,7 +472,7 @@ const gameState = (function() {
                 interactive.fill();
                 interactive.fillStyle = "black"; //set to default
             }
-    });
+        });
 
         //for now is load 'tapIcon'- separate from 'float' the visual tokens to the front
         //TODO - in the future, use this to load.. other visual tokens as well?
@@ -610,10 +586,8 @@ const gameState = (function() {
 
         //TODO- console: reason for failure, for clarity
 
-        console.log("attempt: addToDeck() [gameState.js]");
-
         if(!Array.isArray(donor)) donor = new Array(donor);
-        if(donor.includes(recipient) || recipient == null) {
+        if(donor.includes(recipient) || recipient == null || recipient.disabled) {
             console.log(`addToDeck error: '${recipient}' null or included in donors`);
             return false;
         }
