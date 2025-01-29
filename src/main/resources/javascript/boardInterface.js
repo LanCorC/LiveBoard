@@ -1,8 +1,27 @@
 //purpose: to set up HTML counterparts; such as: managing relevant context buttons,
 //initializing 'hand', and other tools [drop hand, UI], managing playerBubbles,
-//managing chat,
-export class hand {
-    constructor(){}
+//managing chat, managing new previews (otherHands, decks)
+
+//the parent class; core functionality: scrolling, style tags,
+//TODO- investigate how i can 'extend' from this;
+//TODO- so i can make viewBox(parent), handBox (child, own), inspectBox (child, decks/others)
+export class previewBox {
+    constructor(element){
+        element.addEventListener("wheel", this, {passive: false});
+        element.classList.add("previewBox");
+        this.element = element;
+    }
+
+    handleEvent(event) {
+        const scrollIncrement = 200;
+        switch(event.type) {
+            case "wheel":
+                this.element.scrollLeft += event.deltaY;
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 function createBottomRow() {
@@ -20,8 +39,10 @@ function createBottomRow() {
     rightWrap.classList.add("bottomRowPads");
 
     handWrap.id = "handWrap";
-    handWrap.classList.add("previewBox");
     bottomBarWrap.append(leftWrap, handWrap, rightWrap);
+
+    //TODO- temporary, preliminary testing; to be pushed to gameState
+    new previewBox(handWrap);
 }
 
 //TODO- wip, see comments
@@ -33,4 +54,6 @@ export function initializeBoard() {
     //create chat
 
     //create player heads
+    //>>require initialization to accept gameState
+    //>>use gameState to then store copy (address) of players{}
 }

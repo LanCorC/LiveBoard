@@ -470,6 +470,7 @@ window.onload = function() {
                 const newItem = new Image();
                 newItem.src = gameState.getImage(itemFocus).src;
                 handWrap.appendChild(newItem);
+//                console.log(handWrap);
             }
 
         } else {
@@ -483,6 +484,7 @@ window.onload = function() {
             const newItem = new Image();
             newItem.src = gameState.getImage(itemFocus).src;
             handWrap.appendChild(newItem);
+//            console.log(handWrap);
 //            console.log("tap!" + ` ${itemFocus.touchStyle}`);
 
             //if item was already in 'selected', it needs to be reconfirmed
@@ -568,7 +570,6 @@ window.onload = function() {
         contextVis.scale(factor, factor);
         contextVis.translate(-pt.x, -pt.y);
         redraw();
-
     };
 
     const scroll = function(event) {
