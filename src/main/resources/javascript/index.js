@@ -2,6 +2,7 @@ import bindCanvas from "./bindCanvas.js";
 import gameState from "./gameState.js";
 import main from "./itemFactory.js";
 import { loadAssets } from "./assets.js";
+import * as userInterface from "./boardInterface.js";
 
 //Variables
 const board = document.getElementById("gameBoard");
@@ -14,15 +15,13 @@ let inspectMode = true; //toggle for InspectMode
 let inspectImage = document.getElementById("inspectImage");
 let rightClick = false;
 let strictPanMode = false; //hold-CTRL: strict pan mode
+//TODO- to move to an appropriate file/module
 loadAssets();
 
-//TODO: to be localised; global for now
-//purpose: what to scale 'card size' from boards to 'hand's and 'deckPreview's
-const cardScale = 0.5;
-
 window.onload = function() {
-    //TODO - temporary
+    //TODO - temporary -- to refactor as loading the entire board html
     gameState.loadBoard(["Base Deck"]);
+    userInterface.initializeBoard();
 
     //TODO - create ID, check server (if server, add to server, retrieve gameState; else create gameState)
     const user = {
@@ -101,14 +100,16 @@ window.onload = function() {
         handleImageTooltip();
     }
 
-    const insertInspectImage = function(item) {
+    //TODO- try make inspect work on a deck
+    //isPreview - boolean, to say: viewing from HTMLImageElement deck/hand preview
+    const insertInspectImage = function(item, isPreview) {
         //if this is 'back' image, do not display
-        if(!item || item.index == 0) {
+        if(!item || (item.index == 0 && !isPreview)) {
             inspectImage.style.visibility = `hidden`;
             return;
         }
         //TODO to become item.getImage() under 'genericFactory'
-        let image = gameState.getImage(item);
+        let image = isPreview ? item : gameState.getImage(item);
 
         inspectImage.style.visibility = `visible`;
         if(dragging) {
@@ -190,6 +191,10 @@ window.onload = function() {
             //grab the id, or its parent div, or its special attribute 'id' of card
             //then use gameState to find the image
             console.log("Image element found or missing info");
+            //TODO- please revisit once we are using !REAL! cards
+            //that way, we can just pass through the img.card ref
+            insertInspectImage(hoverElement, true);
+            return;
         }
 
         insertInspectImage();
@@ -368,8 +373,8 @@ window.onload = function() {
             pinInspect(event);
 
             return;
-        //if coming from rightclick, keep startPoint null
-        } else if (rightClick) {
+        //if coming from rightclick, or div (not a hand/deck card) keep startPoint null
+        } else if (rightClick || hoverElement instanceof HTMLDivElement) {
             startPoint = null;
             gameState.startPoint = null;
             gameState.offset = null;
@@ -378,7 +383,7 @@ window.onload = function() {
             gameState.startPoint = startPoint;
             //divide by cardscale reverses preview distortion added when canvasObj->element
             gameState.offset = contextVis.transformPoint(
-                event.offsetX/cardScale, event.offsetY/cardScale
+                event.offsetX, event.offsetY
             );
 //            gameState.offset = { x: event.offsetX/cardScale, y: event.offsetY/cardScale};
 //            console.log(gameState.offset);
@@ -461,6 +466,10 @@ window.onload = function() {
                 gameState.deselect(selected.splice(index, 1)); //remove, then de-select x1
             } else {
                 selected.push(itemFocus);
+                //TODO - temporary, for testing 'hand;'
+                const newItem = new Image();
+                newItem.src = gameState.getImage(itemFocus).src;
+                handWrap.appendChild(newItem);
             }
 
         } else {
@@ -470,6 +479,10 @@ window.onload = function() {
             gameState.cycleImage(itemFocus);
             handleImageTooltip(itemFocus);
             selected.push(itemFocus);
+            //TODO - temporary, for testing 'hand;'
+            const newItem = new Image();
+            newItem.src = gameState.getImage(itemFocus).src;
+            handWrap.appendChild(newItem);
 //            console.log("tap!" + ` ${itemFocus.touchStyle}`);
 
             //if item was already in 'selected', it needs to be reconfirmed
@@ -593,4 +606,8 @@ board.style.backgroundImage = "url(../Images/backgrounds/flat-mountains.svg)"; /
 function purgeSelected() {
     gameState.deselect(selected);
     selected.length = 0;
+    //TODO - temporary, for testing 'hand;'
+    while(handWrap.hasChildNodes()) {
+        handWrap.removeChild(handWrap.lastChild);
+    }
 }

@@ -71,6 +71,48 @@
             display: none;
         }
 
+        /*TODO - this is the 'parentStyle' of both hand, and nonself hand/deck */
+        .previewBox {
+            width: 70%;
+            border-radius: 15px;
+            pointer-events: initial;
+
+            white-space: nowrap;
+            display: inline-block;
+            text-align: center;
+            overflow-x: auto;
+            overflow-y: hidden;
+
+            /*TODO - in preview, is generic (deck) or player's color (respective hand)*/
+            /*current: grey ash, 50% transparent*/
+            background-color: rgba(178, 190, 181, 0.5);
+        }
+
+        .previewBox img {
+            max-height: 100%;
+            max-width: 100%;
+            border-radius: 20px;
+        }
+
+        /*todo- minimum heights, max heights*/
+        /*TODO important- connect 'height%' to a global variable*/
+        #bottomBar {
+            height: 25%;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+        #bottomBar div {
+            display: inline-block;
+            height: 100%;
+        }
+
+        .bottomRowPads {
+            width: 15%;
+        }
+
     </style>
     <script type="module" src="../javascript/index.js"></script>
 <!--    <script type="module" src="../javascript/assets.js"></script>-->
