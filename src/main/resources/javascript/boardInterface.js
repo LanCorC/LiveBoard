@@ -33,20 +33,21 @@ class MyHand extends previewBox {
     }
 }
 
-function createBottomRow() {
+function createBottomRow(user) {
     //TODO- temporary; to move to board html-- OR; a 'hand.js' static method!
     //and instance methods can contain: 'takeRandom()' etc
     const bottomBarWrap = document.createElement("div");
     bottomBarWrap.id = "bottomBar";
     document.body.append(bottomBarWrap);
 
-    //TODO-temp, testing
-    const previewContainer = document.createElement("div");
-    previewContainer.classList.add("previewBoxContainer");
 
     const leftWrap = document.createElement("div");
+    const previewContainer = document.createElement("div");
     const handWrap = document.createElement("div");
     const rightWrap = document.createElement("div");
+
+
+    previewContainer.classList.add("previewBoxContainer");
 
     //TODO-temp, testing
     previewContainer.append(handWrap);
@@ -54,18 +55,22 @@ function createBottomRow() {
     leftWrap.classList.add("bottomRowPads");
     rightWrap.classList.add("bottomRowPads");
 
-    handWrap.id = "handWrap";
 //    bottomBarWrap.append(leftWrap, handWrap, rightWrap);
     bottomBarWrap.append(leftWrap, previewContainer, rightWrap);
 
 
-    //TODO- temporary, preliminary testing; to be pushed to gameState
-    new previewBox(handWrap);
+    //TODO- temporary, preliminary testing; to be pushed to gameState(?)
+    //likely: a SPECIAL DECK in gameState;
+    //if corresponding user not online, purges to 0,0 or otherwise
+    new MyHand(handWrap, user);
+    handWrap.setAttribute("empty-hand-text",
+        "This is your hand. Drag here to view card, drop to add to your hand.");
+    handWrap.classList.add("myHand");
 }
 
 //TODO- wip, see comments
-export function initializeBoard() {
-    createBottomRow();
+export function initializeBoard(clientUser) {
+    createBottomRow(clientUser);
 
     //create buttons
 

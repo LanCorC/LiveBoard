@@ -21,7 +21,6 @@ loadAssets();
 window.onload = function() {
     //TODO - temporary -- to refactor as loading the entire board html
     gameState.loadBoard(["Base Deck"]);
-    userInterface.initializeBoard();
 
     //TODO - create ID, check server (if server, add to server, retrieve gameState; else create gameState)
     const user = {
@@ -31,6 +30,7 @@ window.onload = function() {
         //TODO - UI to choose own name
         name: "Player1"
     };
+    userInterface.initializeBoard(user);
     gameState.addPlayer(user);
 
     //Load all event interactions, draws,
@@ -186,13 +186,23 @@ window.onload = function() {
                         return;
                 }
             }
-        } else if (hoverElement instanceof HTMLImageElement || !inspectMode) {
+        }
+        else if (!inspectMode) {
             //for purposes of: looking at hand, or preview
             //grab the id, or its parent div, or its special attribute 'id' of card
             //then use gameState to find the image
-            console.log("Image element found or missing info");
+            console.log("Inspect mode is off");
+
+            return;
+        } else if (hoverElement instanceof HTMLImageElement) {
             //TODO- please revisit once we are using !REAL! cards
             //that way, we can just pass through the img.card ref
+            if(hoverElement.className == "floating-inspect") {
+                insertInspectImage(false, false);
+                return;
+            }
+
+            //TODO- add logic that tests for if card is strictly of previewDiv
             insertInspectImage(hoverElement, true);
             return;
         }
@@ -228,9 +238,10 @@ window.onload = function() {
     const pinInspect = function(event) {
         //Purpose - 'pinning' an inspection 'img' for an image ref
 
+        //TODO TBD: potential... allowing or not allowing 'pin' for handView/deckView
         if(inspectImage.style.visibility == "hidden") {
-            //check for img to delete
-            if(hoverElement.className == "floating-inspect") {
+            //check valid element img to delete
+            if(hoverElement instanceof HTMLImageElement && hoverElement.className == "floating-inspect") {
                 hoverElement.remove();
                 hoverElement = null;
                 preventRightClickDefault();
@@ -312,7 +323,6 @@ window.onload = function() {
         let dy = point.y - startPoint.y;
         //TODO - send .anchored check to gameState
         if(itemFocus && !itemFocus.anchored && !strictPanMode) {
-//            console.log(hoverElement);
             if(itemFocus instanceof HTMLImageElement) {
                 dragElement(event, itemFocus);
             } else
@@ -348,13 +358,9 @@ window.onload = function() {
         mouse.x = event.pageX;
         mouse.y = event.pageY;
 
-        //TODO-temporary
-//        let data = contextTouch.getImageData(mouse.x, mouse.y, 1, 1).data;
-//        let { 0: r, 1: g, 2: b, 3: t }  = data;
-//        console.log(`${r} ${g} ${b}`);
-
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
 //        console.log(hoverElement);
+//        console.log(inspectImage.style.visibility);
 
         //handle tooltip hover- if canvas, finds object
         handleImageTooltip();
@@ -365,7 +371,6 @@ window.onload = function() {
     },false);
 
     window.addEventListener("mousedown", function(event) {
-
         //rightclick detected - create 'detached' inspect image
         if(event.buttons == 2) {
             rightClick = true;
@@ -379,7 +384,6 @@ window.onload = function() {
             gameState.startPoint = null;
             gameState.offset = null;
             //TODO- attempt to stop clickthrough to canvas; works; problems TBD
-            return;
         } else {
             startPoint = contextVis.transformPoint(mouse.x, mouse.y);
             gameState.startPoint = startPoint;
@@ -416,7 +420,8 @@ window.onload = function() {
         }
 
         //TODO - specify for canvas
-        itemFocus = gameState.itemFromRGB(contextTouch, mouse);
+        itemFocus = gameState.hoverIsCanvas ?
+        gameState.itemFromRGB(contextTouch, mouse) : null;
 
         //on mousedown, if available, valid item, select and redraw
         if(itemFocus) {
@@ -471,8 +476,6 @@ window.onload = function() {
                 //TODO - temporary, for testing 'hand;'
                 const newItem = new Image();
                 newItem.src = gameState.getImage(itemFocus).src;
-                handWrap.appendChild(newItem);
-//                console.log(handWrap);
             }
 
         } else {
@@ -485,9 +488,6 @@ window.onload = function() {
             //TODO - temporary, for testing 'hand;'
             const newItem = new Image();
             newItem.src = gameState.getImage(itemFocus).src;
-            handWrap.appendChild(newItem);
-//            console.log(handWrap);
-//            console.log("tap!" + ` ${itemFocus.touchStyle}`);
 
             //if item was already in 'selected', it needs to be reconfirmed
             gameState.select(itemFocus, user);
@@ -609,8 +609,4 @@ board.style.backgroundImage = "url(../Images/backgrounds/flat-mountains.svg)"; /
 function purgeSelected() {
     gameState.deselect(selected);
     selected.length = 0;
-    //TODO - temporary, for testing 'hand;'
-    while(handWrap.hasChildNodes()) {
-        handWrap.removeChild(handWrap.lastChild);
-    }
 }

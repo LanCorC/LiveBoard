@@ -203,11 +203,8 @@ const gameState = (function() {
             //the deck will visually be selected
             if(item.deck) {
                 item.deck.selected = false;
-                console.log(item.deck.selected);
                 delete item.useDeckCoords;
             }
-
-            console.log(item);
 
         });
     }
