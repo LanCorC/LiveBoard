@@ -378,6 +378,8 @@ window.onload = function() {
             startPoint = null;
             gameState.startPoint = null;
             gameState.offset = null;
+            //TODO- attempt to stop clickthrough to canvas; works; problems TBD
+            return;
         } else {
             startPoint = contextVis.transformPoint(mouse.x, mouse.y);
             gameState.startPoint = startPoint;

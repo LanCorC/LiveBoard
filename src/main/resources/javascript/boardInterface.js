@@ -5,7 +5,7 @@
 //the parent class; core functionality: scrolling, style tags,
 //TODO- investigate how i can 'extend' from this;
 //TODO- so i can make viewBox(parent), handBox (child, own), inspectBox (child, decks/others)
-export class previewBox {
+class previewBox {
     constructor(element){
         element.addEventListener("wheel", this, {passive: false});
         element.classList.add("previewBox");
@@ -24,6 +24,15 @@ export class previewBox {
     }
 }
 
+//client's view of own hand
+//TODO- see if this stops of from dragging deck/otherHand preview
+class MyHand extends previewBox {
+    constructor(element, user) {
+        super(element);
+        this.user = user;
+    }
+}
+
 function createBottomRow() {
     //TODO- temporary; to move to board html-- OR; a 'hand.js' static method!
     //and instance methods can contain: 'takeRandom()' etc
@@ -31,15 +40,24 @@ function createBottomRow() {
     bottomBarWrap.id = "bottomBar";
     document.body.append(bottomBarWrap);
 
+    //TODO-temp, testing
+    const previewContainer = document.createElement("div");
+    previewContainer.classList.add("previewBoxContainer");
+
     const leftWrap = document.createElement("div");
     const handWrap = document.createElement("div");
     const rightWrap = document.createElement("div");
+
+    //TODO-temp, testing
+    previewContainer.append(handWrap);
 
     leftWrap.classList.add("bottomRowPads");
     rightWrap.classList.add("bottomRowPads");
 
     handWrap.id = "handWrap";
-    bottomBarWrap.append(leftWrap, handWrap, rightWrap);
+//    bottomBarWrap.append(leftWrap, handWrap, rightWrap);
+    bottomBarWrap.append(leftWrap, previewContainer, rightWrap);
+
 
     //TODO- temporary, preliminary testing; to be pushed to gameState
     new previewBox(handWrap);

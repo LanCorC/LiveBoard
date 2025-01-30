@@ -71,9 +71,22 @@
             display: none;
         }
 
+        /*TODO- purpose: left/right padding to allow dragging of preview*/
+        .previewBoxContainer {
+            width: 60%;
+            border-radius: 15px;
+            pointer-events: initial;
+
+            text-align: center;
+            /*TODO - in preview, is generic (deck) or player's color (respective hand)*/
+            /*current: grey ash, 50% transparent*/
+            background-color: rgba(178, 190, 181, 0.5);
+        }
+
         /*TODO - this is the 'parentStyle' of both hand, and nonself hand/deck */
         .previewBox {
-            width: 70%;
+/*            width: 70%; /* original* /*/
+            width: 90%;
             border-radius: 15px;
             pointer-events: initial;
 
@@ -82,17 +95,13 @@
             text-align: center;
             overflow-x: auto;
             overflow-y: hidden;
-/*            scroll-behavior: smooth;*/
-
-            /*TODO - in preview, is generic (deck) or player's color (respective hand)*/
-            /*current: grey ash, 50% transparent*/
-            background-color: rgba(178, 190, 181, 0.5);
         }
 
         .previewBox img {
             max-height: 100%;
             max-width: 100%;
             border-radius: 20px;
+            padding: 0px 5px;
         }
 
         /*todo- minimum heights, max heights*/
@@ -111,7 +120,7 @@
         }
 
         .bottomRowPads {
-            width: 15%;
+            width: 20%;
         }
 
     </style>
