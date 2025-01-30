@@ -30,8 +30,9 @@ window.onload = function() {
         //TODO - UI to choose own name
         name: "Player1"
     };
-    userInterface.initializeBoard(user);
+    //TODO: have gameState create player's 'hand' object via itemFactory.js
     gameState.addPlayer(user);
+    userInterface.initializeBoard(user);
 
     //Load all event interactions, draws,
     const contextVis = board.getContext("2d");

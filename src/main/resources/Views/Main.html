@@ -44,34 +44,12 @@
             z-index: 5;
         }
 
-/*        .floatingInspect:hover {*/
-/*            box-shadow:*/
-/*            0 4px 8px 0 rgba(0, 0, 0, 0.2),*/
-/*            0 6px 20px 0 rgba(0, 0, 0, 0.19);*/
-/*            cursor: grab;*/
-/*        }*/
-/*        .floatingInspect:active {*/
-/*            cursor: grabbing;*/
-/*        }*/
-        [inspect-tooltip]::before {
-/*            content: attr(inspect-tooltip);*/
-/*            position: absolute;*/
-/*            opacity: 0;*/
-/*            z-index: 6;*/
-        }
-
-        [inspect-tooltip]:hover::before {
-/*            opacity: 1;*/
-
-/*            margin-top: 50px;*/
-/*            margin-left: 20px;*/
-        }
-
         .asset {
             display: none;
         }
 
         /*TODO- purpose: left/right padding to allow dragging of preview*/
+        /* ALSO parentStyle of the container*/
         .previewBoxContainer {
             width: 60%;
             border-radius: 15px;
@@ -104,7 +82,7 @@
             padding: 0px 5px;
         }
 
-        .myHand:empty:before {
+        .myHand:empty::before {
             content:attr(empty-hand-text);
             font-style: italic;
             font-family: 'Trebuchet MS', sans-serif;
@@ -131,18 +109,12 @@
 
     </style>
     <script type="module" src="../javascript/index.js"></script>
-<!--    <script type="module" src="../javascript/assets.js"></script>-->
-<!--    <script type="module" src="../javascript/itemsObjects.js"></script>-->
-<!--    <script type="module" src="../javascript/gameState.js"></script>-->
 
-
-    <!--    <script-->
 </head>
     <body id="viewport">
         <div id="container" style="">
             <canvas id="gameBoard"></canvas>
             <canvas id="touchBoard"></canvas>
-    <!--        <div id="inspectImageContainer">-->
                 <img id="inspectImage" >
         </div>
     </body>

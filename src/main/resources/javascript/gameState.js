@@ -54,6 +54,8 @@ const gameState = (function() {
     function addPlayer(user) {
         players.set(user.id, user);
         clientUser = user;
+
+        //TODO: initialize hand via ItemFactory
     }
 
     //on disconnect, 'deactivate' player? - set all 'selected' on player to null
