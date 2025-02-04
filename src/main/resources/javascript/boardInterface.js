@@ -1,3 +1,5 @@
+import {Hand} from "./itemClasses.js";
+
 //purpose: to set up HTML counterparts; such as: managing relevant context buttons,
 //initializing 'hand', and other tools [drop hand, UI], managing playerBubbles,
 //managing chat, managing new previews (otherHands, decks)
@@ -5,7 +7,7 @@
 //the parent class; core functionality: scrolling, style tags,
 //TODO- investigate how i can 'extend' from this;
 //TODO- so i can make viewBox(parent), handBox (child, own), inspectBox (child, decks/others)
-class previewBox {
+class PreviewBox {
     //TODO- [cardModel] is the reference 'deck' object that represents the hand or deck stored
     //note: hands are *SPECIAL* decks
     constructor(cardModel){
@@ -40,6 +42,10 @@ class previewBox {
     //TODO: 'append/add' method, to what index; find a way to iterate through node.childList
 
     //TODO: 'remove' method, to purge from cardHolder div
+
+    //TODO **when do i want redraw to trigger? ideally, if called here.
+    //however, manipulation code is in gameState.js
+    //try: Hand class in itemClasses.js a special property reporting back to...this?
 }
 
 //client's view of own hand
@@ -48,10 +54,11 @@ class previewBox {
 //>>color of inspecting player
 //>>when special property is reset/handedOver, undo above code
 //>>TODO- the above is a CLASS ADDITION; try make it work, else we'll have to hardcode
-class MyHand extends previewBox {
+class MyHand extends PreviewBox {
     constructor(user) {
         //TODO - create implementation of how 'hand' is created, and referenced
         super(user.hand);
+        user.hand.ref(this);
         this.user = user;
         this.cardHolder.setAttribute("empty-hand-text",
             "This is your hand. Drag here to view card, drop to add to your hand.");
@@ -64,7 +71,7 @@ class MyHand extends previewBox {
 }
 
 //client's view of OTHER hands or decks
-class ViewDeck extends previewBox {
+class ViewDeck extends PreviewBox {
     constructor(source) {
         //TODO - does this work? let it choose the valid one?
         super(source.hand || source);
@@ -79,6 +86,7 @@ function createBottomRow(user) {
     bottomBarWrap.id = "bottomBar";
     document.body.append(bottomBarWrap);
 
+    user.hand = new Hand();
 
     const leftWrap = document.createElement("div");
     const previewContainer = new MyHand(user);

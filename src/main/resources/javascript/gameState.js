@@ -54,8 +54,6 @@ const gameState = (function() {
     function addPlayer(user) {
         players.set(user.id, user);
         clientUser = user;
-
-        //TODO: initialize hand via ItemFactory
     }
 
     //on disconnect, 'deactivate' player? - set all 'selected' on player to null
@@ -309,22 +307,8 @@ const gameState = (function() {
 //        no longer the same, default, then reassign
 //        console.log(hoverCompatible);
         if(hoverItem != hoverObject) {
-//            console.log("aaaaah!");
-//            purgeHoverItem();
-////            hoverItem.
-////
+
             hoverItem = hoverObject;
-//
-//            //validate - if deck + correct types, set visual
-//
-//            //Keep it simple - if itemFocus is same type, then trigger
-//            if(itemFocus.type == hoverItem.type) {
-//                if(hoverItem.isDeck) {
-//                    hoverItem.specialHover = true;
-//                }
-//                hoverCompatible = true;
-//                hoverItem.selected = clientUser.id;
-//            }
 
             if(hoverItem == null || !validHover.has(hoverObject.type) || !selectedTypes.has(hoverItem.type)) {
                 hoverCompatible = false;
@@ -386,7 +370,7 @@ const gameState = (function() {
         for (const [type, list] of Object.entries(items)) {
 
             list.forEach((item) => {
-                if(item.disabled) return;
+                if(item.disabled || !item.coord) return;
 
                 let x = item.coord.x;
                 let y = item.coord.y;
@@ -443,6 +427,8 @@ const gameState = (function() {
         }
 
         items.decks.forEach((deck) => {
+            //.disabled, coord==null/undefined expected under prototypal 'hand' class
+            if(deck.disabled || !deck.coord) return;
             let {x, y} = deck.coord;
 
             if(deck.selected) {
@@ -479,7 +465,7 @@ const gameState = (function() {
         for (const [type, list] of Object.entries(items)) {
 
             list.forEach((item) => {
-                if(!item.selected || item.disabled) return;
+                if(!item.selected || item.disabled || !item.coord) return;
 
                 //TODO - include path for when 'hoverCompatible = true'
                 //+special route for hoverItem
@@ -678,7 +664,7 @@ const gameState = (function() {
 //        console.log(card);
     }
 
-    //used in takeFromDec, addToDeck (optional param)
+    //used in takeFromDec, isMerging (optional param) from addToDeck
     function dissolveDeck(deck, isMerging) {
         console.log("dissolve!");
         if(!isMerging) {
@@ -688,6 +674,8 @@ const gameState = (function() {
         items.decks.splice(items.decks.findIndex((entry) => entry == deck), 1);
     }
 
+    //NOTE: deck.coord == undefined/null, set according to offset/mouse is on 'setStart()'
+    //expected: prototypal 'hand' has no use for coord property; handled in setStart()
     function setCardDefaults(card) {
         let { x, y } = card.deck.coord; //inherit coords, but as a new, unique object
 
