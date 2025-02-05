@@ -9,6 +9,8 @@ export class Hand {
             this.selected = false;
             this.images = []; //empty array, stores the cards
             this.type = "Card";
+            this.disabled = true;
+            this.isHand = true;
         }
 
     //purpose: data manipulation to find out ref exists,

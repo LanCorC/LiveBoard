@@ -112,7 +112,7 @@ const genericFactory = function(type, images, coord) {
     let selected = false;
 
     let getImage = function() {
-        return images[item.index];
+        return images[1];
     }
 
     switch(type) {

@@ -326,7 +326,7 @@ const gameState = (function() {
     }
 
     function getImage(item) {
-        if(item == undefined) console.log("undefined?");
+        if(item == null || item == undefined) return;
         if(item.isDeck) {
 //            return item.getImage();
             const card = item.images[0];
@@ -497,7 +497,7 @@ const gameState = (function() {
             });
         }
 
-        if(hoverCompatible && !hoverItem.selected) {
+        if(hoverCompatible && !hoverItem.selected && !hoverItem.disabled) {
             let img = assets.deckIcon;
             let { x, y } = hoverItem.coord;
             let { height, width } = hoverItem;
@@ -578,11 +578,12 @@ const gameState = (function() {
             return false;
         }
 
-        if(recipient.deck) {
-            recipient = recipient.deck;
+        //where recipient isHand, keep recipient same
+        if(recipient.deck || recipient.isHand) {
+            recipient = recipient.deck || recipient;
         } else if (recipient.disabled) {
             console.log(`addToDeck error: '${recipient}' is touch/vis disabled`);
-            return;
+            return false;
         }
 
         //Collate all 'images' of correct type
@@ -619,10 +620,12 @@ const gameState = (function() {
             card.disabled = true;
         });
 
-        //canvas interaction, add all to 'top of deck(aka recipient)'
+        //'index' intended for specific rearrangements or insertions
         if(index == undefined) {
             //x.concat(y) adds array 'y' to the bottom
             recipient.images = donorCards.concat(recipient.images);
+            //TODO-when a DECK preview inherits special property
+            if(recipient.isHand || recipient.browsing) recipient.ref.update();
             return true;
         }
 

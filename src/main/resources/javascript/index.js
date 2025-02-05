@@ -110,7 +110,7 @@ window.onload = function() {
             return;
         }
         //TODO to become item.getImage() under 'genericFactory'
-        let image = isPreview ? item : gameState.getImage(item);
+        let image = gameState.getImage(item);
 
         inspectImage.style.visibility = `visible`;
         if(dragging) {
@@ -139,13 +139,8 @@ window.onload = function() {
     insertInspectImage();
 
     const handleImageTooltip = function(event) {
-        //TODO: experimental- item == hoverElement, for 'detect deck'
-        if(hoverElement instanceof HTMLCanvasElement) {
-            hoverElement = gameState.itemFromRGB(contextTouch, mouse);
-        }
 
-        //determine what element has been selected
-        if(!inspectMode) {
+        if(!inspectMode || hoverElement == null) {
             return;
         }
 
@@ -163,8 +158,11 @@ window.onload = function() {
         inspectImage.style.top = `${y}px`;
         inspectImage.style.left = `${x}px`;
 
-        //assumes the game board
-        if(document.elementFromPoint(mouse.x, mouse.y) instanceof HTMLCanvasElement && inspectMode) {
+        //Canvas route
+        if (!inspectMode) {
+            console.log("Inspect mode is off");
+            return;
+        } else if (document.elementFromPoint(mouse.x, mouse.y) instanceof HTMLCanvasElement) {
             //for purposes of: looking at items on board
 
             let item = gameState.itemFromRGB(contextTouch, mouse);
@@ -172,9 +170,9 @@ window.onload = function() {
             hoverElement = item;
 
             //if valid, assign image to tooltip
-            if(item) {
+            if (item) {
                 //prevents hovertooltip on deckDongle
-                if(item.isDeck) {
+                if (item.isDeck) {
                     insertInspectImage();
                     return;
                 };
@@ -187,24 +185,14 @@ window.onload = function() {
                         return;
                 }
             }
-        }
-        else if (!inspectMode) {
-            //for purposes of: looking at hand, or preview
-            //grab the id, or its parent div, or its special attribute 'id' of card
-            //then use gameState to find the image
-            console.log("Inspect mode is off");
-
-            return;
-        } else if (hoverElement instanceof HTMLImageElement) {
-            //TODO- please revisit once we are using !REAL! cards
+        //only child image elements of PreviewBox have 'card' property
+        } else if (Object.hasOwn(hoverElement, 'card')) {
             //that way, we can just pass through the img.card ref
             if(hoverElement.className == "floating-inspect") {
                 insertInspectImage(false, false);
                 return;
             }
-
-            //TODO- add logic that tests for if card is strictly of previewDiv
-            insertInspectImage(hoverElement, true);
+            insertInspectImage(hoverElement.card, true);
             return;
         }
 
@@ -366,6 +354,11 @@ window.onload = function() {
         //handle tooltip hover- if canvas, finds object
         handleImageTooltip();
 
+        //TODO-test for using nonCanvas element ref to 'hand/deck' preview
+        if(hoverElement && Object.hasOwn(hoverElement, "deck")) {
+            hoverElement = hoverElement.deck;
+        }
+
         //check for click-hold-drag
         handleDrag(event);
 
@@ -443,6 +436,7 @@ window.onload = function() {
         startPoint = null;
 
         //TODO - below is 'canvasItem' route; make the other routes (HTMLImageElement)
+        //TODO-soon, enabled HTMLImageElement for purposes of deck/hand-preview
         if(!itemFocus || itemFocus instanceof HTMLImageElement) {
         //INVALID - ctrl ? nothing : purge
             if(!strictPanMode) purgeSelected();
@@ -456,6 +450,9 @@ window.onload = function() {
 
         } else if(dragging && !strictPanMode) {
             console.log("mouseup, index.js, dragging");
+
+
+
             //deselect if: drag not in selected[] or was dragged into a deck
             if(!selected.includes(itemFocus)) {
                 gameState.addToDeck(itemFocus, hoverElement);

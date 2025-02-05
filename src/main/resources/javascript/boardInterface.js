@@ -19,9 +19,15 @@ class PreviewBox {
         container.append(cardHolder);
 
         cardHolder.addEventListener("wheel", this, {passive: false});
-        this.cardHolder = cardHolder;
-        this.cardModel = cardModel;
-        this.container = container;
+
+        //hard-coded property reference; purposes of drag-to-Preview
+        cardHolder.deck = cardModel;
+        container.deck = cardModel;
+        //TODO - do the same for img child, even if imgChild.card.deck is equal
+
+        this.cardHolder = cardHolder; //element
+        this.cardModel = cardModel; //object
+        this.container = container; //element
     }
 
     handleEvent(event) {
@@ -37,7 +43,29 @@ class PreviewBox {
     //TODO major: core deck preview interactions; public, make gameState manipulate it via
     //these methods
 
-    //TODO: 'populate' method, via images based on model
+    //TODO: 'update' method, via images based on model; make public
+    //purpose: simple 'delete all, then remake' approach;
+    //Note: quite fast for 150+
+    update() {
+        //purge children
+        const parent = this.cardHolder;
+        while(parent.firstChild) {
+            parent.firstChild.remove();
+        }
+
+        //populate children
+        this.cardModel.images.forEach((card) => {
+           //create img element + ref Card for selection+hoverInspect
+            //+ ref cardModel 'deck' for deck-interactions
+            const childImg = new Image();
+            childImg.src = card.getImage().src;
+            childImg.card = card;
+            childImg.deck = this.cardModel;
+
+            //append to container
+            parent.append(childImg);
+        });
+    }
 
     //TODO: 'append/add' method, to what index; find a way to iterate through node.childList
 
@@ -58,7 +86,8 @@ class MyHand extends PreviewBox {
     constructor(user) {
         //TODO - create implementation of how 'hand' is created, and referenced
         super(user.hand);
-        user.hand.ref(this);
+        //Purpose for .ref?? likely excessive. unless methods used in Hand class
+        user.hand.ref = this;
         this.user = user;
         this.cardHolder.setAttribute("empty-hand-text",
             "This is your hand. Drag here to view card, drop to add to your hand.");
