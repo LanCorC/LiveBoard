@@ -26,7 +26,7 @@ window.onload = function() {
     const user = {
         id: Date.now(),
         //TODO - UI to choose own color
-        color: "white",
+        color: "red",
         //TODO - UI to choose own name
         name: "Player1"
     };
@@ -110,7 +110,7 @@ window.onload = function() {
             return;
         }
         //TODO to become item.getImage() under 'genericFactory'
-        let image = gameState.getImage(item);
+        let image = isPreview ? item.getImage() : gameState.getImage(item);
 
         inspectImage.style.visibility = `visible`;
         if(dragging) {
@@ -246,11 +246,12 @@ window.onload = function() {
         let detachedToolTip = new Image(inspectImage.width, inspectImage.height);
         detachedToolTip.style.top = inspectImage.style.top;
         detachedToolTip.style.left = inspectImage.style.left;
-        detachedToolTip.style.border = `5px solid white`;
-
-        detachedToolTip.style.position = `absolute`;
-        detachedToolTip.style.zIndex = `2`;
-        detachedToolTip.style.userSelect = `none`;
+//        detachedToolTip.style.border = `5px solid white`;
+        detachedToolTip.style.borderColor = `${user.color}`;
+//
+//        detachedToolTip.style.position = `absolute`;
+//        detachedToolTip.style.zIndex = `2`;
+//        detachedToolTip.style.userSelect = `none`;
         detachedToolTip.classList.add("floating-inspect");
         detachedToolTip.setAttribute("draggable", false);
 //        detachedToolTip.setAttribute("inspect-tooltip", "Left: Drag, Right: Close");

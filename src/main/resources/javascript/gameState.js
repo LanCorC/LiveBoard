@@ -377,10 +377,13 @@ const gameState = (function() {
                 let width = item.width;
                 let height = item.height;
 
+                let color = 'white';
+
                 if(item.selected) {
                     //server-wide clarity
-
-                    visual.shadowColor = "white";
+                    //TODO- filter for user with id match, use user's .color
+                    color = players.get(item.selected).color || 'white';
+                    visual.shadowColor = `${color}`;
                     visual.shadowBlur = 25;
                 } else {
                     visual.shadowBlur = 0;
@@ -430,10 +433,11 @@ const gameState = (function() {
             //.disabled, coord==null/undefined expected under prototypal 'hand' class
             if(deck.disabled || !deck.coord) return;
             let {x, y} = deck.coord;
+            let color = 'white';
 
             if(deck.selected) {
-
-                visual.shadowColor = "white";
+                color = players.get(deck.selected).color || 'white';
+                visual.shadowColor = `${color}`;
                 visual.shadowBlur = 25;
             } else {
                 visual.shadowBlur = 0;

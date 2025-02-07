@@ -39,7 +39,7 @@
             position: absolute;
             user-select: none;
             pointer-events: none;
-/*            color likely bound to user color */
+/*          TODO: bind to user color in-code, when user.color changes */
             border: 5px solid white;
             z-index: 5;
         }
@@ -105,6 +105,13 @@
 
         .bottomRowPads {
             width: 20%;
+        }
+
+        .floating-inspect {
+            border: 5px solid;
+            position: absolute;
+            z-index: 2;
+            user-select: none;
         }
 
     </style>
