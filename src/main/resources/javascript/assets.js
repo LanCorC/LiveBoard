@@ -32,6 +32,8 @@ const assets = (function() {
     moveTo.src = `../Images/Tokens/send-svgrepo-com.svg`;
     const no = new Image();
     no.src = `../Images/Tokens/no-svgrepo-com.svg`;
+    const view = new Image();
+    view.src = `../Images/Tokens/magnifier-glass-svgrepo-com.svg`;
 
     return { tapIcon, deckIcon, moveTo, no };
 })();

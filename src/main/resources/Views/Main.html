@@ -64,6 +64,7 @@
         /*TODO - this is the 'parentStyle' of both hand, and nonself hand/deck */
         .previewBox {
 /*            width: 70%; /* original* /*/
+            height: 100%;
             width: 90%;
             border-radius: 15px;
             pointer-events: initial;
@@ -73,6 +74,14 @@
             text-align: center;
             overflow-x: auto;
             overflow-y: hidden;
+        }
+
+        .previewBoxContainer2 {
+            /* Purposes of deck/otherHand */
+            position: absolute;
+            right: 20%;
+            top: 0;
+            height: 25%;
         }
 
         .previewBox img {

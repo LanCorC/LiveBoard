@@ -1,5 +1,6 @@
 import {assets} from "./assets.js";
 import {loadCards, loadMisc, deckify} from "./itemFactory.js";
+import {userInterface} from "./boardInterface.js";
 
 const gameState = (function() {
     //in order to render
@@ -692,6 +693,19 @@ const gameState = (function() {
         delete card.deck; //ties
     }
 
+    //TODO- special visual token to differentiate
+    function selectView(deck) {
+        select(deck, clientUser);
+        userInterface.preview.setView(deck);
+        console.log("hey!");
+    }
+
+    //TODO- special visual token to differentiate
+    function deSelectView() {
+        deselect(userInterface.preview.cardModel);
+        userInterface.preview.setView();
+    }
+
     return {
         getID,
         idToRGB,
@@ -712,7 +726,8 @@ const gameState = (function() {
         startPoint,
         offset,
         hoverIsCanvas,
-        addToDeck
+        addToDeck,
+        selectView
     };
 })();
 

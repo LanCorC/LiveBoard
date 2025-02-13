@@ -68,7 +68,8 @@ window.onload = function() {
     let inspectImgSize = 1;
     let iISizeMin = 0.2;
     let iISizeMax = 2;
-    //Uses of hoverElement: detecting player hand, etc
+    //Primary use: to understand what underlying 'gameObject' is under the cursor; cards, decks, etc
+    //Secondary use: to determine what HTMLElement is under the cursor
     let hoverElement = null;
     //keep above 1.0 to be effective
     let inspectEleResizeFactor = 1.1;
@@ -232,12 +233,15 @@ window.onload = function() {
             //check valid element img to delete
             if(hoverElement instanceof HTMLImageElement && hoverElement.className == "floating-inspect") {
                 hoverElement.remove();
-                hoverElement = null;
-                preventRightClickDefault();
-                rightClick = false;
-            } else {
-                enableRightClickDefault();
+            } else if (hoverElement instanceof HTMLCanvasElement &&
+            gameState.itemFromRGB(contextTouch, mouse) == null) {
+                //TODO- this is a bandaid;
+                //TODO- maybe allow this for other divs
+//                enableRightClickDefault();
+                return;
             }
+            hoverElement = null;
+            preventRightClickDefault();
             return;
         }
         preventRightClickDefault();
@@ -246,15 +250,10 @@ window.onload = function() {
         let detachedToolTip = new Image(inspectImage.width, inspectImage.height);
         detachedToolTip.style.top = inspectImage.style.top;
         detachedToolTip.style.left = inspectImage.style.left;
-//        detachedToolTip.style.border = `5px solid white`;
         detachedToolTip.style.borderColor = `${user.color}`;
-//
-//        detachedToolTip.style.position = `absolute`;
-//        detachedToolTip.style.zIndex = `2`;
-//        detachedToolTip.style.userSelect = `none`;
+
         detachedToolTip.classList.add("floating-inspect");
         detachedToolTip.setAttribute("draggable", false);
-//        detachedToolTip.setAttribute("inspect-tooltip", "Left: Drag, Right: Close");
 
         //image
         detachedToolTip.onload = document.getElementById("container")
@@ -349,8 +348,7 @@ window.onload = function() {
         mouse.y = event.pageY;
 
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
-//        console.log(hoverElement);
-//        console.log(inspectImage.style.visibility);
+        gameState.hoverIsCanvas = hoverElement instanceof HTMLCanvasElement;
 
         //handle tooltip hover- if canvas, finds object
         handleImageTooltip();
@@ -367,14 +365,17 @@ window.onload = function() {
 
     window.addEventListener("mousedown", function(event) {
         //rightclick detected - create 'detached' inspect image
+
+        hoverElement = document.elementFromPoint(mouse.x, mouse.y);
+
         if(event.buttons == 2) {
             rightClick = true;
 
             pinInspect(event);
 
             return;
-        //if coming from rightclick, or div (not a hand/deck card) keep startPoint null
-        } else if (rightClick || hoverElement instanceof HTMLDivElement) {
+        //TODO- exception for HTMLImageElement when dragging in-deck/hand cards
+        } else if (!(hoverElement instanceof HTMLCanvasElement)) {
             startPoint = null;
             gameState.startPoint = null;
             gameState.offset = null;
@@ -390,14 +391,13 @@ window.onload = function() {
 //            console.log(gameState.offset);
         }
 
-        rightClick = false;
         dragging = false;
 
         //purpose: determine coords to use for canvas render,
         //dragStart for topOfDeck- to choose deck coords or
         //translate mouseOffset + element offset (within deck preview)
-        gameState.hoverIsCanvas = document.elementFromPoint(
-            mouse.x, mouse.y) instanceof HTMLCanvasElement;
+//        gameState.hoverIsCanvas = document.elementFromPoint(
+//            mouse.x, mouse.y) instanceof HTMLCanvasElement;
 //        console.log(gameState.hoverIsCanvas);
 
         if((itemFocus = hoverElement)
@@ -441,7 +441,6 @@ window.onload = function() {
         if(!itemFocus || itemFocus instanceof HTMLImageElement) {
         //INVALID - ctrl ? nothing : purge
             if(!strictPanMode) purgeSelected();
-
         } else if(dragging && strictPanMode) {
 
             if(!selected.includes(itemFocus)) {
@@ -451,8 +450,6 @@ window.onload = function() {
 
         } else if(dragging && !strictPanMode) {
             console.log("mouseup, index.js, dragging");
-
-
 
             //deselect if: drag not in selected[] or was dragged into a deck
             if(!selected.includes(itemFocus)) {
@@ -484,14 +481,29 @@ window.onload = function() {
             gameState.cycleImage(itemFocus);
             handleImageTooltip(itemFocus);
             selected.push(itemFocus);
-            //TODO - temporary, for testing 'hand;'
-            const newItem = new Image();
-            newItem.src = gameState.getImage(itemFocus).src;
 
             //if item was already in 'selected', it needs to be reconfirmed
             gameState.select(itemFocus, user);
         }
 
+        //TODO future: deck remains 'selected' when panning board
+        //AND change render token from pointer->view(magnifyingGlass)
+        //purpose: special view select.
+        //handles specialSelection of deck/opponentHand to preview
+        //handles de-specialSelection of preview
+        if(rightClick && gameState.hoverIsCanvas) {
+            const item = gameState.itemFromRGB(contextTouch, mouse);
+
+            if(item && item.isDeck) {
+                console.log("rClick, canvas, isDeck!");
+                //TODO- method here- select + special previewSelect
+                //maybe keep it out of selection. only de-selectSpecial if rightclick triggered again!
+                //out of select-> lets us pan, or drag things into deck/opponentHand
+                gameState.selectView(item);
+            };
+        };
+
+        rightClick = false;
         itemFocus = null;
         dragging = false;
         gameState.purgeHoverItem();

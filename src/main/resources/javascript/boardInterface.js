@@ -20,14 +20,17 @@ class PreviewBox {
 
         cardHolder.addEventListener("wheel", this, {passive: false});
 
+        this.cardHolder = cardHolder; //element
+        this.container = container; //element
+
+        //ViewDeck subclass has no starting card model
+        if(!cardModel) return;
+
+        this.cardModel = cardModel; //object
         //hard-coded property reference; purposes of drag-to-Preview
         cardHolder.deck = cardModel;
         container.deck = cardModel;
         //TODO - do the same for img child, even if imgChild.card.deck is equal
-
-        this.cardHolder = cardHolder; //element
-        this.cardModel = cardModel; //object
-        this.container = container; //element
     }
 
     handleEvent(event) {
@@ -52,6 +55,8 @@ class PreviewBox {
         while(parent.firstChild) {
             parent.firstChild.remove();
         }
+
+        if(!this.cardModel || !this.cardModel.images) return;
 
         //populate children
         this.cardModel.images.forEach((card) => {
@@ -103,10 +108,52 @@ class MyHand extends PreviewBox {
 class ViewDeck extends PreviewBox {
     constructor(source) {
         //TODO - does this work? let it choose the valid one?
-        super(source.hand || source);
+        super();
         //TODO- process: is the source a User/Player or Deck
+        this.container.classList.add("previewBoxContainer2");
+        this.update();
+    }
+
+    //functionality to eject, accept new source [switching/returning views]
+    //notably, cardModel property from super() assigned to this.cardModel,
+    //as well as cardHolder.deck, container.deck
+    //TODO- see if leaving it unchecked for now will break the code launch
+
+    //override update()-
+    update() {
+        if(this.cardModel == null || this.cardModel == undefined) {
+            this.#hideBody();
+            console.log("heeeeyyaaaaa");
+        } else {
+            this.#showBody();
+            console.log("oops");
+        }
+        super.update();
+    }
+
+    #hideBody() {
+        //note: visibility takes care of mouse/pointer
+        this.cardHolder.style.visibility = `hidden`;
+        this.container.style.visibility = `hidden`;
+    }
+
+    #showBody() {
+        //note: visibility takes care of mouse/pointer
+        this.cardHolder.style.visibility = ``;
+        this.container.style.visibility = ``;
+    }
+
+    setView(cardModel) {
+        this.cardModel = cardModel;
+        this.update();
     }
 }
+
+//object ref to gameState (client-side updates UI)
+//likely
+//TODO: hand stored in user; store previewObj in visuals; buttons in visuals;
+//TODO cont: chatBox in visuals
+export let userInterface = { preview: null };
 
 function createBottomRow(user) {
     //TODO- temporary; to move to board html-- OR; a 'hand.js' static method!
@@ -128,9 +175,19 @@ function createBottomRow(user) {
     bottomBarWrap.append(leftWrap, previewContainer.container, rightWrap);
 }
 
+function createTopView() {
+    const topViewContainer = new ViewDeck();
+
+    document.body.append(topViewContainer.container);
+
+    userInterface.preview = topViewContainer;
+}
+
 //TODO- wip, see comments
 export function initializeBoard(clientUser) {
     createBottomRow(clientUser);
+
+    createTopView();
 
     //create buttons
 
