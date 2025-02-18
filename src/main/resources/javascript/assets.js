@@ -35,7 +35,7 @@ const assets = (function() {
     const view = new Image();
     view.src = `../Images/Tokens/magnifier-glass-svgrepo-com.svg`;
 
-    return { tapIcon, deckIcon, moveTo, no };
+    return { tapIcon, deckIcon, moveTo, no, view };
 })();
 
 function getMiscImages(type) {
@@ -274,9 +274,6 @@ function loadExpansionCards(number, folderName, prefix) {
 
 //needs the card; (card's id),
 function processRefCard(card, expansion) {
-    //TODO - see if image size can be applied 'after' the source. likely; - determined when rendered
-        //particularly, notice that the newer expansions have greater image height,width (src)
-        //see if they are all drawn 'equally' on canvas
     let size;
     let type;
     switch(Math.floor(card.magicId/100)) {

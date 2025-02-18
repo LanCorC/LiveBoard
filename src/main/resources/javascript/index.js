@@ -112,6 +112,7 @@ window.onload = function() {
         }
         //TODO to become item.getImage() under 'genericFactory'
         let image = isPreview ? item.getImage() : gameState.getImage(item);
+        if(!image) return;
 
         inspectImage.style.visibility = `visible`;
         if(dragging) {
@@ -358,6 +359,8 @@ window.onload = function() {
             hoverElement = hoverElement.deck;
         }
 
+//        console.log(hoverElement);
+
         //check for click-hold-drag
         handleDrag(event);
 
@@ -449,7 +452,7 @@ window.onload = function() {
             //else, user only panned across board. all else preserved
 
         } else if(dragging && !strictPanMode) {
-            console.log("mouseup, index.js, dragging");
+//            console.log("mouseup, index.js, dragging");
 
             //deselect if: drag not in selected[] or was dragged into a deck
             if(!selected.includes(itemFocus)) {
@@ -469,9 +472,6 @@ window.onload = function() {
                 gameState.deselect(selected.splice(index, 1)); //remove, then de-select x1
             } else {
                 selected.push(itemFocus);
-                //TODO - temporary, for testing 'hand;'
-                const newItem = new Image();
-                newItem.src = gameState.getImage(itemFocus).src;
             }
 
         } else {
@@ -486,21 +486,14 @@ window.onload = function() {
             gameState.select(itemFocus, user);
         }
 
-        //TODO future: deck remains 'selected' when panning board
-        //AND change render token from pointer->view(magnifyingGlass)
-        //purpose: special view select.
-        //handles specialSelection of deck/opponentHand to preview
-        //handles de-specialSelection of preview
+    //TODO- include interaction of OpponentHand [boardInterface.js is relevant]
+        //handles 'previewDivElement' selection, de-selection
         if(rightClick && gameState.hoverIsCanvas) {
             const item = gameState.itemFromRGB(contextTouch, mouse);
 
-            if(item && item.isDeck) {
-                console.log("rClick, canvas, isDeck!");
-                //TODO- method here- select + special previewSelect
-                //maybe keep it out of selection. only de-selectSpecial if rightclick triggered again!
-                //out of select-> lets us pan, or drag things into deck/opponentHand
-                gameState.selectView(item);
-            };
+            //out of select-> lets us pan, or drag things into deck/opponentHand
+            gameState.selectView(item);
+
         };
 
         rightClick = false;
@@ -516,12 +509,12 @@ window.onload = function() {
     let rotateIncrement = 30;
     let radians = rotateIncrement * Math.PI / 180;
 
-    //TODO: feels it should be global, e.g. center of screen, not mouse
     const handleBoardRotate = function(pos) {
         //centeredOnMouse
 //        let point = contextVis.transformPoint(mouse.x, mouse.y);
         //centeredOnScreen
         let point = contextVis.transformPoint(window.innerWidth/2, window.innerHeight/2);
+
         contextVis.translate(+point.x, +point.y);
         contextVis.rotate(pos ? radians : -radians);
         contextVis.translate(-point.x, -point.y);
@@ -553,7 +546,7 @@ window.onload = function() {
             case "ControlRight":
                 strictPanMode = true;
             default:
-                //invalid key, skip processing
+                //unregistered key, end of processing
 //                console.log("invalid key");
                 return;
         }

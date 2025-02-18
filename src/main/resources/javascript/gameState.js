@@ -175,20 +175,17 @@ const gameState = (function() {
 
         let size = items.length;
         items.forEach((item) => {
+            if(item.deck && item.deck.browsing && hoverIsCanvas) {
+                //reject if onCanvas, taking from deck being browsed
+                console.log("select() rejected: object is being browsed");
+                return;
+            }
             //TODO: ask server for permission; if denied, do not add to 'selected'
             item.selected = user.id;
 
-            //TODO - try make this work
-            //additional: if 'topcard' was selected,
-            //the deck will visually be selected
             if(item.deck) {
                 item.deck.selected = user.id;
-
-                //purpose: determine if using deck coords for dragStart
-                item.useDeckCoords = hoverIsCanvas;
             }
-
-//                        setEnableItems(item, user.id);
         });
     }
 
@@ -196,16 +193,19 @@ const gameState = (function() {
         if(!Array.isArray(items)) items = new Array(items);
         if(items[0] == undefined) return;
         items.forEach((item) => {
+            if(item.isDeck && item.browsing) return;
+
             //TODO: notify server release of 'lock';
             item.selected = false;
-//            setEnableItems(item, true);
 
             //additional: if 'topcard' was selected,
             //the deck will visually be selected
-            if(item.deck) {
+            if(item.deck && !item.deck.browsing) {
                 item.deck.selected = false;
-                delete item.useDeckCoords;
             }
+//            else if (item.deck && item.deck.browsing) {
+//                //for testing: ensuring browsing deck is not deselected
+//            }
 
         });
     }
@@ -230,13 +230,16 @@ const gameState = (function() {
 
     function setStart(items) {
         items.forEach((item) => {
+            if(!item.selected) return;
             if(item.deck) {
 
-                if(item.useDeckCoords) {
+//                if(item.useDeckCoords) {
+                if(hoverIsCanvas) {
                     item.dragStart.x = item.deck.getX();
                     item.dragStart.y = item.deck.getY();
                 } else {
                     //TODO- use mouse/screen translated values
+                    //Purpose: dragging from Hand or Preview (nonCanvas)
                     console.log("oh naur");
                     item.dragStart.x = 0;
                     item.dragStart.y = 0;
@@ -313,21 +316,22 @@ const gameState = (function() {
 
             if(hoverItem == null || !validHover.has(hoverObject.type) || !selectedTypes.has(hoverItem.type)) {
                 hoverCompatible = false;
-                console.log("incompatible!");
+//                console.log("incompatible!");
             } else {
                 hoverCompatible = true;
-                console.log("compatible!");
+//                console.log("compatible!");
             }
         }
 
         dragItem.forEach((item) => {
+            if(!item.selected) return;
             item.coord.x = dx + item.dragStart.x;
             item.coord.y = dy + item.dragStart.y;
         });
     }
 
     function getImage(item) {
-        if(item == null || item == undefined) return;
+        if(!item || (!item.index && item.index != 0)) return;
         if(item.isDeck) {
 //            return item.getImage();
             const card = item.images[0];
@@ -387,6 +391,7 @@ const gameState = (function() {
                     visual.shadowColor = `${color}`;
                     visual.shadowBlur = 25;
                 } else {
+                    if(visual == undefined) console.log("what");
                     visual.shadowBlur = 0;
                 }
 
@@ -465,11 +470,12 @@ const gameState = (function() {
             }
         });
 
-        //for now is load 'tapIcon'- separate from 'float' the visual tokens to the front
+        //So far: Visual tokens on Cards
         //TODO - in the future, use this to load.. other visual tokens as well?
         for (const [type, list] of Object.entries(items)) {
 
             list.forEach((item) => {
+                if(item.browsing) {} else
                 if(!item.selected || item.disabled || !item.coord) return;
 
                 //TODO - include path for when 'hoverCompatible = true'
@@ -478,8 +484,13 @@ const gameState = (function() {
                 let { width, height } = item;
 
                 let img;
-                if(!hoverCompatible || item == hoverItem) {
+                if(item.browsing) {
+                    img = assets.view;
+                } else if(!hoverCompatible || item == hoverItem
+                || item.selected != clientUser.id) {
                     img = assets.tapIcon;
+                } else if(item.browsing) {
+                    img = assets.view;
                 } else if (item.type == hoverItem.type) {
                     img = assets.moveTo;
                 } else {
@@ -489,7 +500,7 @@ const gameState = (function() {
                 visual.save();
 
                 visual.filter = "blur(10px)";
-                visual.fillStyle = players.get(item.selected)["color"];
+                visual.fillStyle = players.get(item.selected || item.browsing)["color"];
                 visual.beginPath();
                 visual.arc(x + width/2, y + height/2, img.height/2,//radius
                     0, 2* Math.PI);
@@ -605,8 +616,10 @@ const gameState = (function() {
             if(item.isDeck) {
                 item.images.forEach((card) => donorCards.push(card));
                 dissolveDeck(item, true);
-            } else {
+            //checks if item is already in; prevents duplicates
+            } else if (!recipient.images.includes(item)){
                 donorCards.push(item);
+                console.log("n i oop");
             }
         });
 
@@ -629,8 +642,7 @@ const gameState = (function() {
         if(index == undefined) {
             //x.concat(y) adds array 'y' to the bottom
             recipient.images = donorCards.concat(recipient.images);
-            //TODO-when a DECK preview inherits special property
-            if(recipient.isHand || recipient.browsing) recipient.ref.update();
+            if(recipient.ref) recipient.ref.update();
             return true;
         }
 
@@ -662,14 +674,15 @@ const gameState = (function() {
 
         //set 'leavingDeck' defaults
         setCardDefaults(card);
-        //TODO- special hover (deck VIEW still open) == keep deck selected
-        //OR: deck view terminates as soon as we takeFrom
-        deck.selected = false;
+        //TODO: deck view terminates as soon as we takeFrom
+        if(!deck.browsing) deck.selected = false;
 
         if(deck.images.length == 1) dissolveDeck(deck, false);
 
-//        //to test
-//        console.log(card);
+        if(deck.ref) {
+            deck.ref.update();
+            console.log("ayo what");
+        }
     }
 
     //used in takeFromDec, isMerging (optional param) from addToDeck
@@ -680,6 +693,8 @@ const gameState = (function() {
             setCardDefaults(card);
         }
         items.decks.splice(items.decks.findIndex((entry) => entry == deck), 1);
+
+        if(userInterface.preview.getView() == deck) selectView();
     }
 
     //NOTE: deck.coord == undefined/null, set according to offset/mouse is on 'setStart()'
@@ -689,21 +704,42 @@ const gameState = (function() {
 
         card.coord = {x, y};
         card.disabled = false; //visuals,touch
-        delete card.useDeckCoords; //ancillary property
+//        delete card.useDeckCoords; //ancillary property
         delete card.deck; //ties
     }
 
-    //TODO- special visual token to differentiate
     function selectView(deck) {
+
+        //Validate: purge view if null, invalid type, in-use, or same object
+        const current = userInterface.preview.getView();
+        if(current) {
+            deselectView();
+        }
+        if(!deck || !deck.isDeck || current == deck
+        || (deck.selected && deck.selected != clientUser.id)){
+            //Note: if not selected, selected == false
+            return;
+        };
+
+        deck.browsing = clientUser.id;
+
         select(deck, clientUser);
         userInterface.preview.setView(deck);
-        console.log("hey!");
     }
 
     //TODO- special visual token to differentiate
-    function deSelectView() {
-        deselect(userInterface.preview.cardModel);
-        userInterface.preview.setView();
+    function deselectView() {
+
+        //revert properties
+        const preview = userInterface.preview;
+        const cardModel = preview.cardModel;
+
+        //deselect() requires .browsing to be false to work
+        cardModel.browsing = false;
+        deselect(cardModel);
+
+        //decouple
+        preview.setView();
     }
 
     return {

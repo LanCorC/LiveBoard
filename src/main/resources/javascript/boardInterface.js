@@ -95,7 +95,7 @@ class MyHand extends PreviewBox {
         user.hand.ref = this;
         this.user = user;
         this.cardHolder.setAttribute("empty-hand-text",
-            "This is your hand. Drag here to view card, drop to add to your hand.");
+            "This is your hand. Drag and drop here to add to your hand.");
         this.cardHolder.classList.add("myHand");
 
         //TODO: additional special property when client is locked out their own hand
@@ -123,10 +123,8 @@ class ViewDeck extends PreviewBox {
     update() {
         if(this.cardModel == null || this.cardModel == undefined) {
             this.#hideBody();
-            console.log("heeeeyyaaaaa");
         } else {
             this.#showBody();
-            console.log("oops");
         }
         super.update();
     }
@@ -144,8 +142,20 @@ class ViewDeck extends PreviewBox {
     }
 
     setView(cardModel) {
+        if(!cardModel) {
+            delete this.cardModel.ref;
+        } else {
+            cardModel.ref = this;
+        }
         this.cardModel = cardModel;
         this.update();
+
+        this.cardHolder.deck = cardModel;
+        this.container.deck = cardModel;
+    }
+
+    getView() {
+        return this.cardModel;
     }
 }
 
@@ -162,7 +172,7 @@ function createBottomRow(user) {
     bottomBarWrap.id = "bottomBar";
     document.body.append(bottomBarWrap);
 
-    user.hand = new Hand();
+    user.hand = new Hand(user);
 
     const leftWrap = document.createElement("div");
     const previewContainer = new MyHand(user);
