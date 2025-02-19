@@ -423,7 +423,8 @@ window.onload = function() {
 
         //on mousedown, if available, valid item, select and redraw
         if(itemFocus) {
-            if(!itemFocus.selected) {
+            //'anchored' unique to gameMat, playMat => filter out
+            if(!itemFocus.selected && !Object.hasOwn(itemFocus, "anchored")) {
                 gameState.select(itemFocus, user);
                 redraw();
             //else- already claimed by us, de-select
@@ -479,11 +480,15 @@ window.onload = function() {
 
             purgeSelected();
             gameState.cycleImage(itemFocus);
-            handleImageTooltip(itemFocus);
-            selected.push(itemFocus);
 
-            //if item was already in 'selected', it needs to be reconfirmed
-            gameState.select(itemFocus, user);
+            //unique to gameMat, playMat; prevent gameMat, playMat from being selected
+            if(!Object.hasOwn(itemFocus, "anchored")) {
+                handleImageTooltip(itemFocus);
+                selected.push(itemFocus);
+
+                //if item was already in 'selected', it needs to be reconfirmed
+                gameState.select(itemFocus, user);
+            }
         }
 
     //TODO- include interaction of OpponentHand [boardInterface.js is relevant]
@@ -494,6 +499,12 @@ window.onload = function() {
             //out of select-> lets us pan, or drag things into deck/opponentHand
             gameState.selectView(item);
 
+            //unique to gameMat, playMat
+            if(item && Object.hasOwn(item, "anchored")) {
+                console.log("n i oop");
+                gameState.cycleImage(item, -1);
+            }
+
         };
 
         rightClick = false;
@@ -502,7 +513,6 @@ window.onload = function() {
         gameState.purgeHoverItem();
         redraw();
     }, false);
-
 
     //Rotate the board around the mouse, press 'a' or 'd'
     //note: 90 is right angle rotation, 180 is upsidedown, 360 is all the way to normal
