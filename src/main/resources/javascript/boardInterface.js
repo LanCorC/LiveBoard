@@ -15,6 +15,9 @@ class PreviewBox {
         const cardHolder = document.createElement("div");
         cardHolder.classList.add("previewBox");
 
+        container.setAttribute("draggable", "false");
+        cardHolder.setAttribute("draggable", "false");
+
         container.append(cardHolder);
 
         cardHolder.addEventListener("wheel", this, {passive: false});
@@ -29,7 +32,6 @@ class PreviewBox {
         //hard-coded property reference; purposes of drag-to-Preview
         cardHolder.deck = cardModel;
         container.deck = cardModel;
-        //TODO - do the same for img child, even if imgChild.card.deck is equal
     }
 
     handleEvent(event) {
@@ -65,6 +67,8 @@ class PreviewBox {
             childImg.src = card.getImage().src;
             childImg.card = card;
             childImg.deck = this.cardModel;
+
+            childImg.setAttribute("draggable", "false");
 
             //append to container
             parent.append(childImg);

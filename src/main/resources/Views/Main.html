@@ -89,6 +89,11 @@
             max-width: 100%;
             border-radius: 20px;
             padding: 0px 5px;
+
+            /* borrowed from Stack Overflow, prevents highlight */
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10 and IE 11 */
+            user-select: none; /* Standard syntax */
         }
 
         .myHand:empty::before {
