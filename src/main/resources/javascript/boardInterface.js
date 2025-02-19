@@ -5,10 +5,9 @@ import {Hand} from "./itemClasses.js";
 //managing chat, managing new previews (otherHands, decks)
 
 //the parent class; core functionality: scrolling, style tags,
-//TODO- investigate how i can 'extend' from this;
 //TODO- so i can make viewBox(parent), handBox (child, own), inspectBox (child, decks/others)
 class PreviewBox {
-    //TODO- [cardModel] is the reference 'deck' object that represents the hand or deck stored
+    //note: [cardModel] is the reference 'deck' object that represents the hand or deck stored
     //note: hands are *SPECIAL* decks
     constructor(cardModel){
         const container = document.createElement("div");
@@ -95,7 +94,7 @@ class MyHand extends PreviewBox {
         user.hand.ref = this;
         this.user = user;
         this.cardHolder.setAttribute("empty-hand-text",
-            "This is your hand. Drag and drop here to add to your hand.");
+            "Drag and drop here to add to your hand. Right-click to inspect deck.");
         this.cardHolder.classList.add("myHand");
 
         //TODO: additional special property when client is locked out their own hand
@@ -145,6 +144,7 @@ class ViewDeck extends PreviewBox {
         if(!cardModel) {
             delete this.cardModel.ref;
         } else {
+            //TODO- exception for Hand objects
             cardModel.ref = this;
         }
         this.cardModel = cardModel;

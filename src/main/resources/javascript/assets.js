@@ -151,8 +151,7 @@ const miscRef = new Map([
         "backMonster": null
     }],
     ["playMat", []],
-    ["gameMat", []],
-    ["", ] //TODO: tapicon? tokens?
+    ["gameMat", []]
 ]);
 
 let padHundred = function(number) {

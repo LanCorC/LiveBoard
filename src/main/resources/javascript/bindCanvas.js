@@ -20,19 +20,6 @@
      //-- TODO - tie userColor to make it clear which user has selected what
      //*optional, as the user's mouse will be tracked too
 
-     //removed for sake of 'clip()' clarity; tradeoff: duplicate code, readable
-//    let save = vis.save;
-//    vis.save = function() {
-//        int.save();
-//        return save.call(vis);
-//    }
-
-//    let restore = vis.restore;
-//    vis.restore = function() {
-//        int.restore();
-//        return restore.call(vis);
-//    }
-
     let translate = vis.translate;
     vis.translate = function(x, y) {
         int.translate(x, y);
@@ -64,7 +51,7 @@
     }
 
      //rounds the object; use .clip() but .save() prior and .restore() after
-     let radius = 50; //TODO - maximise this for aesthetic feel when all images are integrated
+     let radius = 50;
 //     const roundedImage = function(x,y,width,height,radius){
      const roundedImage = function(x,y,width,height){
         let ctx = this;

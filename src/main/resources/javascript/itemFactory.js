@@ -124,12 +124,9 @@ const genericFactory = function(type, images, coord) {
                 selected, isDeck};
         case "playMat":
         case "gameMat":
-            //TODO - implement 'anchored', equivalent of non-draggable
-            //if itemFocus is 'anchored: true', drag board
-            //else not itemFocus, does not change coord at any stag
             return {type, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, getImage, disabled,cycleImage: cycleCardImage,
-                anchored: false, selected, isDeck};
+                anchored: true, selected, isDeck};
         case "dice":
             return {type, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, getImage, disabled, cycleImage: cycleDiceImage,
@@ -137,8 +134,7 @@ const genericFactory = function(type, images, coord) {
         case "deck":
             return {type: images[0].type, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, disabled, selected,
-                browsing: false, //TODO set to userID when being browsed, false when finish
-                //if(browsing), overrides 'selected' visual cue, instead renders an eye
+                browsing: false,
                 isDeck: true,
                 getImage: function() {
                     //TODO- discontinue? see if required outside of canvas

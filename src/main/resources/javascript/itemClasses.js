@@ -2,8 +2,7 @@
 //Why?: Current 'legacy' deck object purges the item if only one card, or null, remains
 export class Hand {
         constructor(user) {
-            //TODO: insert public properties
-            //NOTE: lots are vestigial for purposes of hand, required for deck methods
+            //NOTE: many properties for purposes of hand are technical debt, required for existing deck methods
 
             //TODO- user.id used as means to back-reference for updating;
             //goes through all user.id; if match, user.hand is used for processing

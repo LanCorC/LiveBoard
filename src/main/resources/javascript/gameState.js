@@ -619,12 +619,14 @@ const gameState = (function() {
             //checks if item is already in; prevents duplicates
             } else if (!recipient.images.includes(item)){
                 donorCards.push(item);
-                console.log("n i oop");
             }
         });
 
         //no type matches
-        if(donorCards.length == 0) return false;
+        if(donorCards.length == 0) {
+            console.log(`addToDeck error: no valid donors, or donors included are in recipient`);
+            return false;
+        }
 
         //!isDeck only happens in Canvas interaction, no index
         if(!recipient.isDeck) {
@@ -649,6 +651,7 @@ const gameState = (function() {
         //TODO - index specific arrangement; low priority?
         //is this what i'll be using when i clickDrag/rearrange from a hand/deck?
 
+        console.log(`addToDeck error: index ${index} provided; logic route not implemented`);
         return false;
     }
 
@@ -727,7 +730,6 @@ const gameState = (function() {
         userInterface.preview.setView(deck);
     }
 
-    //TODO- special visual token to differentiate
     function deselectView() {
 
         //revert properties
