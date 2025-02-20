@@ -590,7 +590,7 @@ const gameState = (function() {
 
         if(!Array.isArray(donor)) donor = new Array(donor);
         if(donor.includes(recipient) || recipient == null) {
-            console.log(`addToDeck error: '${recipient}' null or included in donors`);
+//            console.log(`addToDeck error: '${recipient}' null or included in donors`);
             return false;
         }
 
@@ -598,7 +598,7 @@ const gameState = (function() {
         if(recipient.deck || recipient.isHand) {
             recipient = recipient.deck || recipient;
         } else if (recipient.disabled) {
-            console.log(`addToDeck error: '${recipient}' is touch/vis disabled`);
+//            console.log(`addToDeck error: '${recipient}' is touch/vis disabled`);
             return false;
         }
 
@@ -662,7 +662,7 @@ const gameState = (function() {
     //actually, [random] likely just self inserts into calling person
     //'s hand
     function takeFromDeck(card) {
-        console.log("took from deck");
+//        console.log("took from deck");
         let {id, deck} = card;
         if(!id) console.log("no id found! takeFromDeck()");
         if(!deck) console.log("no deck found! takeFromDeck()");
@@ -682,9 +682,10 @@ const gameState = (function() {
 
         if(deck.images.length == 1) dissolveDeck(deck, false);
 
+        //ref = visual interface (preview)
         if(deck.ref) {
             deck.ref.update();
-            console.log("ayo what");
+//            console.log("ayo what");
         }
     }
 

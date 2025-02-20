@@ -273,22 +273,22 @@ window.onload = function() {
 
         if(mouse.x < window.innerWidth * borderProximity) {
             //pan left
-            console.log("left");
+//            console.log("left");
             contextVis.translate(value, 0);
         }
         if(mouse.x > window.innerWidth * (1 - borderProximity)) {
             //pan right
             contextVis.translate(-value, 0);
-            console.log("right");
+//            console.log("right");
         }
         if(mouse.y < window.innerHeight * borderProximity) {
             //pan top
             contextVis.translate(0, value);
-            console.log("top");
+//            console.log("top");
         }
         if(mouse.y > window.innerHeight * (1 - borderProximity)) {
             contextVis.translate(0, -value);
-            console.log("bottom");
+//            console.log("bottom");
         }
         //redrawing twice? see: called by handleDrag
         if(dragging){
@@ -499,9 +499,8 @@ window.onload = function() {
             //out of select-> lets us pan, or drag things into deck/opponentHand
             gameState.selectView(item);
 
-            //unique to gameMat, playMat
+            //unique to gameMat, playMat => let item cycle backwards on rClick
             if(item && Object.hasOwn(item, "anchored")) {
-                console.log("n i oop");
                 gameState.cycleImage(item, -1);
             }
 
