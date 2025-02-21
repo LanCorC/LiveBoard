@@ -34,8 +34,9 @@ const assets = (function() {
     no.src = `../Images/Tokens/no-svgrepo-com.svg`;
     const view = new Image();
     view.src = `../Images/Tokens/magnifier-glass-svgrepo-com.svg`;
+    const backImg = 0;
 
-    return { tapIcon, deckIcon, moveTo, no, view };
+    return { tapIcon, deckIcon, moveTo, no, view, backImg };
 })();
 
 function getMiscImages(type) {
@@ -424,4 +425,4 @@ function prepareImages(expansions) {
 }
 
 //export default {assets as assets, loadAssets};
-export {assets, loadAssets, getMiscImages, prepareImages};
+export {assets, loadAssets, getMiscImages, prepareImages, sizes};

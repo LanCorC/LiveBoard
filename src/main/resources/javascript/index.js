@@ -15,6 +15,7 @@ let inspectMode = true; //toggle for InspectMode
 let inspectImage = document.getElementById("inspectImage");
 let rightClick = false;
 let strictPanMode = false; //hold-CTRL: strict pan mode
+
 //TODO- to move to an appropriate file/module
 loadAssets();
 
@@ -33,6 +34,7 @@ window.onload = function() {
     //TODO: have gameState create player's 'hand' object via itemFactory.js
     gameState.addPlayer(user);
     userInterface.initializeBoard(user);
+    gameState.translateOffset();
 
     //Load all event interactions, draws,
     const contextVis = board.getContext("2d");
@@ -349,16 +351,17 @@ window.onload = function() {
         mouse.y = event.pageY;
 
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
-        gameState.hoverIsCanvas = hoverElement instanceof HTMLCanvasElement;
+        gameState.hoverIsCanvas(hoverElement instanceof HTMLCanvasElement);
+//        console.log(gameState.hoverIsCanvas);
 
         //handle tooltip hover- if canvas, finds object
         handleImageTooltip();
 
         //TODO-test for using nonCanvas element ref to 'hand/deck' preview
-        if(hoverElement && Object.hasOwn(hoverElement, "deck")) {
-            hoverElement = hoverElement.deck;
-        }
-
+//        if(hoverElement && Object.hasOwn(hoverElement, "deck")) {
+//            hoverElement = hoverElement.deck;
+//        }
+//
 //        console.log(hoverElement);
 
         //check for click-hold-drag
@@ -370,6 +373,7 @@ window.onload = function() {
         //rightclick detected - create 'detached' inspect image
 
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
+        let isPreviewCard = Object.hasOwn(hoverElement, "card");
 
         if(event.buttons == 2) {
             rightClick = true;
@@ -378,20 +382,19 @@ window.onload = function() {
 
             return;
         //TODO- exception for HTMLImageElement when dragging in-deck/hand cards
-        } else if (!(hoverElement instanceof HTMLCanvasElement)) {
+        //"card" property unique to preview image HTML elements
+        } else if (!(hoverElement instanceof HTMLCanvasElement) && !isPreviewCard) {
             startPoint = null;
-            gameState.startPoint = null;
-            gameState.offset = null;
+            gameState.startPoint(null);
+            gameState.offset(null);
             //TODO- attempt to stop clickthrough to canvas; works; problems TBD
         } else {
             startPoint = contextVis.transformPoint(mouse.x, mouse.y);
-            gameState.startPoint = startPoint;
+            gameState.startPoint(startPoint);
             //divide by cardscale reverses preview distortion added when canvasObj->element
-            gameState.offset = contextVis.transformPoint(
-                event.offsetX, event.offsetY
+            gameState.offset(
+                {x: event.offsetX, y: event.offsetY}
             );
-//            gameState.offset = { x: event.offsetX/cardScale, y: event.offsetY/cardScale};
-//            console.log(gameState.offset);
         }
 
         dragging = false;
@@ -403,8 +406,10 @@ window.onload = function() {
 //            mouse.x, mouse.y) instanceof HTMLCanvasElement;
 //        console.log(gameState.hoverIsCanvas);
 
+        //exception for MyHand and PreviewDeck imgs
+        //"card" property unique to preview image HTML elements
         if((itemFocus = hoverElement)
-            instanceof HTMLImageElement) {
+            instanceof HTMLImageElement && !isPreviewCard) {
 
             purgeSelected(selected);
 
@@ -417,9 +422,22 @@ window.onload = function() {
             return;
         }
 
-        //TODO - specify for canvas
-        itemFocus = gameState.hoverIsCanvas ?
-        gameState.itemFromRGB(contextTouch, mouse) : null;
+        //TODO - specify for canvas - TODO- for cards in hand/preview; assign to .card property; else rework above
+//        itemFocus = gameState.hoverIsCanvas ?
+//        gameState.itemFromRGB(contextTouch, mouse) : null;
+        if(gameState.hoverIsCanvas()) {
+            itemFocus = gameState.itemFromRGB(contextTouch, mouse);
+        } else if (isPreviewCard) {
+            itemFocus = hoverElement.card;
+        } else {
+            itemFocus = null;
+        }
+
+        //TODO test: test mousedown that we get the corresponding card in preview div/image element
+//        console.log(`${gameState.hoverIsCanvas}`);
+//        console.log(itemFocus.getImage().src);
+
+
 
         //on mousedown, if available, valid item, select and redraw
         if(itemFocus) {
@@ -493,7 +511,7 @@ window.onload = function() {
 
     //TODO- include interaction of OpponentHand [boardInterface.js is relevant]
         //handles 'previewDivElement' selection, de-selection
-        if(rightClick && gameState.hoverIsCanvas) {
+        if(rightClick && gameState.hoverIsCanvas()) {
             const item = gameState.itemFromRGB(contextTouch, mouse);
 
             //out of select-> lets us pan, or drag things into deck/opponentHand
@@ -607,6 +625,7 @@ window.onload = function() {
         board.setHeight(window.innerHeight);
         board.setWidth(window.innerWidth);
         console.log("resized");
+        gameState.translateOffset();
         redraw();
     }, true);
 

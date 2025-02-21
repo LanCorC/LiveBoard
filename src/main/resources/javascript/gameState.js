@@ -1,4 +1,4 @@
-import {assets} from "./assets.js";
+import {assets, sizes} from "./assets.js";
 import {loadCards, loadMisc, deckify} from "./itemFactory.js";
 import {userInterface} from "./boardInterface.js";
 
@@ -95,16 +95,10 @@ const gameState = (function() {
             if(item = findItem(id, list)) {
                 //Purpose: detecting 'topOfCard' of a deck
                 if(trueId != id) {
-//                    console.log("hovering a deck!");
                     let deck = item;
                     item = item.images[0]; //top of deck
-                    //!item.deck here moved to itemFactory, for purposes of deck/hand
-//                    item.deck = deck; //for onDrag decoupling
-//                    console.log("top of deck spotted");
                 }
-//                else {
-//                    console.log("hovering a card!");
-//                }
+
                 return item;
             };
         }
@@ -175,9 +169,9 @@ const gameState = (function() {
 
         let size = items.length;
         items.forEach((item) => {
-            if(item.deck && item.deck.browsing && hoverIsCanvas) {
+            if(item.deck && item.deck.browsing && hoverIsCanvas()) {
                 //reject if onCanvas, taking from deck being browsed
-                console.log("select() rejected: object is being browsed");
+                console.log(`select() rejected: object is being browsed`);
                 return;
             }
             //TODO: ask server for permission; if denied, do not add to 'selected'
@@ -219,44 +213,124 @@ const gameState = (function() {
 
     //for performing accurate to mouse-position drags
     //in and out of hands/decks/non-canvas-elements
-    let startPoint;
-    let offset;
-    let imageScale; //e.g. purposes of translating offset to card size
+    const interfaceVariables = {
+        hoverIsCanvas: true,
+        startPoint: null,
+        offset: null
+//        ,
+//        imageScale: null
+    }
 
-    //private function - track relative start, for item dragging tracking
-    //TODO- if card is inside a deck, read mouse offset
+    //getter and setter
+    function hoverIsCanvas(boolean) {
+        //if blank, return value
+        if(boolean == undefined) {
+            return interfaceVariables.hoverIsCanvas;
+        }
+        //if not blank, adjust value
+        else {
+            interfaceVariables.hoverIsCanvas = boolean;
+        }
+    }
 
-    let hoverIsCanvas = true;
+    function startPoint(boolean) {
+        //if blank, return value
+        if(boolean == undefined) {
+            return interfaceVariables.startPoint;
+        }
+        //if not blank, adjust value
+        else {
+            interfaceVariables.startPoint = boolean;
+        }
+    }
 
+    function offset(boolean) {
+        //if blank, return value
+        if(boolean == undefined) {
+            return interfaceVariables.offset;
+        }
+        //if not blank, adjust value
+        else {
+            interfaceVariables.offset = boolean;
+        }
+    }
+
+//    function imageScale(boolean) {
+//        //if blank, return value
+//        if(boolean == undefined) {
+//            return interfaceVariables.imageScale;
+//        }
+//        //if not blank, adjust value
+//        else {
+//            interfaceVariables.imageScale = boolean;
+//        }
+//    }
+
+    let offsetMultipliers = {
+        Cards: null,
+        Monsters: null,
+        Leaders: null
+    }
+
+    //Purpose: translating mouseOffset when dragging a card from nonCanvasElement
+    //calculate on game start, on resize (WIP)
+    function translateOffset() {
+        //get ref via user.hand.ref
+        //note: not precise, due to scrollbar space occupied, and img padding
+        let visualHeight = clientUser.hand.ref.cardHolder.clientHeight;
+
+        offsetMultipliers.Card = sizes.small.height/visualHeight;
+        offsetMultipliers.Monster = sizes.medium.height/visualHeight;
+        offsetMultipliers.Leader = offsetMultipliers.Monsters;
+    }
+
+    //Purpose: reference point of an item being dragged
     function setStart(items) {
+
+        //purpose of offsetting multiple cards taken from hand
+        let xBonus = 0;
+        let yBonus = 0;
+
+        let fromDeckCards = [];
+
         items.forEach((item) => {
             if(!item.selected) return;
             if(item.deck) {
 
-//                if(item.useDeckCoords) {
-                if(hoverIsCanvas) {
+                if(hoverIsCanvas()) {
                     item.dragStart.x = item.deck.getX();
                     item.dragStart.y = item.deck.getY();
+                    console.log("huh");
                 } else {
-                    //TODO- use mouse/screen translated values
                     //Purpose: dragging from Hand or Preview (nonCanvas)
-                    console.log("oh naur");
-                    item.dragStart.x = 0;
-                    item.dragStart.y = 0;
+                    fromDeckCards.push(item);
+
+                    let multiplier = offsetMultipliers[item.type] || 1;
+                    item.dragStart.x = startPoint().x - offset().x * multiplier + xBonus;
+                    item.dragStart.y = startPoint().y - offset().y * multiplier + yBonus;
+
+                    xBonus += item.height*0.20;
+                    yBonus -= item.height*0.20;
                 }
 
                 //then remove from deck
+                //TODO- edgecase. last item of a deck reads as not having a deck, due to dissolve
+                //how to repeat: drag all items (multiple) from a deck preview to canvas
+                //*hands are fine, because it's never deleted
                 takeFromDeck(item);
 
             } else {
-                //TODO-refactor? .getX() on a deck-removed item refers to original, primitive coord
-                //drag from deck- works fine. when using .getX/Y(), future dragStarts zip to primitive
+                //TODO-refactor? .getX() on a deck-removed item
+                //refers to original, primitive coord
+                //drag from deck- works fine. when using .getX/Y(),
 
                 item.dragStart.x = item.coord.x;
                 item.dragStart.y = item.coord.y;
             }
 
         });
+
+        forward(fromDeckCards);
     }
 
     //relies on querying server for permission to lock the card, property: "disabled"
@@ -586,8 +660,6 @@ const gameState = (function() {
         //TODO- 'hoverElement' is recipient, else find a way to set hoverElement to 'hand'; likely in index.js
         //TODO- find out if 'lock' is important for race conditions
 
-        //TODO- console: reason for failure, for clarity
-
         if(!Array.isArray(donor)) donor = new Array(donor);
         if(donor.includes(recipient) || recipient == null) {
 //            console.log(`addToDeck error: '${recipient}' null or included in donors`);
@@ -685,12 +757,12 @@ const gameState = (function() {
         //ref = visual interface (preview)
         if(deck.ref) {
             deck.ref.update();
-//            console.log("ayo what");
         }
     }
 
     //used in takeFromDec, isMerging (optional param) from addToDeck
     function dissolveDeck(deck, isMerging) {
+        if(deck.isHand) return; //exception
         console.log("dissolve!");
         if(!isMerging) {
             let card = deck.images[0];
@@ -704,12 +776,20 @@ const gameState = (function() {
     //NOTE: deck.coord == undefined/null, set according to offset/mouse is on 'setStart()'
     //expected: prototypal 'hand' has no use for coord property; handled in setStart()
     function setCardDefaults(card) {
-        let { x, y } = card.deck.coord; //inherit coords, but as a new, unique object
+        let x, y;
+        if(!card.deck.coord) {
+            x = 0;
+            y = 0;
+        } else {
+            ({x, y} = card.deck.coord);
+        }
 
         card.coord = {x, y};
         card.disabled = false; //visuals,touch
-//        delete card.useDeckCoords; //ancillary property
-        delete card.deck; //ties
+        if(card.deck.isHand) {
+            card.index = assets.backImg;
+        }
+        delete card.deck;
     }
 
     function selectView(deck) {
@@ -766,7 +846,8 @@ const gameState = (function() {
         offset,
         hoverIsCanvas,
         addToDeck,
-        selectView
+        selectView,
+        translateOffset
     };
 })();
 
