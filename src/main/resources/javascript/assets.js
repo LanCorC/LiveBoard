@@ -174,12 +174,15 @@ let padHundred = function(number) {
 
 let baseAddress = "../Images";
 //TODO - have this update an html view to update the user
+//TODO: only call array of chosen expansion names, for sake of fast load (temporary)? TBD
 //purpose: load all assets
-function loadAssets() {
+function loadAssets(chosenExpansions) {
     let x = "Base Deck";
     let y = "leaders";
 //    console.log(refExpansionCards[x]);
     expansionProperties.forEach( (value, key, map) => {
+        if(!chosenExpansions.includes(key)) return;
+
         console.log(`Unpacking ${key}...`);
 
         loadExpansionCards(1, key, value.prefix);

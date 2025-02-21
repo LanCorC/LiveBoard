@@ -16,12 +16,13 @@ let inspectImage = document.getElementById("inspectImage");
 let rightClick = false;
 let strictPanMode = false; //hold-CTRL: strict pan mode
 
-//TODO- to move to an appropriate file/module
-loadAssets();
+//TODO- to move to an appropriate file/module + incorporate into user interface, e.g. select desired expansions...
+const expansionsToLoad = ["Base Deck"];
+loadAssets(expansionsToLoad);
 
 window.onload = function() {
     //TODO - temporary -- to refactor as loading the entire board html
-    gameState.loadBoard(["Base Deck"]);
+    gameState.loadBoard(expansionsToLoad);
 
     //TODO - create ID, check server (if server, add to server, retrieve gameState; else create gameState)
     const user = {
