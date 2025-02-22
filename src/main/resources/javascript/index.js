@@ -353,7 +353,7 @@ window.onload = function() {
 
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
         gameState.hoverIsCanvas(hoverElement instanceof HTMLCanvasElement);
-//        console.log(gameState.hoverIsCanvas);
+//        console.log(itemFocus);
 
         //handle tooltip hover- if canvas, finds object
         handleImageTooltip();
@@ -424,21 +424,27 @@ window.onload = function() {
         }
 
         //TODO - specify for canvas - TODO- for cards in hand/preview; assign to .card property; else rework above
-//        itemFocus = gameState.hoverIsCanvas ?
-//        gameState.itemFromRGB(contextTouch, mouse) : null;
-        if(gameState.hoverIsCanvas()) {
-            itemFocus = gameState.itemFromRGB(contextTouch, mouse);
-        } else if (isPreviewCard) {
+//        if(gameState.hoverIsCanvas()) {
+//            itemFocus = gameState.itemFromRGB(contextTouch, mouse);
+//
+//            if(itemFocus && Object.hasOwn(itemFocus, "deck") && itemFocus.deck.browsing) {
+//                itemFocus = null;
+//            }
+//
+//        } else if (isPreviewCard) {
+//            itemFocus = hoverElement.card;
+//        } else {
+//            itemFocus = null;
+//        }
+
+        if(isPreviewCard) {
             itemFocus = hoverElement.card;
-        } else {
+        } else if(gameState.hoverIsCanvas() &&
+        (itemFocus = gameState.itemFromRGB(contextTouch, mouse)) &&
+        Object.hasOwn(itemFocus, "deck") && itemFocus.deck.browsing){
+            //itemFocus set to null if itemFromRGB null, or itemFocus.deck.browsing==true
             itemFocus = null;
         }
-
-        //TODO test: test mousedown that we get the corresponding card in preview div/image element
-//        console.log(`${gameState.hoverIsCanvas}`);
-//        console.log(itemFocus.getImage().src);
-
-
 
         //on mousedown, if available, valid item, select and redraw
         if(itemFocus) {
