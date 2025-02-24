@@ -207,7 +207,7 @@ const gameState = (function() {
                 item.deck.selected = false;
             }
 
-            if(!hoverIsCanvas()) {
+            if(!hoverIsCanvas() && Object.hasOwn(item, "ref")) {
                 item.ref.deselect();
             }
 
@@ -686,7 +686,7 @@ const gameState = (function() {
     //returns true: method was successful, proceed to purge selected (index.js)
     //returns false: "" unsuccessful after 'mouseUp' + 'isDragging'; do not purge
     //"index" - is nullable, provided when dragged into specific deck/hand preview index;
-    function addToDeck(donor, recipient, index) {
+    function addToDeck(donor, recipient) {
         //TODO- 'hoverElement' is recipient, else find a way to set hoverElement to 'hand'; likely in index.js
         //TODO- find out if 'lock' is important for race conditions
 
@@ -696,8 +696,12 @@ const gameState = (function() {
             return false;
         }
 
+        let index;
+
         //where recipient isHand, keep recipient same
         if(recipient.deck || recipient.isHand) {
+            if(!recipient.isDeck) index = recipient.deck.images.indexOf(recipient.card);
+            if(index == -1) index = 0;
             recipient = recipient.deck || recipient;
         } else if (recipient.disabled) {
 //            console.log(`addToDeck error: '${recipient}' is touch/vis disabled`);
@@ -746,19 +750,11 @@ const gameState = (function() {
             }
         });
 
-        //'index' intended for specific rearrangements or insertions
-        if(index == undefined) {
-            //x.concat(y) adds array 'y' to the bottom
-            recipient.images = donorCards.concat(recipient.images);
-            if(recipient.ref) recipient.ref.update();
-            return true;
-        }
+        recipient.images.splice(index, 0, ...donorCards)
 
-        //TODO - index specific arrangement; low priority?
-        //is this what i'll be using when i clickDrag/rearrange from a hand/deck?
+        if(recipient.ref) recipient.ref.update();
 
-        console.log(`addToDeck error: index ${index} provided; logic route not implemented`);
-        return false;
+        return true;
     }
 
     //to only trigger where, onDragStart, a card.disabled = true was  found
