@@ -604,9 +604,21 @@ window.onload = function() {
     const zoom = function(val) {
         let factor = Math.pow(scale, val); //example: scale '2' results in => double (pow2) or half (pow-2 = x0.5)
         let pt = contextVis.transformPoint(mouse.x, mouse.y);
+
+        console.log(contextVis.getTransform());
+        //TODO note warning: hard coded; assign to named variable
+        //note: based on arbitrary scale, not on bounds/boundaries
+        //min
+        if(factor > 1 && contextVis.getTransform().a > 2 ||
+        //max
+        factor < 1 && contextVis.getTransform().a < 0.25) {
+            return;
+        }
+
         contextVis.translate(pt.x, pt.y);
         contextVis.scale(factor, factor);
         contextVis.translate(-pt.x, -pt.y);
+
         redraw();
     };
 
