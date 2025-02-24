@@ -35,8 +35,9 @@ const assets = (function() {
     const view = new Image();
     view.src = `../Images/Tokens/magnifier-glass-svgrepo-com.svg`;
     const backImg = 0;
+    const frontImg = 1;
 
-    return { tapIcon, deckIcon, moveTo, no, view, backImg };
+    return { tapIcon, deckIcon, moveTo, no, view, backImg, frontImg };
 })();
 
 function getMiscImages(type) {

@@ -444,6 +444,18 @@ const gameState = (function() {
             if(!modifier) {
                 item.index++;
                 item.index %= item.images.length;
+
+                //visual facedown, faceup
+//                if(item.deck && item.ref) {
+//                    console.log("hallo");
+//                    if(item.deck.isHand) return;
+//                    if(item.index == assets.backImg) {
+//                        item.ref.facedown();
+//                    } else {
+//                        item.ref.faceup();
+//                    }
+//                }
+
                 return;
             }
 
@@ -455,6 +467,7 @@ const gameState = (function() {
                 item.index = modifier;
                 item.index %= item.images.length;
             }
+
         });
 
     }
@@ -727,6 +740,10 @@ const gameState = (function() {
             card.deck = recipient;
             card.coord = recipient.coord;
             card.disabled = true;
+
+            if(recipient.isHand) {
+                card.index = assets.frontImg;
+            }
         });
 
         //'index' intended for specific rearrangements or insertions

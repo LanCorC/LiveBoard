@@ -78,6 +78,18 @@ class PreviewBox {
                 this.classList.remove("selectedImg");
             }
 
+            //visual facedown, faceup
+//            if(!this.cardModel.isHand) {
+//                childImg.facedown = function() {
+//                    this.classList.add("facedownImg");
+//                }
+//                childImg.faceup = function() {
+//                    this.classList.remove("facedownImg");
+//                }
+//                //TODO note warning: hard coded value
+//                if(card.index == 0) childImg.facedown();
+//            }
+
             if(card.selected) childImg.select();
 
             //append to container
