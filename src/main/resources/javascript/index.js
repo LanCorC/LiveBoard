@@ -478,7 +478,6 @@ window.onload = function() {
             //else, user only panned across board. all else preserved
 
         } else if(dragging && !strictPanMode) {
-//            console.log("mouseup, index.js, dragging");
 
             //deselect if: drag not in selected[] or was dragged into a deck
             if(!selected.includes(itemFocus)) {
@@ -502,7 +501,6 @@ window.onload = function() {
 
         } else {
         //NODRAG noCtrl
-
             purgeSelected();
             gameState.cycleImage(itemFocus);
 

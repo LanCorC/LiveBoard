@@ -54,6 +54,7 @@ class PreviewBox {
         //purge children
         const parent = this.cardHolder;
         while(parent.firstChild) {
+            delete parent.firstChild.card.ref;
             parent.firstChild.remove();
         }
 
@@ -66,9 +67,18 @@ class PreviewBox {
             const childImg = new Image();
             childImg.src = card.getImage().src;
             childImg.card = card;
+            card.ref = childImg;
             childImg.deck = this.cardModel;
 
             childImg.setAttribute("draggable", "false");
+            childImg.select = function() {
+                this.classList.add("selectedImg");
+            }
+            childImg.deselect = function() {
+                this.classList.remove("selectedImg");
+            }
+
+            if(card.selected) childImg.select();
 
             //append to container
             parent.append(childImg);

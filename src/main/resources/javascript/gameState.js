@@ -180,28 +180,45 @@ const gameState = (function() {
             if(item.deck) {
                 item.deck.selected = user.id;
             }
+
+            if(item.deck && !hoverIsCanvas()) {
+                item.ref.select();
+            }
         });
     }
 
     function deselect(items) {
         if(!Array.isArray(items)) items = new Array(items);
         if(items[0] == undefined) return;
+
+        let cardHolders = [];
+
         items.forEach((item) => {
             if(item.isDeck && item.browsing) return;
 
             //TODO: notify server release of 'lock';
             item.selected = false;
 
+            if(!item.deck) return;
+
             //additional: if 'topcard' was selected,
             //the deck will visually be selected
-            if(item.deck && !item.deck.browsing) {
+            if(!item.deck.browsing) {
                 item.deck.selected = false;
             }
-//            else if (item.deck && item.deck.browsing) {
-//                //for testing: ensuring browsing deck is not deselected
-//            }
+
+            if(!hoverIsCanvas()) {
+                item.ref.deselect();
+            }
+
+            if(item.deck.ref) {
+                cardHolders.push(item.deck.ref);
+            }
 
         });
+
+        //fixes visual: selected previewItem remains selected when moving back to canvas
+        cardHolders.forEach((ref) => ref.update());
     }
 
     //TODO: replace to 'tap' binary 0* rotation or 90*
