@@ -37,7 +37,44 @@ const assets = (function() {
     const backImg = 0;
     const frontImg = 1;
 
-    return { tapIcon, deckIcon, moveTo, no, view, backImg, frontImg };
+    //padding between each play/gameMat
+    let buffer = 100;
+    let allowance = 100;
+    //hardcoded, arbitrary; based on 'true board' size
+    //0,0 is top corner of gameMat
+    const dimensions = {
+        leftBorder: -(sizes.large.width + buffer + allowance),
+        rightBorder: sizes.large.width * 2 + buffer + allowance,
+        topBorder: -(buffer + sizes.large2.height + allowance),
+        bottomBorder: sizes.large.height + sizes.large2.height + buffer + allowance,
+
+        //for purposes of being centered on the board
+        center: {
+            x: sizes.large.width/2,
+            y: sizes.large.height/2,
+        },
+
+        //calculated value, based on clientWidth, clientHeight and approximation to borders
+        minZoomoutTransform: null,
+        height: null,
+        width: null
+    }
+
+    dimensions.height = dimensions.bottomBorder - dimensions.topBorder;
+    dimensions.width = dimensions.rightBorder - dimensions.leftBorder;
+
+    function adjustMin(windowWidth, windowHeight) {
+        let tableWidth = dimensions.rightBorder - dimensions.leftBorder;
+        let tableHeight = dimensions.bottomBorder - dimensions.topBorder;
+
+        let widthMin = windowWidth / tableWidth;
+        let heightMin = windowHeight / tableHeight;
+
+        dimensions.minZoomoutTransform = Math.min(widthMin, heightMin);
+        return dimensions.minZoomoutTransform;
+    }
+
+    return { tapIcon, deckIcon, moveTo, no, view, backImg, frontImg, dimensions, adjustMin };
 })();
 
 function getMiscImages(type) {

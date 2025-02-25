@@ -301,6 +301,11 @@ const gameState = (function() {
         offsetMultipliers.Leader = offsetMultipliers.Monsters;
     }
 
+    function translateDimensions(width, height) {
+        translateOffset();
+        assets.adjustMin(width, height);
+    }
+
     //Purpose: reference point of an item being dragged
     function setStart(items) {
 
@@ -314,10 +319,11 @@ const gameState = (function() {
             if(!item.selected) return;
             if(item.deck) {
 
-                if(hoverIsCanvas()) {
+                if(hoverIsCanvas()
+                //to filter 'Hand' type, prevents error
+                && Object.hasOwn(item.deck, "getX")) {
                     item.dragStart.x = item.deck.getX();
                     item.dragStart.y = item.deck.getY();
-                    console.log("huh");
                 } else {
                     //Purpose: dragging from Hand or Preview (nonCanvas)
                     fromDeckCards.push(item);
@@ -877,7 +883,7 @@ const gameState = (function() {
         hoverIsCanvas,
         addToDeck,
         selectView,
-        translateOffset
+        translateDimensions
     };
 })();
 

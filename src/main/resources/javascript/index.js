@@ -1,7 +1,7 @@
 import bindCanvas from "./bindCanvas.js";
 import gameState from "./gameState.js";
-import main from "./itemFactory.js";
-import { loadAssets } from "./assets.js";
+//import main from "./itemFactory.js";
+import { loadAssets, assets } from "./assets.js";
 import * as userInterface from "./boardInterface.js";
 
 //Variables
@@ -32,18 +32,33 @@ window.onload = function() {
         //TODO - UI to choose own name
         name: "Player1"
     };
-    //TODO: have gameState create player's 'hand' object via itemFactory.js
     gameState.addPlayer(user);
     userInterface.initializeBoard(user);
-    gameState.translateOffset();
 
     //Load all event interactions, draws,
     const contextVis = board.getContext("2d");
     const contextTouch  = touch.getContext("2d", {willReadFrequently : true});
-    bindCanvas(board, touch);
+    bindCanvas(board, touch, assets.dimensions);
 
     board.setHeight(window.innerHeight);
     board.setWidth(window.innerWidth);
+
+    function centerBoard() {
+        gameState.translateDimensions(board.clientWidth, board.clientHeight);
+
+        let multiplier = assets.dimensions.minZoomoutTransform;
+        let center = assets.dimensions.center;
+
+        //adjust proportions
+        contextVis.setTransform(multiplier, 0, 0, multiplier, 0, 0);
+
+        //reverse transform:
+        let pt =
+        contextVis.transformPoint(board.clientWidth/2, board.clientHeight/2);
+        contextVis.translate(pt.x - center.x, pt.y - center.y);
+    }
+    centerBoard();
+
 
     //mouse tracking
     let mouse = {
@@ -335,6 +350,7 @@ window.onload = function() {
                 handleEdgePan();
             }
         } else {
+            //TODO- insert maximum offsets, based on translated x=0, y=0, x=maxScreenWidth, y=maxScreenHeight
             //move the board
             contextVis.translate(point.x-startPoint.x, point.y-startPoint.y);
         }
@@ -592,11 +608,48 @@ window.onload = function() {
             case "ControlRight":
                 strictPanMode = false;
             default:
-                //invalid key, skip processing
+                //unregistered key, end of processing
                 //                console.log("invalid key");
                 return;
         }
     }, false);
+
+    //call at the END of every translate;
+    //notice: some translates are 2-part, + then -. call only once, after minus.
+    function correctTranslation() {
+//        let {a, b, c, d, e, f} = contextVis.getTransform();
+//        let dimensions = assets.dimensions;
+//
+//        console.log("hey!");
+//        //for purposes of bottomBorder, rightBorder
+//        let pt = contextVis.transformPoint(dimensions.width, dimensions.height);
+////        if(pt.x <= dimensions.rightBorder) e = dimensions.rightBorder;
+////        if(pt.y >= dimensions.bottomBorder) f = dimensions.bottomBorder;
+////        //for purposes of topBorder, leftBorder
+////        if(e <= dimensions.leftBorder) e = dimensions.leftBorder;
+////        if(f <= dimensions.topBorder) f = dimensions.topBorder;
+//
+//        //TODO note: right, bottom reads as intended
+////        if(pt.x >= dimensions.rightBorder) console.log("right");
+////        if(pt.y >= dimensions.bottomBorder) console.log("bottom");
+////        if(pt.x >= dimensions.rightBorder) e = pt.x - dimensions.rightBorder;
+////        if(pt.y >= dimensions.bottomBorder) f = pt.y - dimensions.bottomBorder;
+//        //for purposes of topBorder, leftBorder
+//        //TODO note: left, top does not read as intended
+////        pt = contextVis.transformPoint(0,0);
+////        console.log(`${e} ${f}`);
+////        console.log(`${dimensions.leftBorder}`);
+////        if(e >= dimensions.leftBorder) console.log("left");
+////        if(f <= dimensions.topBorder) console.log("top");
+//
+//        //attempt c: work off 'fauxCenter', and calculate cielings and walls
+//        //then, assign transform where e(horizontal) = Math.min(Math.max(etc))
+//        //and so on
+//
+//        console.log(e);
+//        console.log(pt.x);
+//        contextVis.setTransform(a, b, c, d, Math.min(e, 2000), f);
+    }
 
     //scrollResize responsiveness multiplier
     let scale = 1.1;
@@ -605,18 +658,33 @@ window.onload = function() {
         let factor = Math.pow(scale, val); //example: scale '2' results in => double (pow2) or half (pow-2 = x0.5)
         let pt = contextVis.transformPoint(mouse.x, mouse.y);
 
-        console.log(contextVis.getTransform());
+        let {a, b, c, d} = contextVis.getTransform();
+
         //TODO note warning: hard coded; assign to named variable
-        //note: based on arbitrary scale, not on bounds/boundaries
-        //min
-        if(factor > 1 && contextVis.getTransform().a > 2 ||
-        //max
-        factor < 1 && contextVis.getTransform().a < 0.25) {
+        //min - arbitrary
+        if(factor > 1 && a > 2
+        //max - arbitrary, generous allowance
+        || factor < 1 && a < 0.05) {
             return;
         }
 
+        let override = false;
+        let currMinimum = assets.dimensions.minZoomoutTransform;
+
+        if(factor < 1 &&
+        a * factor < currMinimum) {
+            override = true;
+        }
+
         contextVis.translate(pt.x, pt.y);
-        contextVis.scale(factor, factor);
+        if(override) {
+            //Maximum zoomout: set to minimum transform value
+            let {e, f} = contextVis.getTransform();
+            contextVis.setTransform(currMinimum, b, c,
+                currMinimum, e, f);
+        } else {
+            contextVis.scale(factor, factor);
+        }
         contextVis.translate(-pt.x, -pt.y);
 
         redraw();
@@ -633,7 +701,6 @@ window.onload = function() {
     };
 
     touch.addEventListener("wheel", scroll, {passive: true});
-//    touch.addEventListener("wheel", scroll);
 
     window.addEventListener('resize', function(event) {
         const vp = document.getElementById("viewport");
@@ -642,12 +709,12 @@ window.onload = function() {
         board.setHeight(window.innerHeight);
         board.setWidth(window.innerWidth);
         console.log("resized");
-        gameState.translateOffset();
+        centerBoard();
         redraw();
     }, true);
 
-    //summon items
-    main();
+    //itenFactory testing
+//    main();
     //For some reason, this needs to be called twice in order to properly capture, as far as tested, "mousedown"
     redraw();
 }
