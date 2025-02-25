@@ -70,6 +70,7 @@ window.onload = function() {
     let dragging = false;
 
     const redraw = function() {
+        correctTranslation();
         //Clear
         contextVis.save();
         contextTouch.save();
@@ -617,45 +618,129 @@ window.onload = function() {
     //call at the END of every translate;
     //notice: some translates are 2-part, + then -. call only once, after minus.
     function correctTranslation() {
-//        let {a, b, c, d, e, f} = contextVis.getTransform();
-//        let dimensions = assets.dimensions;
-//
-//        console.log("hey!");
-//        //for purposes of bottomBorder, rightBorder
-//        let pt = contextVis.transformPoint(dimensions.width, dimensions.height);
-////        if(pt.x <= dimensions.rightBorder) e = dimensions.rightBorder;
-////        if(pt.y >= dimensions.bottomBorder) f = dimensions.bottomBorder;
-////        //for purposes of topBorder, leftBorder
-////        if(e <= dimensions.leftBorder) e = dimensions.leftBorder;
-////        if(f <= dimensions.topBorder) f = dimensions.topBorder;
-//
-//        //TODO note: right, bottom reads as intended
-////        if(pt.x >= dimensions.rightBorder) console.log("right");
-////        if(pt.y >= dimensions.bottomBorder) console.log("bottom");
-////        if(pt.x >= dimensions.rightBorder) e = pt.x - dimensions.rightBorder;
-////        if(pt.y >= dimensions.bottomBorder) f = pt.y - dimensions.bottomBorder;
-//        //for purposes of topBorder, leftBorder
-//        //TODO note: left, top does not read as intended
-////        pt = contextVis.transformPoint(0,0);
-////        console.log(`${e} ${f}`);
-////        console.log(`${dimensions.leftBorder}`);
-////        if(e >= dimensions.leftBorder) console.log("left");
-////        if(f <= dimensions.topBorder) console.log("top");
-//
-//        //attempt c: work off 'fauxCenter', and calculate cielings and walls
-//        //then, assign transform where e(horizontal) = Math.min(Math.max(etc))
-//        //and so on
-//
-//        console.log(e);
-//        console.log(pt.x);
-//        contextVis.setTransform(a, b, c, d, Math.min(e, 2000), f);
+        let dimensions = assets.dimensions;
+
+        //notice: x,y;Point
+        //borders here are -ve values
+        let leftTopPoint = contextVis.transformPoint(0,0);
+        leftTopPoint.x = Math.round(leftTopPoint.x);
+        leftTopPoint.y = Math.round(leftTopPoint.y);
+        //borders here are +ve values
+        let rightBottomPoint = contextVis.transformPoint(
+            board.clientWidth, board.clientHeight);
+        rightBottomPoint.x = Math.round(rightBottomPoint.x);
+        rightBottomPoint.y = Math.round(rightBottomPoint.y);
+
+        //Note- measure pair breach
+//        if(leftTopPoint.x < dimensions.leftBorder &&
+//        rightBottomPoint.x > dimensions.rightBorder) {
+//            //Pair? do nothing;
+//        }
+//        if(leftTopPoint.y < dimensions.topBorder &&
+//        rightBottomPoint.y > dimensions.bottomBorder) {
+////            //Pair? do nothing;
+//        }
+
+        //Measure pair breach: notice, if both (left:right or top:bottom), = null
+        //NOTE: removing 'or equal', <=, >=; for <,> causes violent flickering
+        let leftRight = null;
+        if(leftTopPoint.x <= dimensions.leftBorder) {
+            leftRight = "left";
+        }
+        if(rightBottomPoint.x >= dimensions.rightBorder) {
+            //if both, null;
+            leftRight = leftRight ? null : "right";
+        }
+
+        let topBottom = null;
+        if(leftTopPoint.y <= dimensions.topBorder) {
+            topBottom = "top";
+        }
+        if(rightBottomPoint.y >= dimensions.bottomBorder) {
+            topBottom = topBottom ? null : "bottom";
+        }
+
+        //Strict: both breach
+        if(leftRight == null && topBottom == null) {
+            return;
+        }
+
+//        let magic = 5;
+//        let useMagic = false;
+//        if(leftRight == null || topBottom == null) {
+//            magic = 0;
+//        }
+
+        let arg1 = 0; //x
+        let arg2 = 0; //y
+
+        switch (leftRight) {
+            case "left":
+                arg1 = leftTopPoint.x - dimensions.leftBorder; //easy
+                console.log("left!");
+                break;
+            case "right":
+                arg1 = rightBottomPoint.x - dimensions.rightBorder; //? translate?
+                console.log("right!");
+                break;
+            default:
+                console.log("leftRight = null!");
+//                useMagic = "topBottom";
+                break;
+        }
+
+        switch (topBottom) {
+            case "top":
+                arg2 = leftTopPoint.y - dimensions.topBorder; //easy
+                console.log("top!");
+                break;
+            case "bottom":
+                arg2 = rightBottomPoint.y - dimensions.bottomBorder; //? translate?
+                console.log("bottom!");
+                break;
+            default:
+                console.log("topBottom = null!");
+//                useMagic = "leftRight";
+                break;
+        }
+
+//        switch(useMagic) {
+//            case "leftRight":
+//                contextVis.translate(arg1, arg2);
+//                break;
+//            case "topBottom":
+//                contextVis.translate(arg1 + magic, arg2);
+//                break;
+//            default:
+//                contextVis.translate(arg1, arg2);
+//                break;
+//        }
+//        if(arg1 == 0) {
+//            contextVis.translate(arg1, arg2/2);
+//            return;
+//        } else if (arg2 == 0) {
+////
+//        }
+
+        contextVis.translate(arg1, arg2);
+
+        console.log(`${arg1} ${arg2}`);
+
     }
 
     //scrollResize responsiveness multiplier
     let scale = 1.1;
+    let maxZoomOut = false;
 
     const zoom = function(val) {
         let factor = Math.pow(scale, val); //example: scale '2' results in => double (pow2) or half (pow-2 = x0.5)
+
+        if(maxZoomOut && factor < 1) {
+            return;
+        } else {
+            maxZoomOut = false;
+        }
+
         let pt = contextVis.transformPoint(mouse.x, mouse.y);
 
         let {a, b, c, d} = contextVis.getTransform();
@@ -674,6 +759,7 @@ window.onload = function() {
         if(factor < 1 &&
         a * factor < currMinimum) {
             override = true;
+            maxZoomOut = true;
         }
 
         contextVis.translate(pt.x, pt.y);
