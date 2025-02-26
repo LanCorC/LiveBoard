@@ -56,12 +56,8 @@ const assets = (function() {
 
         //calculated value, based on clientWidth, clientHeight and approximation to borders
         minZoomoutTransform: null,
-        height: null,
-        width: null
     }
 
-    dimensions.height = dimensions.bottomBorder - dimensions.topBorder;
-    dimensions.width = dimensions.rightBorder - dimensions.leftBorder;
 
     function adjustMin(windowWidth, windowHeight) {
         let tableWidth = dimensions.rightBorder - dimensions.leftBorder;

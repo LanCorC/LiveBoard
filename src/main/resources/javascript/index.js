@@ -615,34 +615,15 @@ window.onload = function() {
         }
     }, false);
 
-    //call at the END of every translate;
-    //notice: some translates are 2-part, + then -. call only once, after minus.
+    //[Usage: inserted inside redraw() codeblock]
     function correctTranslation() {
         let dimensions = assets.dimensions;
 
         //notice: x,y;Point
-        //borders here are -ve values
         let leftTopPoint = contextVis.transformPoint(0,0);
-        leftTopPoint.x = Math.round(leftTopPoint.x);
-        leftTopPoint.y = Math.round(leftTopPoint.y);
-        //borders here are +ve values
-        let rightBottomPoint = contextVis.transformPoint(
-            board.clientWidth, board.clientHeight);
-        rightBottomPoint.x = Math.round(rightBottomPoint.x);
-        rightBottomPoint.y = Math.round(rightBottomPoint.y);
-
-        //Note- measure pair breach
-//        if(leftTopPoint.x < dimensions.leftBorder &&
-//        rightBottomPoint.x > dimensions.rightBorder) {
-//            //Pair? do nothing;
-//        }
-//        if(leftTopPoint.y < dimensions.topBorder &&
-//        rightBottomPoint.y > dimensions.bottomBorder) {
-////            //Pair? do nothing;
-//        }
+        let rightBottomPoint = contextVis.transformPoint(board.clientWidth, board.clientHeight);
 
         //Measure pair breach: notice, if both (left:right or top:bottom), = null
-        //NOTE: removing 'or equal', <=, >=; for <,> causes violent flickering
         let leftRight = null;
         if(leftTopPoint.x <= dimensions.leftBorder) {
             leftRight = "left";
@@ -660,72 +641,60 @@ window.onload = function() {
             topBottom = topBottom ? null : "bottom";
         }
 
-        //Strict: both breach
         if(leftRight == null && topBottom == null) {
             return;
         }
 
-//        let magic = 5;
-//        let useMagic = false;
-//        if(leftRight == null || topBottom == null) {
-//            magic = 0;
-//        }
+        //Note: if one of a pair has breached, find smallest
+        if(leftRight) {
+            if(Math.abs(leftTopPoint.x - dimensions.leftBorder) <
+            Math.abs(rightBottomPoint.x - dimensions.rightBorder)) {
+                leftRight = "left";
+            } else {
+                leftRight = "right";
+            }
+        }
+        if(topBottom) {
+            if(Math.abs(leftTopPoint.y - dimensions.topBorder) <
+            Math.abs(rightBottomPoint.y - dimensions.bottomBorder)) {
+                topBottom = "top";
+            } else {
+                topBottom = "bottom";
+            }
+        }
 
-        let arg1 = 0; //x
-        let arg2 = 0; //y
+        let argX = 0;
+        let argY = 0;
 
         switch (leftRight) {
             case "left":
-                arg1 = leftTopPoint.x - dimensions.leftBorder; //easy
-                console.log("left!");
+                argX = leftTopPoint.x - dimensions.leftBorder; //easy
+//                console.log("fix from edge: left!");
                 break;
             case "right":
-                arg1 = rightBottomPoint.x - dimensions.rightBorder; //? translate?
-                console.log("right!");
+                argX = rightBottomPoint.x - dimensions.rightBorder; //? translate?
+//                console.log("fix from edge: right!");
                 break;
             default:
-                console.log("leftRight = null!");
-//                useMagic = "topBottom";
+//                console.log("leftRight = null!");
                 break;
         }
 
         switch (topBottom) {
             case "top":
-                arg2 = leftTopPoint.y - dimensions.topBorder; //easy
-                console.log("top!");
+                argY = leftTopPoint.y - dimensions.topBorder; //easy
+//                console.log("fix from edge: top!");
                 break;
             case "bottom":
-                arg2 = rightBottomPoint.y - dimensions.bottomBorder; //? translate?
-                console.log("bottom!");
+                argY = rightBottomPoint.y - dimensions.bottomBorder; //? translate?
+//                console.log("fix from edge: bottom!");
                 break;
             default:
-                console.log("topBottom = null!");
-//                useMagic = "leftRight";
+//                console.log("topBottom = null!");
                 break;
         }
 
-//        switch(useMagic) {
-//            case "leftRight":
-//                contextVis.translate(arg1, arg2);
-//                break;
-//            case "topBottom":
-//                contextVis.translate(arg1 + magic, arg2);
-//                break;
-//            default:
-//                contextVis.translate(arg1, arg2);
-//                break;
-//        }
-//        if(arg1 == 0) {
-//            contextVis.translate(arg1, arg2/2);
-//            return;
-//        } else if (arg2 == 0) {
-////
-//        }
-
-        contextVis.translate(arg1, arg2);
-
-        console.log(`${arg1} ${arg2}`);
-
+        contextVis.translate(argX, argY);
     }
 
     //scrollResize responsiveness multiplier
