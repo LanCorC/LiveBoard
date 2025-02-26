@@ -723,7 +723,7 @@ const gameState = (function() {
 
         donor.forEach((item) => {
             //filter
-            if(item.type != type) return;
+            if(item.type != type || item.browsing) return;
 
             if(item.isDeck) {
                 item.images.forEach((card) => donorCards.push(card));
