@@ -496,6 +496,8 @@ window.onload = function() {
 
         } else if(dragging && !strictPanMode) {
 
+            gameState.correctCoords(selected, itemFocus);
+
             //deselect if: drag not in selected[] or was dragged into a deck
             if(!selected.includes(itemFocus)) {
                 gameState.addToDeck(itemFocus, hoverElement);
@@ -617,7 +619,7 @@ window.onload = function() {
 
     //[Usage: inserted inside redraw() codeblock]
     function correctTranslation() {
-        let dimensions = assets.dimensions;
+        let {leftBorder, rightBorder, topBorder, bottomBorder} = assets.dimensions;
 
         //notice: x,y;Point
         let leftTopPoint = contextVis.transformPoint(0,0);
@@ -625,19 +627,19 @@ window.onload = function() {
 
         //Measure pair breach: notice, if both (left:right or top:bottom), = null
         let leftRight = null;
-        if(leftTopPoint.x <= dimensions.leftBorder) {
+        if(leftTopPoint.x <= leftBorder) {
             leftRight = "left";
         }
-        if(rightBottomPoint.x >= dimensions.rightBorder) {
+        if(rightBottomPoint.x >= rightBorder) {
             //if both, null;
             leftRight = leftRight ? null : "right";
         }
 
         let topBottom = null;
-        if(leftTopPoint.y <= dimensions.topBorder) {
+        if(leftTopPoint.y <= topBorder) {
             topBottom = "top";
         }
-        if(rightBottomPoint.y >= dimensions.bottomBorder) {
+        if(rightBottomPoint.y >= bottomBorder) {
             topBottom = topBottom ? null : "bottom";
         }
 
@@ -647,16 +649,16 @@ window.onload = function() {
 
         //Note: if one of a pair has breached, find smallest
         if(leftRight) {
-            if(Math.abs(leftTopPoint.x - dimensions.leftBorder) <
-            Math.abs(rightBottomPoint.x - dimensions.rightBorder)) {
+            if(Math.abs(leftTopPoint.x - leftBorder) <
+            Math.abs(rightBottomPoint.x - rightBorder)) {
                 leftRight = "left";
             } else {
                 leftRight = "right";
             }
         }
         if(topBottom) {
-            if(Math.abs(leftTopPoint.y - dimensions.topBorder) <
-            Math.abs(rightBottomPoint.y - dimensions.bottomBorder)) {
+            if(Math.abs(leftTopPoint.y - topBorder) <
+            Math.abs(rightBottomPoint.y - bottomBorder)) {
                 topBottom = "top";
             } else {
                 topBottom = "bottom";
@@ -668,11 +670,11 @@ window.onload = function() {
 
         switch (leftRight) {
             case "left":
-                argX = leftTopPoint.x - dimensions.leftBorder; //easy
+                argX = leftTopPoint.x - leftBorder; //easy
 //                console.log("fix from edge: left!");
                 break;
             case "right":
-                argX = rightBottomPoint.x - dimensions.rightBorder; //? translate?
+                argX = rightBottomPoint.x - rightBorder; //? translate?
 //                console.log("fix from edge: right!");
                 break;
             default:
@@ -682,11 +684,11 @@ window.onload = function() {
 
         switch (topBottom) {
             case "top":
-                argY = leftTopPoint.y - dimensions.topBorder; //easy
+                argY = leftTopPoint.y - topBorder; //easy
 //                console.log("fix from edge: top!");
                 break;
             case "bottom":
-                argY = rightBottomPoint.y - dimensions.bottomBorder; //? translate?
+                argY = rightBottomPoint.y - bottomBorder; //? translate?
 //                console.log("fix from edge: bottom!");
                 break;
             default:
@@ -712,13 +714,14 @@ window.onload = function() {
 
         let pt = contextVis.transformPoint(mouse.x, mouse.y);
 
-        let {a, b, c, d} = contextVis.getTransform();
+        //a assumed identical to d
+        let {a: currentMultiplier, b, c, d} = contextVis.getTransform();
 
         //TODO note warning: hard coded; assign to named variable
         //min - arbitrary
-        if(factor > 1 && a > 2
+        if(factor > 1 && currentMultiplier > 2
         //max - arbitrary, generous allowance
-        || factor < 1 && a < 0.05) {
+        || factor < 1 && currentMultiplier < 0.05) {
             return;
         }
 
@@ -726,7 +729,7 @@ window.onload = function() {
         let currMinimum = assets.dimensions.minZoomoutTransform;
 
         if(factor < 1 &&
-        a * factor < currMinimum) {
+        currentMultiplier * factor < currMinimum) {
             override = true;
             maxZoomOut = true;
         }

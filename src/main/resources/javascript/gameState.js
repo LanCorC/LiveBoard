@@ -861,6 +861,22 @@ const gameState = (function() {
         preview.setView();
     }
 
+    //purpose: at end of dragging, on mouseup, to keep cards within boundaries
+    function correctCoords(items, itemFocus) {
+        if(itemFocus && Object.hasOwn(itemFocus, "anchored")) itemFocus = null;
+
+        //consolidate itemFocus if applicable
+        if(itemFocus && !items.includes(itemFocus)) items.push(itemFocus);
+
+        let { leftBorder: minX, rightBorder: maxX, topBorder: minY, bottomBorder: maxY} = assets.dimensions;
+
+        items.forEach((item) => {
+            item.coord.x = Math.max(Math.min(maxX - item.width, item.coord.x), minX);
+            item.coord.y = Math.max(Math.min(maxY - item.height, item.coord.y), minY);
+        });
+
+    }
+
     return {
         getID,
         idToRGB,
@@ -883,7 +899,8 @@ const gameState = (function() {
         hoverIsCanvas,
         addToDeck,
         selectView,
-        translateDimensions
+        translateDimensions,
+        correctCoords
     };
 })();
 
