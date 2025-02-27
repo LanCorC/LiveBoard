@@ -50,6 +50,14 @@ class PreviewBox {
     //TODO: 'update' method, via images based on model; make public
     //purpose: simple 'delete all, then remake' approach;
     //Note: quite fast for 150+
+
+    purgeVisualCards() {
+        const parent = this.cardHolder;
+        while(parent.firstChild) {
+            parent.firstChild.remove();
+        }
+    }
+
     update() {
         //purge children
         const parent = this.cardHolder;
@@ -97,8 +105,6 @@ class PreviewBox {
         });
     }
 
-    //TODO: 'append/add' method, to what index; find a way to iterate through node.childList
-
     //TODO: 'remove' method, to purge from cardHolder div
 
     //TODO **when do i want redraw to trigger? ideally, if called here.
@@ -119,20 +125,57 @@ class MyHand extends PreviewBox {
         //Purpose for .ref?? likely excessive. unless methods used in Hand class
         user.hand.ref = this;
         this.user = user;
-        this.cardHolder.setAttribute("empty-hand-text",
-            "Drag and drop here to add to your hand. Right-click to inspect deck.");
+        this.cardHolder.setAttribute("empty-hand-text", this.#emptyHandText);
         this.cardHolder.classList.add("myHand");
 
+        this.container.addEventListener("mousedown", this, {passive: false});
+        this.container.addEventListener("mouseover", this, {passive: false});
         //TODO: additional special property when client is locked out their own hand
     }
 
+    #emptyHandText = "Drag and drop here to add to your hand. Right-click to minimize.";
+    #hideText = "Your hand has been minimized. Hover to show.";
+
     //TODO: additional methods that enforce being locked out; and being returned access
+
+    #minimizeSize = "10%";
+    #hideHand() {
+        this.container.style.height = this.#minimizeSize;
+        this.purgeVisualCards();
+        console.log(this.cardHolder.children);
+        this.cardHolder.setAttribute("empty-hand-text", this.#hideText);
+    }
+
+    #showHand() {
+        this.container.style.height = `100%`;
+        this.cardHolder.style.removeProperty("visibility");
+        this.update();
+        this.cardHolder.setAttribute("empty-hand-text", this.#emptyHandText);
+    }
+
+    handleEvent(event) {
+        switch(event.type) {
+            case "mousedown":
+                //Strict: mouse is not child img 'card'
+                if(event.buttons == 2 && !(event.target instanceof HTMLImageElement)) {
+                    this.#hideHand();
+                }
+                break;
+            case "mouseover":
+                if(this.container.style.height == this.#minimizeSize) {
+                    this.#showHand();
+                }
+                break;
+            default:
+                super.handleEvent(event);
+                break;
+        }
+    }
 }
 
 //client's view of OTHER hands or decks
 class ViewDeck extends PreviewBox {
     constructor(source) {
-        //TODO - does this work? let it choose the valid one?
         super();
         //TODO- process: is the source a User/Player or Deck
         this.container.classList.add("previewBoxContainer2");

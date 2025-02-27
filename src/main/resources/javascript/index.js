@@ -771,6 +771,8 @@ window.onload = function() {
         redraw();
     }, true);
 
+    preventRightClickDefault();
+
     //itenFactory testing
 //    main();
     //For some reason, this needs to be called twice in order to properly capture, as far as tested, "mousedown"

@@ -182,7 +182,7 @@ const gameState = (function() {
             }
 
             if(item.deck && !hoverIsCanvas()) {
-                item.ref.select();
+                if(Object.hasOwn(item, "ref")) item.ref.select();
             }
         });
     }
@@ -447,6 +447,8 @@ const gameState = (function() {
         items.forEach((item) => {
             //TODO - to be made item.cycleImage(mod);
             //default increments +1
+            if(!item.id) return;
+
             if(!modifier) {
                 item.index++;
                 item.index %= item.images.length;
