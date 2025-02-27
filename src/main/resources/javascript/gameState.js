@@ -780,7 +780,7 @@ const gameState = (function() {
         //deliberate use of 'id', in case other properties may differ
         let i = -1;
         while(deck.images[++i].id != card.id);
-        if(i == deck.images.length) console.log("oops, not found! takeFromDeck()");
+        if(i == deck.images.length) console.log("takeFromDeck: card was not found in deck!");
 
         //remove sole item
         deck.images.splice(i, 1);
@@ -801,7 +801,6 @@ const gameState = (function() {
     //used in takeFromDec, isMerging (optional param) from addToDeck
     function dissolveDeck(deck, isMerging) {
         if(deck.isHand) return; //exception
-        console.log("dissolve!");
         if(!isMerging) {
             let card = deck.images[0];
             setCardDefaults(card);

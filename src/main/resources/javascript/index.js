@@ -396,7 +396,7 @@ window.onload = function() {
         if(event.buttons == 2) {
             rightClick = true;
 
-            pinInspect(event);
+//            pinInspect(event);
 
             return;
         //TODO- exception for HTMLImageElement when dragging in-deck/hand cards

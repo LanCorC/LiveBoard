@@ -142,7 +142,6 @@ class MyHand extends PreviewBox {
     #hideHand() {
         this.container.style.height = this.#minimizeSize;
         this.purgeVisualCards();
-        console.log(this.cardHolder.children);
         this.cardHolder.setAttribute("empty-hand-text", this.#hideText);
     }
 
