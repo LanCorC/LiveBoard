@@ -327,6 +327,7 @@ const gameState = (function() {
                 } else {
                     //Purpose: dragging from Hand or Preview (nonCanvas)
                     fromDeckCards.push(item);
+                    item.flipMe = clientUser.position;
 
                     let multiplier = offsetMultipliers[item.type] || 1;
                     item.dragStart.x = startPoint().x - offset().x * multiplier + xBonus;
@@ -494,6 +495,35 @@ const gameState = (function() {
                 let width = item.width;
                 let height = item.height;
 
+                let useX;
+                let useY;
+
+                let itemImg = getImage(item);
+                if(!(itemImg instanceof HTMLImageElement)) {
+                    console.log("error!");
+                    return;
+                }
+                if(item.flipMe) {
+                    visual.save();
+                    visual.rotate((item.flipMe * 90) * Math.PI / 180);
+                }
+                switch(item.flipMe % 4) {
+                        case 1: //90*
+                            useX = y - (itemImg.width/2 - itemImg.height/2);
+                            useY = -x - (itemImg.height/2 + itemImg.width/2);
+                            break;
+                        case 2: //180*
+                            useX = -x - itemImg.width;
+                            useY = -y - itemImg.height;
+                            break;
+                        case 3: //270*
+                            useX = -y - (itemImg.width/2 + itemImg.height/2);
+                            useY = +x - (itemImg.height/2 - itemImg.width/2);
+                            break;
+                        default:
+                            break;
+                }
+
                 let color = 'white';
 
                 if(item.selected) {
@@ -513,7 +543,7 @@ const gameState = (function() {
                 } else {
                     interactive.save();
 
-                    interactive.roundedImage(x, y, width, height);
+                    interactive.roundedImage(useX || x, useY || y, width, height);
 
                     //purpose: to detect 'TopOfCard'
                     if(item.isDeck) {
@@ -522,28 +552,25 @@ const gameState = (function() {
                         interactive.fillStyle = item.touchStyle;
                     }
 
-                    interactive.fillRect(x , y, width, height);
+                    interactive.fillRect(useX || x , useY || y, width, height);
                     interactive.fill();
 
                     interactive.restore();
                 }
 
-                let itemImg = getImage(item);
-                if(itemImg instanceof HTMLImageElement) {
+                //Make rounded
+                visual.save();
 
-                    //Make rounded
-                    visual.save();
+                visual.roundedImage(useX || x, useY || y, width, height);
+                visual.clip();
+                visual.drawImage(itemImg, useX || x, useY || y, itemImg.width, itemImg.height);
 
-                    visual.roundedImage(x, y, width, height);
-                    visual.clip();
+                visual.restore();
 
-                    visual.drawImage(itemImg, x, y, itemImg.width, itemImg.height);
-
+                //...finally
+                if(item.flipMe) {
                     visual.restore();
-                } else {
-                    console.log("error!");
                 }
-
             });
         }
 
@@ -652,7 +679,6 @@ const gameState = (function() {
     //TODO - checks 'persist' storage if gameState 'items' already exists to load from
     function loadBoard(expansions) {
         //todo - from objectFactory, in conjunction with assets - hard coded set of objects - mats, dice
-        console.log(loadMisc());
         loadMisc().forEach((misc)=> push(misc));
 
         let freshCards = loadCards(expansions);
@@ -875,7 +901,19 @@ const gameState = (function() {
             item.coord.x = Math.max(Math.min(maxX - item.width, item.coord.x), minX);
             item.coord.y = Math.max(Math.min(maxY - item.height, item.coord.y), minY);
         });
+    }
 
+    //'tap' to rotate by 90*, or 0.5*pi-radians
+    function tapItem(items) {
+        if(!items) return;
+        if(!Array.isArray(items)) items = new Array(items);
+
+        items.forEach((item) => {
+            if(Object.hasOwn(item, "flipMe")) {
+                item.flipMe++;
+                item.flipMe %= 4;
+            }
+        });
     }
 
     return {
@@ -901,7 +939,8 @@ const gameState = (function() {
         addToDeck,
         selectView,
         translateDimensions,
-        correctCoords
+        correctCoords,
+        tapItem
     };
 })();
 

@@ -30,7 +30,8 @@ window.onload = function() {
         //TODO - UI to choose own color
         color: "red",
         //TODO - UI to choose own name
-        name: "Player1"
+        name: "Player1",
+        position: 0 //purposes of myHand default, card rotation
     };
     gameState.addPlayer(user);
     userInterface.initializeBoard(user);
@@ -557,7 +558,7 @@ window.onload = function() {
 
     //Rotate the board around the mouse, press 'a' or 'd'
     //note: 90 is right angle rotation, 180 is upsidedown, 360 is all the way to normal
-    let rotateIncrement = 30;
+    let rotateIncrement = 90;
     let radians = rotateIncrement * Math.PI / 180;
 
     const handleBoardRotate = function(pos) {
@@ -566,10 +567,24 @@ window.onload = function() {
         //centeredOnScreen
         let point = contextVis.transformPoint(window.innerWidth/2, window.innerHeight/2);
 
+        user.position += pos ? -1 : 1;
+        user.position %= 4;
+
         contextVis.translate(+point.x, +point.y);
         contextVis.rotate(pos ? radians : -radians);
         contextVis.translate(-point.x, -point.y);
 
+        redraw();
+    }
+
+    const tapItem = function() {
+        if(selected.length != 0) {
+            gameState.tapItem(selected);
+        } else if (itemFocus) {
+            gameState.tapItem(itemFocus);
+        } else {
+            gameState.tapItem(hoverElement);
+        }
         redraw();
     }
 
@@ -592,15 +607,20 @@ window.onload = function() {
                 break;
             case "KeyI":
                 toggleTooltip();
-                return;
+                break;
             case "ControlLeft":
             case "ControlRight":
                 strictPanMode = true;
+                break;
+            case "Space":
+                tapItem();
+                break;
             default:
                 //unregistered key, end of processing
 //                console.log("invalid key");
                 return;
         }
+        return;
     }, false);
 
     window.addEventListener("keyup", function(event){

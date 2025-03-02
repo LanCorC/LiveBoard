@@ -110,6 +110,7 @@ const genericFactory = function(type, images, coord) {
     let disabled = false;
     //dual purpose: mock-ReentrantLock using userId AND visual marker
     let selected = false;
+    let flipMe = 0; //purpose: range(0,3), 1=90*, 2=180*, 3=270*, 0=(0*/360*) rotations
 
     let getImage = function() {
         return images[1];
@@ -121,16 +122,16 @@ const genericFactory = function(type, images, coord) {
         case "Monster":
             return {type, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, getImage, disabled, cycleImage: cycleCardImage,
-                selected, isDeck};
+                selected, isDeck, flipMe};
         case "playMat":
         case "gameMat":
             return {type, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, getImage, disabled,cycleImage: cycleCardImage,
-                anchored: true, selected, isDeck};
+                anchored: true, selected, isDeck, flipMe};
         case "dice":
             return {type, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, getImage, disabled, cycleImage: cycleDiceImage,
-                selected, isDeck};
+                selected, isDeck, flipMe};
         case "deck":
             return {type: images[0].type, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, disabled, selected,
@@ -149,7 +150,8 @@ const genericFactory = function(type, images, coord) {
                 //                takeRandom: () => console.log(),
                 cycleImage: cycleDeckImage,
                 faceDownAll: () => hideAllInDeck(images),
-                specialHover: false}; //for indicating 'validDeckCreate' on hover
+                specialHover: false, //for indicating 'validDeckCreate' on hover
+                flipMe};
         default:
             console.log(`type not found for this card! ${type}`);
     }

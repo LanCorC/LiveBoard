@@ -50,6 +50,19 @@
         return clearRect.call(vis, x, y, width, height);
     }
 
+     let save = vis.save;
+     vis.save = function() {
+         int.save();
+         return save.call(vis);
+     }
+
+     //TODO: tbd, see if this causes lag / performance hit; else i have to explicitly call for specific codeblock
+     let restore = vis.restore;
+     vis.restore = function() {
+         int.restore();
+         return restore.call(vis);
+     }
+
      //rounds the object; use .clip() but .save() prior and .restore() after
      let radius = 50;
 //     const roundedImage = function(x,y,width,height,radius){
