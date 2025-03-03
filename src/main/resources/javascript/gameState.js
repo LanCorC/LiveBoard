@@ -505,20 +505,21 @@ const gameState = (function() {
                 }
                 if(item.flipMe) {
                     visual.save();
-                    visual.rotate((item.flipMe * 90) * Math.PI / 180);
+                    //TODO: fix for positions 1,3 they are swapped around
+                    visual.rotate((item.flipMe * -90) * Math.PI / 180);
                 }
                 switch(item.flipMe % 4) {
                         case 1: //90*
-                            useX = y - (itemImg.width/2 - itemImg.height/2);
-                            useY = -x - (itemImg.height/2 + itemImg.width/2);
+                            useX = -y - (itemImg.width/2 + itemImg.height/2);
+                            useY = +x - (itemImg.height/2 - itemImg.width/2);
                             break;
                         case 2: //180*
                             useX = -x - itemImg.width;
                             useY = -y - itemImg.height;
                             break;
                         case 3: //270*
-                            useX = -y - (itemImg.width/2 + itemImg.height/2);
-                            useY = +x - (itemImg.height/2 - itemImg.width/2);
+                            useX = y - (itemImg.width/2 - itemImg.height/2);
+                            useY = -x - (itemImg.height/2 + itemImg.width/2);
                             break;
                         default:
                             break;
@@ -862,11 +863,20 @@ const gameState = (function() {
         if(current) {
             deselectView();
         }
-        if(!deck || !deck.isDeck || current == deck
-        || (deck.selected && deck.selected != clientUser.id)){
+
+        //TODO- TBD: if, as currently implemented, will prevent me from selecting a deck someone has .selected
+        //null item, not a deck, is the same (deselect, above)
+        if(!deck || current == deck || current == deck.deck || (deck.selected && deck.selected != clientUser.id)){
             //Note: if not selected, selected == false
             return;
         };
+
+        //item is in fact, a CARD representing a deck on HTMLCanvasElement
+        if(Object.hasOwn(deck, "deck") && deck.deck.isDeck) {
+            deck = deck.deck;
+        } else if(!deck.isDeck){
+            return;
+        }
 
         deck.browsing = clientUser.id;
 
@@ -904,14 +914,18 @@ const gameState = (function() {
     }
 
     //'tap' to rotate by 90*, or 0.5*pi-radians
+    //NOTE: as rendered from player hand, 3and1 share the other's render
     function tapItem(items) {
         if(!items) return;
         if(!Array.isArray(items)) items = new Array(items);
 
         items.forEach((item) => {
             if(Object.hasOwn(item, "flipMe")) {
-                item.flipMe++;
-                item.flipMe %= 4;
+                if(item.flipMe == 0) {
+                    item.flipMe = 3;
+                } else {
+                    item.flipMe--;
+                }
             }
         });
     }

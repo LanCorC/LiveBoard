@@ -45,8 +45,9 @@ const assets = (function() {
     const dimensions = {
         leftBorder: -(sizes.large.width + buffer + allowance),
         rightBorder: sizes.large.width * 2 + buffer + allowance,
-        topBorder: -(buffer + sizes.large2.height + allowance),
-        bottomBorder: sizes.large.height + sizes.large2.height + buffer + allowance,
+        topBorder: -(buffer + sizes.large2.height + sizes.large2.width/2 - sizes.large2.height/2 + allowance),
+        bottomBorder: sizes.large.height + sizes.large2.height + buffer +
+        (sizes.large2.width/2 - sizes.large2.height/2) + allowance,
 
         //for purposes of being centered on the board
         center: {

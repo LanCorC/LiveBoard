@@ -71,6 +71,7 @@ window.onload = function() {
     let dragging = false;
 
     const redraw = function() {
+//        console.log(contextVis.getTransform());
         correctTranslation();
         //Clear
         contextVis.save();
@@ -567,13 +568,24 @@ window.onload = function() {
         //centeredOnScreen
         let point = contextVis.transformPoint(window.innerWidth/2, window.innerHeight/2);
 
-        user.position += pos ? -1 : 1;
+        user.position += pos ? 1 : -1;
         user.position %= 4;
+        if(user.position < 0) user.position = 3;
+
+        console.log(user.position);
 
         contextVis.translate(+point.x, +point.y);
         contextVis.rotate(pos ? radians : -radians);
         contextVis.translate(-point.x, -point.y);
 
+        switch(user.position) {
+            case 1:
+            case 3:
+                gameState.translateDimensions(board.clientHeight, board.clientWidth);
+                break;
+            default:
+                gameState.translateDimensions(board.clientWidth, board.clientHeight);
+        }
         redraw();
     }
 
@@ -612,9 +624,9 @@ window.onload = function() {
             case "ControlRight":
                 strictPanMode = true;
                 break;
-            case "Space":
-                tapItem();
-                break;
+//            case "Space":
+//                tapItem();
+//                break;
             default:
                 //unregistered key, end of processing
 //                console.log("invalid key");
@@ -630,6 +642,10 @@ window.onload = function() {
             case "ControlLeft":
             case "ControlRight":
                 strictPanMode = false;
+                break;
+            case "Space":
+                tapItem();
+                break;
             default:
                 //unregistered key, end of processing
                 //                console.log("invalid key");
@@ -639,11 +655,50 @@ window.onload = function() {
 
     //[Usage: inserted inside redraw() codeblock]
     function correctTranslation() {
-        let {leftBorder, rightBorder, topBorder, bottomBorder} = assets.dimensions;
+        let {leftBorder, rightBorder, topBorder, bottomBorder, center} = assets.dimensions;
 
+        //TODO- assign leftTopPoint, rightBottomPoint transformPoint dependent on clientUser position
         //notice: x,y;Point
         let leftTopPoint = contextVis.transformPoint(0,0);
         let rightBottomPoint = contextVis.transformPoint(board.clientWidth, board.clientHeight);
+
+//        console.log(user.position);
+        //TODO notice: this is enough to fix; i might need to apply this to adjustMin()
+        //TODO cont: or also apply the border changes there, as in here
+        //TODO tbd: see if gameState.correctCoords() affected greatly
+        switch(user.position) {
+            case 1: //TODO- works, but boundaries are misshapen / uncentered
+                //seems to be off by about center coords == gameMat.width/2, gameMat.height/2
+                leftTopPoint = contextVis.transformPoint(0,board.clientHeight);
+                rightBottomPoint = contextVis.transformPoint(board.clientWidth, 0);
+//                console.log(leftTopPoint.x);
+//                console.log(leftTopPoint.y);
+
+                //                console.log(rightBorder-leftBorder); //width of table, pre-adjustment
+//                console.log(bottomBorder-topBorder); //height of table, pre-adjustment
+//                console.log(`${leftBorder} ${rightBorder}`);
+//                console.log(`${topBorder} ${bottomBorder}`);
+                [leftBorder, rightBorder, topBorder, bottomBorder] =
+                [topBorder, bottomBorder, leftBorder, rightBorder];
+//                console.log(`new width: ${rightBorder-leftBorder}`); //width of table, after adjustment
+//                console.log(`new height: ${bottomBorder-topBorder}`); //height of table, after adjutment
+//                console.log(`${leftBorder} ${rightBorder}`);
+//                console.log(`${topBorder} ${bottomBorder}`);
+                //                [topBorder - center.y, bottomBorder + center.y, rightBorder - center.x, leftBorder + center.x];
+                break;
+            case 2: //TODO- currently tested - works with 'default' leftTopPoint 0,0
+                [leftBorder, rightBorder] = [rightBorder, leftBorder];
+                [topBorder, bottomBorder] = [bottomBorder, topBorder];
+                break;
+            case 3: //TODO- pending
+                [leftBorder, rightBorder] = [topBorder, bottomBorder];
+                [topBorder, bottomBorder] = [rightBorder, leftBorder];
+                break;
+            default: //default
+                break;
+        }
+
+
 
         //Measure pair breach: notice, if both (left:right or top:bottom), = null
         let leftRight = null;
@@ -691,11 +746,11 @@ window.onload = function() {
         switch (leftRight) {
             case "left":
                 argX = leftTopPoint.x - leftBorder; //easy
-//                console.log("fix from edge: left!");
+                console.log("fix from edge: left!");
                 break;
             case "right":
                 argX = rightBottomPoint.x - rightBorder; //? translate?
-//                console.log("fix from edge: right!");
+                console.log("fix from edge: right!");
                 break;
             default:
 //                console.log("leftRight = null!");
@@ -705,11 +760,11 @@ window.onload = function() {
         switch (topBottom) {
             case "top":
                 argY = leftTopPoint.y - topBorder; //easy
-//                console.log("fix from edge: top!");
+                console.log("fix from edge: top!");
                 break;
             case "bottom":
                 argY = rightBottomPoint.y - bottomBorder; //? translate?
-//                console.log("fix from edge: bottom!");
+                console.log("fix from edge: bottom!");
                 break;
             default:
 //                console.log("topBottom = null!");
@@ -721,7 +776,7 @@ window.onload = function() {
 
     //scrollResize responsiveness multiplier
     let scale = 1.1;
-    let maxZoomOut = false;
+    let maxZoomOut = false; //purpose: early skip zoom() if conditions met
 
     const zoom = function(val) {
         let factor = Math.pow(scale, val); //example: scale '2' results in => double (pow2) or half (pow-2 = x0.5)
@@ -735,7 +790,20 @@ window.onload = function() {
         let pt = contextVis.transformPoint(mouse.x, mouse.y);
 
         //a assumed identical to d
-        let {a: currentMultiplier, b, c, d} = contextVis.getTransform();
+        let {a, b, c, d} = contextVis.getTransform();
+        let currentMultiplier;
+
+        switch(user.position) {
+            case 1:
+            case 3:
+                currentMultiplier = Math.abs(b); //Math.abs(c) also works
+                break;
+            case 2:
+                currentMultiplier = Math.abs(a);
+                break;
+            default: //position 0 aka 0*,360*
+                currentMultiplier = a;
+        }
 
         //TODO note warning: hard coded; assign to named variable
         //min - arbitrary
@@ -755,13 +823,35 @@ window.onload = function() {
         }
 
         contextVis.translate(pt.x, pt.y);
-        if(override) {
-            //Maximum zoomout: set to minimum transform value
-            let {e, f} = contextVis.getTransform();
-            contextVis.setTransform(currMinimum, b, c,
-                currMinimum, e, f);
-        } else {
-            contextVis.scale(factor, factor);
+        let {e, f} = contextVis.getTransform();
+        switch(user.position) {
+            case 1:
+                if(override) {
+                    contextVis.setTransform(0, currMinimum, -currMinimum, 0, e, f);
+                } else {
+                    contextVis.setTransform(0, currentMultiplier*factor, -currentMultiplier*factor, 0, e, f);
+                }
+                break;
+            case 2:
+                if(override) {
+                    contextVis.setTransform(-currMinimum, 0, 0, -currMinimum, e, f);
+                } else {
+                    contextVis.setTransform(-currentMultiplier*factor, 0, 0, -currentMultiplier*factor, e, f);
+                }
+                break;
+            case 3:
+                if(override) {
+                    contextVis.setTransform(0, -currMinimum, +currMinimum, 0, e, f);
+                } else {
+                    contextVis.setTransform(0, -currentMultiplier*factor, currentMultiplier*factor, 0, e, f);
+                }
+                break;
+            default:
+                if(override) {
+                    contextVis.setTransform(currMinimum, b, c, currMinimum, e, f);
+                } else {
+                    contextVis.scale(factor, factor);
+                }
         }
         contextVis.translate(-pt.x, -pt.y);
 
@@ -787,6 +877,7 @@ window.onload = function() {
         board.setHeight(window.innerHeight);
         board.setWidth(window.innerWidth);
         console.log("resized");
+        user.position = 0;
         centerBoard();
         redraw();
     }, true);

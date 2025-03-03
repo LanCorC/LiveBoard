@@ -156,7 +156,8 @@ class MyHand extends PreviewBox {
         switch(event.type) {
             case "mousedown":
                 //Strict: mouse is not child img 'card'
-                if(event.buttons == 2 && !(event.target instanceof HTMLImageElement)) {
+//                if(event.buttons == 2 && !(event.target instanceof HTMLImageElement)) {
+                if(event.buttons == 2) {
                     this.#hideHand();
                 }
                 break;
