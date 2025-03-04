@@ -15,6 +15,7 @@ let inspectMode = true; //toggle for InspectMode
 let inspectImage = document.getElementById("inspectImage");
 let rightClick = false;
 let strictPanMode = false; //hold-CTRL: strict pan mode
+let pinBoard = false;
 
 //TODO- to move to an appropriate file/module + incorporate into user interface, e.g. select desired expansions...
 const expansionsToLoad = ["Base Deck"];
@@ -373,10 +374,11 @@ window.onload = function() {
             if(!handleEdgePanlooping) {
                 handleEdgePan();
             }
-        } else {
-            //TODO- insert maximum offsets, based on translated x=0, y=0, x=maxScreenWidth, y=maxScreenHeight
+        } else if(!pinBoard){
             //move the board
             contextVis.translate(point.x-startPoint.x, point.y-startPoint.y);
+        } else {
+            console.log(`Board is pinned, preventing from moving across the board: press "P" to unlock`);
         }
 
         //Placed here, as means to determine (see .dragItems()) whether this is the first
@@ -623,12 +625,6 @@ window.onload = function() {
         //TODO - future, if chatbox or input box, send null
         let key = hoverElement instanceof HTMLInputElement ? null : event.code;
         switch(key) {
-            case "KeyA":
-                handleBoardRotate(false);
-                break;
-            case "KeyD":
-                handleBoardRotate(true);
-                break;
             //TODO: inspect size is not final; to move to buttons
             case "KeyZ":
                 increaseInspectSize();
@@ -674,15 +670,24 @@ window.onload = function() {
         //TODO - future, if CHATBOX instance is TARGET(focus), aka, activeTyping into, skip processing
         let key = hoverElement instanceof HTMLInputElement ? null : event.code;
         switch(key) {
+            case "KeyA":
+                handleBoardRotate(false);
+                break;
+            case "KeyD":
+                handleBoardRotate(true);
+                break;
+            case "KeyL":
+                anchorItem();
+                break;
+            case "KeyP": //toggle: prevent board pan
+                pinBoard = !pinBoard;
+                break;
             case "ControlLeft":
             case "ControlRight":
                 strictPanMode = false;
                 break;
             case "Space":
                 tapItem();
-                break;
-            case "KeyL":
-                anchorItem();
                 break;
             default:
                 //unregistered key, end of processing
