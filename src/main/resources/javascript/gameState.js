@@ -678,11 +678,6 @@ const gameState = (function() {
 
         //TODO note: code for testing boundaries (visual) code; not for demo or 'official release'
         visual.save();
-//        visual.beginPath();
-//        visual.rect(assets.dimensions.leftBorder, assets.dimensions.topBorder,
-//        assets.dimensions.rightBorder - assets.dimensions.leftBorder, //width
-//        assets.dimensions.bottomBorder - assets.dimensions.topBorder); //height
-//        visual.clip("evenodd");
         visual.fillStyle = `RGB(0, 255, 0, 0.3)`;
         visual.fillRect(assets.dimensions.leftBorder, assets.dimensions.topBorder,
             assets.dimensions.rightBorder - assets.dimensions.leftBorder, //width
@@ -921,8 +916,19 @@ const gameState = (function() {
         let { leftBorder: minX, rightBorder: maxX, topBorder: minY, bottomBorder: maxY} = assets.dimensions;
 
         items.forEach((item) => {
-            item.coord.x = Math.max(Math.min(maxX - item.width, item.coord.x), minX);
-            item.coord.y = Math.max(Math.min(maxY - item.height, item.coord.y), minY);
+            switch(item.flipMe) {
+                case 1:
+                case 3:
+                    item.coord.x = Math.max(Math.min(maxX - (item.height/2 + item.width/2), item.coord.x),
+                        minX - (- item.height/2 + item.width/2));
+                    item.coord.y = Math.max(Math.min(maxY - (item.height/2 + item.width/2), item.coord.y),
+                        minY - (item.height/2 - item.width/2));
+                    break;
+                default: //case 0,2
+                    item.coord.x = Math.max(Math.min(maxX - item.width, item.coord.x), minX);
+                    item.coord.y = Math.max(Math.min(maxY - item.height, item.coord.y), minY);
+                    break;
+            }
         });
     }
 
@@ -941,6 +947,8 @@ const gameState = (function() {
                 }
             }
         });
+
+        correctCoords(items);
     }
 
     return {
