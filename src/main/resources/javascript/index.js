@@ -289,6 +289,7 @@ window.onload = function() {
     let handleEdgePanlooping = false;
 
     const handleEdgePan = function() {
+        console.log("hi!");
         let {a: modifier} = contextVis.getTransform().inverse();
         let value = panRate * modifier;
 
@@ -568,6 +569,8 @@ window.onload = function() {
     let rotateIncrement = 90;
     let radians = rotateIncrement * Math.PI / 180;
 
+    let maxZoomOut = false; //purpose: early skip zoom() if conditions met
+
     const handleBoardRotate = function(pos) {
         //centeredOnMouse
 //        let point = contextVis.transformPoint(mouse.x, mouse.y);
@@ -592,6 +595,7 @@ window.onload = function() {
             default:
                 gameState.translateDimensions(board.clientWidth, board.clientHeight);
         }
+        maxZoomOut = false;
         redraw();
     }
 
@@ -663,48 +667,25 @@ window.onload = function() {
     function correctTranslation() {
         let {leftBorder, rightBorder, topBorder, bottomBorder, center} = assets.dimensions;
 
-        //TODO- assign leftTopPoint, rightBottomPoint transformPoint dependent on clientUser position
         //notice: x,y;Point
         let leftTopPoint = contextVis.transformPoint(0,0);
         let rightBottomPoint = contextVis.transformPoint(board.clientWidth, board.clientHeight);
 
-//        console.log(user.position);
-        //TODO notice: this is enough to fix; i might need to apply this to adjustMin()
-        //TODO cont: or also apply the border changes there, as in here
         //TODO tbd: see if gameState.correctCoords() affected greatly
         switch(user.position) {
-            case 1: //TODO- works, but boundaries are misshapen / uncentered
-                //seems to be off by about center coords == gameMat.width/2, gameMat.height/2
-                leftTopPoint = contextVis.transformPoint(0,board.clientHeight);
-                rightBottomPoint = contextVis.transformPoint(board.clientWidth, 0);
-//                console.log(leftTopPoint.x);
-//                console.log(leftTopPoint.y);
-
-                //                console.log(rightBorder-leftBorder); //width of table, pre-adjustment
-//                console.log(bottomBorder-topBorder); //height of table, pre-adjustment
-//                console.log(`${leftBorder} ${rightBorder}`);
-//                console.log(`${topBorder} ${bottomBorder}`);
-                [leftBorder, rightBorder, topBorder, bottomBorder] =
-                [topBorder, bottomBorder, leftBorder, rightBorder];
-//                console.log(`new width: ${rightBorder-leftBorder}`); //width of table, after adjustment
-//                console.log(`new height: ${bottomBorder-topBorder}`); //height of table, after adjutment
-//                console.log(`${leftBorder} ${rightBorder}`);
-//                console.log(`${topBorder} ${bottomBorder}`);
-                //                [topBorder - center.y, bottomBorder + center.y, rightBorder - center.x, leftBorder + center.x];
+            case 1:
+                [topBorder, bottomBorder] = [bottomBorder, topBorder];
                 break;
-            case 2: //TODO- currently tested - works with 'default' leftTopPoint 0,0
+            case 2:
                 [leftBorder, rightBorder] = [rightBorder, leftBorder];
                 [topBorder, bottomBorder] = [bottomBorder, topBorder];
                 break;
-            case 3: //TODO- pending
-                [leftBorder, rightBorder] = [topBorder, bottomBorder];
-                [topBorder, bottomBorder] = [rightBorder, leftBorder];
+            case 3:
+                [leftBorder, rightBorder] = [rightBorder, leftBorder];
                 break;
             default: //default
                 break;
         }
-
-
 
         //Measure pair breach: notice, if both (left:right or top:bottom), = null
         let leftRight = null;
@@ -752,11 +733,11 @@ window.onload = function() {
         switch (leftRight) {
             case "left":
                 argX = leftTopPoint.x - leftBorder; //easy
-                console.log("fix from edge: left!");
+//                console.log("fix from edge: left!");
                 break;
             case "right":
                 argX = rightBottomPoint.x - rightBorder; //? translate?
-                console.log("fix from edge: right!");
+//                console.log("fix from edge: right!");
                 break;
             default:
 //                console.log("leftRight = null!");
@@ -766,11 +747,11 @@ window.onload = function() {
         switch (topBottom) {
             case "top":
                 argY = leftTopPoint.y - topBorder; //easy
-                console.log("fix from edge: top!");
+//                console.log("fix from edge: top!");
                 break;
             case "bottom":
                 argY = rightBottomPoint.y - bottomBorder; //? translate?
-                console.log("fix from edge: bottom!");
+//                console.log("fix from edge: bottom!");
                 break;
             default:
 //                console.log("topBottom = null!");
@@ -782,7 +763,6 @@ window.onload = function() {
 
     //scrollResize responsiveness multiplier
     let scale = 1.1;
-    let maxZoomOut = false; //purpose: early skip zoom() if conditions met
 
     const zoom = function(val) {
         let factor = Math.pow(scale, val); //example: scale '2' results in => double (pow2) or half (pow-2 = x0.5)
