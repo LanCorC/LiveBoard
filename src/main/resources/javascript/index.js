@@ -289,28 +289,48 @@ window.onload = function() {
     let handleEdgePanlooping = false;
 
     const handleEdgePan = function() {
-        console.log("hi!");
-        let {a: modifier} = contextVis.getTransform().inverse();
+        let {a, b, c} = contextVis.getTransform().inverse();
+
+        let modifier = a;
+        let clientLeft = mouse.x < window.innerWidth * borderProximity;
+        let clientRight = mouse.x > window.innerWidth * (1 - borderProximity);
+        let clientTop = mouse.y < window.innerHeight * borderProximity;
+        let clientBottom = mouse.y > window.innerHeight * (1 - borderProximity);
+
+        switch(user.position) {
+            case 1:
+                modifier = b;
+                [clientLeft, clientRight, clientTop, clientBottom] = [clientBottom, clientTop, clientLeft, clientRight];
+                break;
+            case 3:
+                modifier = c;
+                [clientLeft, clientRight, clientTop, clientBottom] = [clientTop, clientBottom, clientRight, clientLeft];
+                break;
+            default: //position 0, 2
+                break;
+        }
+
         let value = panRate * modifier;
 
-        if(mouse.x < window.innerWidth * borderProximity) {
-            //pan left
-//            console.log("left");
+        if(clientLeft) {
+            //pan left (board perspective, not client)
+            console.log("left");
             contextVis.translate(value, 0);
         }
-        if(mouse.x > window.innerWidth * (1 - borderProximity)) {
-            //pan right
+        if(clientRight) {
+            //pan right (board perspective, not client)
             contextVis.translate(-value, 0);
-//            console.log("right");
+            console.log("right");
         }
-        if(mouse.y < window.innerHeight * borderProximity) {
-            //pan top
+        if(clientTop) {
+            //pan top (board perspective, not client)
             contextVis.translate(0, value);
-//            console.log("top");
+            console.log("top");
         }
-        if(mouse.y > window.innerHeight * (1 - borderProximity)) {
+        if(clientBottom) {
+            //pan bottom (board perspective, not client)
             contextVis.translate(0, -value);
-//            console.log("bottom");
+            console.log("bottom");
         }
         //redrawing twice? see: called by handleDrag
         if(dragging){
