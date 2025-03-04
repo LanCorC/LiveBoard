@@ -672,17 +672,14 @@ const gameState = (function() {
             visual.drawImage(img, x + width/2 - img.width/2,
                 y + height/2 - img.height/2);
         }
-//
-//        console.log(items);
-//        console.log(items.cards);
 
         //TODO note: code for testing boundaries (visual) code; not for demo or 'official release'
-        visual.save();
-        visual.fillStyle = `RGB(0, 255, 0, 0.3)`;
-        visual.fillRect(assets.dimensions.leftBorder, assets.dimensions.topBorder,
-            assets.dimensions.rightBorder - assets.dimensions.leftBorder, //width
-            assets.dimensions.bottomBorder - assets.dimensions.topBorder); //height
-        visual.restore();
+//        visual.save();
+//        visual.fillStyle = `RGB(0, 255, 0, 0.3)`;
+//        visual.fillRect(assets.dimensions.leftBorder, assets.dimensions.topBorder,
+//            assets.dimensions.rightBorder - assets.dimensions.leftBorder, //width
+//            assets.dimensions.bottomBorder - assets.dimensions.topBorder); //height
+//        visual.restore();
     }
 
     //TODO - checks 'persist' storage if gameState 'items' already exists to load from
