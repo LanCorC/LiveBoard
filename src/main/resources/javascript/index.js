@@ -619,17 +619,6 @@ window.onload = function() {
         redraw();
     }
 
-    const tapItem = function() {
-        if(selected.length != 0) {
-            gameState.tapItem(selected);
-        } else if (itemFocus) {
-            gameState.tapItem(itemFocus);
-        } else {
-            gameState.tapItem(hoverElement);
-        }
-        redraw();
-    }
-
     window.addEventListener("keydown", function(event){
         //TODO - future, if chatbox or input box, send null
         let key = hoverElement instanceof HTMLInputElement ? null : event.code;
@@ -654,9 +643,6 @@ window.onload = function() {
             case "ControlRight":
                 strictPanMode = true;
                 break;
-//            case "Space":
-//                tapItem();
-//                break;
             default:
                 //unregistered key, end of processing
 //                console.log("invalid key");
@@ -665,8 +651,27 @@ window.onload = function() {
         return;
     }, false);
 
+    //TODO- see how this feels only one item (hoverElement) for feel
+    const tapItem = function() {
+        if(selected.length != 0) {
+            gameState.tapItem(selected);
+        } else if (itemFocus) {
+            gameState.tapItem(itemFocus);
+        } else {
+            gameState.tapItem(hoverElement);
+        }
+        redraw();
+    }
+
+    //TODO- player clarity?
+    const anchorItem = function() {
+        gameState.anchorItem(hoverElement);
+        //TODO- see if i must purgeSelected()
+    }
+
     window.addEventListener("keyup", function(event){
         //TODO - future, if chatbox or input box, send null
+        //TODO - future, if CHATBOX instance is TARGET(focus), aka, activeTyping into, skip processing
         let key = hoverElement instanceof HTMLInputElement ? null : event.code;
         switch(key) {
             case "ControlLeft":
@@ -675,6 +680,9 @@ window.onload = function() {
                 break;
             case "Space":
                 tapItem();
+                break;
+            case "KeyL":
+                anchorItem();
                 break;
             default:
                 //unregistered key, end of processing

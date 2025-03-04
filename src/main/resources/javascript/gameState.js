@@ -729,6 +729,7 @@ const gameState = (function() {
     //returns true: method was successful, proceed to purge selected (index.js)
     //returns false: "" unsuccessful after 'mouseUp' + 'isDragging'; do not purge
     //"index" - is nullable, provided when dragged into specific deck/hand preview index;
+    const typeWhiteList = ["Card", "Leader", "Monster"];
     function addToDeck(donor, recipient) {
         //TODO- 'hoverElement' is recipient, else find a way to set hoverElement to 'hand'; likely in index.js
         //TODO- find out if 'lock' is important for race conditions
@@ -753,7 +754,6 @@ const gameState = (function() {
 
         //Collate all 'images' of correct type
         const type = recipient.type;
-        const typeWhiteList = ["Card", "Leader", "Monster"];
         if(!typeWhiteList.includes(type)) return false;
 
         let donorCards = [];
@@ -939,6 +939,7 @@ const gameState = (function() {
         if(!Array.isArray(items)) items = new Array(items);
 
         items.forEach((item) => {
+            if(Object.hasOwn(item, "anchored")) return;
             if(Object.hasOwn(item, "flipMe")) {
                 if(item.flipMe == 0) {
                     item.flipMe = 3;
@@ -949,6 +950,26 @@ const gameState = (function() {
         });
 
         correctCoords(items);
+    }
+
+    //Purpose: mousehover + button will anchor/unanchor item, allowing it to be dragged and selected
+    //TODO- determine if 'anchored' means cannot me imageCycle()'d; ask clientelle
+    function anchorItem(items) {
+        if(!items) return;
+        if(!Array.isArray(items)) items = new Array(items);
+
+
+        items.forEach((item) => {
+            //Whitelist: ["Card", "Leader", "Monster"]
+            if(item.isDeck || item.deck || typeWhiteList.includes(item.type)) return;
+            if(Object.hasOwn(item, "anchored")) {
+                delete item.anchored;
+            } else {
+                item.anchored = true; //the value does not matter
+            }
+        })
+
+        //purge selection (index.js) after
     }
 
     return {
@@ -975,7 +996,8 @@ const gameState = (function() {
         selectView,
         translateDimensions,
         correctCoords,
-        tapItem
+        tapItem,
+        anchorItem
     };
 })();
 
