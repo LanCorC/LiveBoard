@@ -25,6 +25,10 @@ class PreviewBox {
         this.cardHolder = cardHolder; //element
         this.container = container; //element
 
+        //user-page responsiveness
+        this.container.addEventListener("mousedown", this, {passive: false});
+        this.container.addEventListener("mouseover", this, {passive: false});
+
         //ViewDeck subclass has no starting card model
         if(!cardModel) return;
 
@@ -34,11 +38,30 @@ class PreviewBox {
         container.deck = cardModel;
     }
 
+    enlargeBody() {
+        this.container.style.height = this.enlargeSize;
+        this.update();
+    };
+    minimizeBody() {
+        this.container.style.height = this.minimizeSize;
+        this.purgeVisualCards();
+    };
+
     handleEvent(event) {
         const scrollIncrement = 200;
         switch(event.type) {
             case "wheel":
                 this.cardHolder.scrollLeft += event.deltaY;
+                break;
+            case "mousedown":
+                if(event.buttons == 2) {
+                    this.minimizeBody();
+                }
+                break;
+            case "mouseover":
+                if(this.container.style.height == this.minimizeSize) {
+                    this.enlargeBody();
+                }
                 break;
             default:
                 break;
@@ -125,52 +148,28 @@ class MyHand extends PreviewBox {
         //Purpose for .ref?? likely excessive. unless methods used in Hand class
         user.hand.ref = this;
         this.user = user;
-        this.cardHolder.setAttribute("empty-hand-text", this.#emptyHandText);
+        this.cardHolder.setAttribute("empty-hand-text", this.emptyHandText);
         this.cardHolder.classList.add("myHand");
 
-        this.container.addEventListener("mousedown", this, {passive: false});
-        this.container.addEventListener("mouseover", this, {passive: false});
         //TODO: additional special property when client is locked out their own hand
     }
 
-    #emptyHandText = "Drag and drop here to add to your hand. Right-click to minimize.";
-    #hideText = "Your hand has been minimized. Hover to show.";
+    emptyHandText = "Drag and drop here to add to your hand. Right-click to minimize.";
+    hideText = "Your hand has been minimized. Hover to view.";
+
+    minimizeSize = "10%";
+    enlargeSize = `100%`;
+    minimizeBody() {
+        super.minimizeBody();
+        this.cardHolder.setAttribute("empty-hand-text", this.hideText);
+    }
+
+    enlargeBody() {
+        super.enlargeBody();
+        this.cardHolder.setAttribute("empty-hand-text", this.emptyHandText);
+    }
 
     //TODO: additional methods that enforce being locked out; and being returned access
-
-    #minimizeSize = "10%";
-    #hideHand() {
-        this.container.style.height = this.#minimizeSize;
-        this.purgeVisualCards();
-        this.cardHolder.setAttribute("empty-hand-text", this.#hideText);
-    }
-
-    #showHand() {
-        this.container.style.height = `100%`;
-        this.cardHolder.style.removeProperty("visibility");
-        this.update();
-        this.cardHolder.setAttribute("empty-hand-text", this.#emptyHandText);
-    }
-
-    handleEvent(event) {
-        switch(event.type) {
-            case "mousedown":
-                //Strict: mouse is not child img 'card'
-//                if(event.buttons == 2 && !(event.target instanceof HTMLImageElement)) {
-                if(event.buttons == 2) {
-                    this.#hideHand();
-                }
-                break;
-            case "mouseover":
-                if(this.container.style.height == this.#minimizeSize) {
-                    this.#showHand();
-                }
-                break;
-            default:
-                super.handleEvent(event);
-                break;
-        }
-    }
 }
 
 //client's view of OTHER hands or decks
@@ -180,7 +179,11 @@ class ViewDeck extends PreviewBox {
         //TODO- process: is the source a User/Player or Deck
         this.container.classList.add("previewBoxContainer2");
         this.update();
+
+        this.cardHolder.setAttribute("empty-hand-text", this.hideText);
     }
+
+    hideText = "This deck/hand preview has been minimized. Hover to view";
 
     //functionality to eject, accept new source [switching/returning views]
     //notably, cardModel property from super() assigned to this.cardModel,
@@ -190,30 +193,35 @@ class ViewDeck extends PreviewBox {
     //override update()-
     update() {
         if(this.cardModel == null || this.cardModel == undefined) {
-            this.#hideBody();
+            this.hideBody();
         } else {
-            this.#showBody();
+            this.showBody();
         }
         super.update();
     }
 
-    #hideBody() {
+    hideBody() {
         //note: visibility takes care of mouse/pointer
         this.cardHolder.style.visibility = `hidden`;
         this.container.style.visibility = `hidden`;
     }
 
-    #showBody() {
+    showBody() {
         //note: visibility takes care of mouse/pointer
         this.cardHolder.style.visibility = ``;
         this.container.style.visibility = ``;
     }
 
+    //Adjust accordingly: 0.25 == 25% is the parent div container height of MyHand obj
+    minimizeSize = `${10 * 0.25}%`;
+    enlargeSize = `${100 * 0.25}%`;
+
     setView(cardModel) {
+        this.enlargeBody();
         if(!cardModel) {
             delete this.cardModel.ref;
         } else {
-            //TODO- exception for Hand objects
+            //TODO- exception for Hand objects, who already have their own .ref
             cardModel.ref = this;
         }
         this.cardModel = cardModel;
