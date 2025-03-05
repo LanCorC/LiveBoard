@@ -64,6 +64,6 @@ public class ServerApplication extends WebSocketServer {
 
     @Override
     public void onStart() {
-        System.out.println("Beep boop, the server is up.");
+        System.out.printf("Beep boop, the server is up on %s.%n", SERVER_PORT) ;
     }
 }

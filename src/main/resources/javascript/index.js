@@ -21,6 +21,22 @@ let pinBoard = false;
 const expansionsToLoad = ["Base Deck"];
 loadAssets(expansionsToLoad);
 
+//TODO- experiment with having ONE server spit out the html, and the SAME connection to server
+//TODO cont- to upgrade to ws (websocket) for joining the game
+//Goal: localhost the server is enough for me to load html + 'start a lobby/game' with self
+//Goal2: have github spit out the HTML, the ws attempt, and loading screen + demo ready
+//attempt at connecting to local server
+const socket = new WebSocket(`ws://localhost:8080`);
+socket.onopen = function(event) {
+    console.log(event);
+    console.log("whoop?");
+    //TODO-
+}
+socket.onmessage = function(event) {
+    console.log(event);
+    console.log("whoopie?");
+}
+
 window.onload = function() {
     //TODO - temporary -- to refactor as loading the entire board html
     gameState.loadBoard(expansionsToLoad);
@@ -659,6 +675,24 @@ window.onload = function() {
         //TODO- see if i must purgeSelected()
     }
 
+    const rollDice = function() {
+//        let ans = new Array(13);
+//        ans.fill(0);
+//        let times = 5000;
+//        for(let i = 0; i < times; i++) {
+//            ans[Math.ceil(Math.random() * 6) + Math.ceil(Math.random() * 6)]++;
+//        }
+//        for(let i = 0; i < ans.length; i++) {
+//            ans[i] = ans[i]/times * 100;
+//        }
+//        console.log(ans);
+
+        //TODO - ping on server, + store as 'latest roll' under clientUser for future 'tracking'
+        //elaboration: players may look at each other's badgeName to see the latest rolled value (2D6 => 2-12)
+        let result = Math.ceil(Math.random() * 6) + Math.ceil(Math.random() * 6)
+        console.log(result);
+    }
+
     window.addEventListener("keyup", function(event){
         //TODO - future, if chatbox or input box, send null
         //TODO - future, if CHATBOX instance is TARGET(focus), aka, activeTyping into, skip processing
@@ -675,6 +709,9 @@ window.onload = function() {
                 break;
             case "KeyP": //toggle: prevent board pan
                 pinBoard = !pinBoard;
+                break;
+            case "KeyR":
+                rollDice();
                 break;
             case "ControlLeft":
             case "ControlRight":
