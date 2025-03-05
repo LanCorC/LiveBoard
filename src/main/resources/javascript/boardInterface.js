@@ -26,7 +26,7 @@ class PreviewBox {
         this.container = container; //element
 
         //user-page responsiveness
-        this.container.addEventListener("mousedown", this, {passive: false});
+        this.container.addEventListener("mouseup", this, {passive: false});
         this.container.addEventListener("mouseover", this, {passive: false});
 
         //ViewDeck subclass has no starting card model
@@ -53,14 +53,16 @@ class PreviewBox {
             case "wheel":
                 this.cardHolder.scrollLeft += event.deltaY;
                 break;
-            case "mousedown":
-                if(event.buttons == 2) {
+            case "mouseup":
+                if(event.button == 2) {
                     this.minimizeBody();
+                    console.log("ayo");
                 }
                 break;
             case "mouseover":
                 if(this.container.style.height == this.minimizeSize) {
                     this.enlargeBody();
+                    console.log("whut");
                 }
                 break;
             default:

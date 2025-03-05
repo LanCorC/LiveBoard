@@ -412,14 +412,9 @@ window.onload = function() {
 
     },false);
 
-    let atMouseDown; //element at mouse down; initially created to increase allowance of rightclick drag immediately
-    //de-selecting the same deckPreview that was just minimized
-
     window.addEventListener("mousedown", function(event) {
         //rightclick detected - create 'detached' inspect image
 
-        //Note: very important that nonCanvas element is picked up by atMouseDown
-        atMouseDown = hoverElement;
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
         let isPreviewCard = Object.hasOwn(hoverElement, "card");
 
@@ -565,8 +560,7 @@ window.onload = function() {
 
     //TODO- include interaction of OpponentHand [boardInterface.js is relevant]
         //handles 'previewDivElement' selection, de-selection
-        if(rightClick &&
-        ((atMouseDown instanceof HTMLCanvasElement) || atMouseDown == null || Object.hasOwn(atMouseDown, "id"))) {
+        if(rightClick && gameState.hoverIsCanvas()) {
             const item = gameState.itemFromRGB(contextTouch, mouse);
 
             //out of select-> lets us pan, or drag things into deck/opponentHand
