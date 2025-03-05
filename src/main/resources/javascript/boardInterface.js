@@ -40,7 +40,6 @@ class PreviewBox {
 
     enlargeBody() {
         this.container.style.height = this.enlargeSize;
-        this.update();
     };
     minimizeBody() {
         this.container.style.height = this.minimizeSize;
@@ -56,13 +55,12 @@ class PreviewBox {
             case "mouseup":
                 if(event.button == 2) {
                     this.minimizeBody();
-                    console.log("ayo");
                 }
                 break;
             case "mouseover":
                 if(this.container.style.height == this.minimizeSize) {
                     this.enlargeBody();
-                    console.log("whut");
+                    this.update();
                 }
                 break;
             default:
@@ -182,10 +180,10 @@ class ViewDeck extends PreviewBox {
         this.container.classList.add("previewBoxContainer2");
         this.update();
 
-        this.cardHolder.setAttribute("empty-hand-text", this.hideText);
     }
 
     hideText = "This deck/hand preview has been minimized. Hover to view";
+    noDeckSelectedText = "This preview is empty. Right-click to preview a deck.";
 
     //functionality to eject, accept new source [switching/returning views]
     //notably, cardModel property from super() assigned to this.cardModel,
@@ -195,9 +193,10 @@ class ViewDeck extends PreviewBox {
     //override update()-
     update() {
         if(this.cardModel == null || this.cardModel == undefined) {
-            this.hideBody();
+            this.cardHolder.setAttribute("empty-hand-text", this.noDeckSelectedText);
+            this.minimizeBody();
         } else {
-            this.showBody();
+            this.cardHolder.setAttribute("empty-hand-text", this.hideText);
         }
         super.update();
     }
