@@ -1,5 +1,7 @@
 import {Hand} from "./itemClasses.js";
 
+const verbose = false;
+
 //purpose: to set up HTML counterparts; such as: managing relevant context buttons,
 //initializing 'hand', and other tools [drop hand, UI], managing playerBubbles,
 //managing chat, managing new previews (otherHands, decks)
@@ -40,10 +42,14 @@ class PreviewBox {
 
     enlargeBody() {
         this.container.style.height = this.enlargeSize;
+
+        if(verbose) console.log("enlargeBody()");
     };
     minimizeBody() {
         this.container.style.height = this.minimizeSize;
         this.purgeVisualCards();
+
+        if(verbose) console.log("minimizeBody()");
     };
 
     handleEvent(event) {
@@ -81,6 +87,7 @@ class PreviewBox {
         }
     }
 
+    //TODO- turn childImgContainer into childContainerDiv - test for visual inaccuracies
     update() {
         //purge children
         const parent = this.cardHolder;
@@ -111,14 +118,14 @@ class PreviewBox {
 
             //visual facedown, faceup
 //            if(!this.cardModel.isHand) {
-//                childImg.facedown = function() {
+//                childImgContainer.facedown = function() {
 //                    this.classList.add("facedownImg");
 //                }
-//                childImg.faceup = function() {
+//                childImgContainer.faceup = function() {
 //                    this.classList.remove("facedownImg");
 //                }
 //                //TODO note warning: hard coded value
-//                if(card.index == 0) childImg.facedown();
+//                if(card.index == 0) childImgContainer.facedown();
 //            }
 
             if(card.selected) childImg.select();

@@ -19,6 +19,7 @@ public class ServerApplication extends WebSocketServer {
     public static void main(String[] args) {
         var server = new ServerApplication();
         server.start();
+//        System.out.println(server.getAddress());
     }
 
     //Called after a handshake is established
