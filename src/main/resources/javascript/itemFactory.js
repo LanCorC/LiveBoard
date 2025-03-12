@@ -183,11 +183,10 @@ const loadMisc = function() {
     mats.forEach(mat => misc.push(mat));
 
     //Hard-coded, feel
-    let array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; //includes 5 extra leaders
 //    let array = [0, 1, 2, 3, 4, 5]; //original 6 leaders
+    let array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; //includes 5 extra leaders
     mats.forEach(mat => {
         let index = array.splice(Math.ceil(Math.random() * (array.length - 1)), 1)[0] || 1;
-        console.log(index);
         if(mat.type == "playMat") mat.index = index;
     })
 

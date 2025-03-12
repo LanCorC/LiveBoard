@@ -683,11 +683,23 @@ const gameState = (function() {
     }
 
     //TODO - checks 'persist' storage if gameState 'items' already exists to load from
+    const loadAll = false; //testing code; 'false' for live
+    const allExpansions = [ //testing code, in conjunction with loadAll
+        'Base Deck',
+        'Berserkers and Necromancers Expansion',
+        'Blind Box Exclusive',
+        'Dragon Sorcerer Expansion',
+        'Exclusive',
+        'KickStarter Exclusive',
+        'Monster Expansion',
+        'Warrior and Druid Expansion',
+    ];
     function loadBoard(expansions) {
         //todo - from objectFactory, in conjunction with assets - hard coded set of objects - mats, dice
         loadMisc().forEach((misc)=> push(misc));
 
-        let freshCards = loadCards(expansions);
+        //if loadAll, load all expansions- NOTE: make sure all assets are loaded
+        let freshCards = loadCards(loadAll ? allExpansions: expansions);
 
         //push cards into gamestate
         for(const value of Object.values(freshCards)) {

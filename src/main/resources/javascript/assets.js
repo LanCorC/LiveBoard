@@ -37,11 +37,10 @@ const assets = (function() {
     const backImg = 0;
     const frontImg = 1;
 
-    //padding between each play/gameMat
-    let buffer = 100;
-    let allowance = 100;
-    //hardcoded, arbitrary; based on 'true board' size
-    //0,0 is top corner of gameMat
+    let buffer = 100;       //padding between each play/gameMat
+    let allowance = 100;    //extra whitespace on edges of entire board
+
+    //Calculations based on 0,0 being top corner of gameMat
     const dimensions = {
         leftBorder: -(sizes.large.width + buffer + allowance),
         rightBorder: sizes.large.width * 2 + buffer + allowance,
@@ -95,12 +94,22 @@ let refExpansionCards = {
         leaders: [],
         monsters: []
     },
+    "Blind Box Exclusive": {
+        cards: [],
+        leaders: [],
+        monsters: []
+    },
     "Dragon Sorcerer Expansion": {
         cards: [],
         leaders: [],
         monsters: []
     },
     "Exclusive": {
+        cards: [],
+        leaders: [],
+        monsters: []
+    },
+    "KickStarter Exclusive": {
         cards: [],
         leaders: [],
         monsters: []
@@ -116,6 +125,8 @@ let refExpansionCards = {
         monsters: []
     }
 }
+
+//console.log(Object.keys(refExpansionCards));
 
 //store in hashmap - key is the image file directory, value is prefix to use on the images
 const expansionProperties = new Map();
@@ -145,6 +156,14 @@ function populateProperties() {
         });
     expansionProperties.set("Exclusive",
         { prefix: "HtS-ConCard-",
+            duplicates: new Map()
+        });
+    expansionProperties.set("Blind Box Exclusive",
+        { prefix: "HtS-NecBers-",
+            duplicates: new Map()
+        });
+    expansionProperties.set("KickStarter Exclusive",
+        { prefix: "HtS-PnP-KSE-",
             duplicates: new Map()
         });
 
@@ -208,6 +227,7 @@ let padHundred = function(number) {
 }
 
 let baseAddress = "../Images";
+const loadAll = false; //testing variable: if true, loads all expansions
 //TODO - have this update an html view to update the user
 //TODO: only call array of chosen expansion names, for sake of fast load (temporary)? TBD
 //purpose: load all assets
@@ -216,7 +236,10 @@ function loadAssets(chosenExpansions) {
     let y = "leaders";
 //    console.log(refExpansionCards[x]);
     expansionProperties.forEach( (value, key, map) => {
-        if(!chosenExpansions.includes(key)) return;
+        if(loadAll) {
+        } else if(!chosenExpansions.includes(key)) {
+            return;
+        }
 
         console.log(`Unpacking ${key}...`);
 
@@ -275,6 +298,8 @@ let itemCount = {
 }
 let countsToGo = 6;
 
+const countVerbose = false;
+
 function loadExpansionCards(number, folderName, prefix) {
     //'magicId' required as reference for recursion
     const card = new Image();
@@ -302,6 +327,8 @@ function loadExpansionCards(number, folderName, prefix) {
                 if(--countsToGo == 0) {
                     console.log("Finished loading all expansions");
                     console.log(Object.entries(refExpansionCards));
+                } else if (countVerbose) {
+                    console.log(itemCount);
                 }
                 return;
         }
@@ -454,8 +481,9 @@ function prepareImages(expansions) {
                 }
             })
 
-            console.log(`${expansion} has ${preItems[arrayName].length}
-            cards in deck ${type}`);
+            //NOTE: preItems[arrayName].length is cumulative
+//            console.log(`${expansion} has ${preItems[arrayName].length}
+//            cards in deck ${type}`);
         }
     });
 

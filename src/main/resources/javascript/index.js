@@ -3,6 +3,7 @@ import gameState from "./gameState.js";
 //import main from "./itemFactory.js";
 import { loadAssets, assets } from "./assets.js";
 import * as userInterface from "./boardInterface.js";
+import server from "./serverConnection.js";
 
 //Variables
 const board = document.getElementById("gameBoard");
@@ -21,21 +22,7 @@ let pinBoard = false;
 const expansionsToLoad = ["Base Deck"];
 loadAssets(expansionsToLoad);
 
-//TODO- experiment with having ONE server spit out the html, and the SAME connection to server
-//TODO cont- to upgrade to ws (websocket) for joining the game
-//Goal: localhost the server is enough for me to load html + 'start a lobby/game' with self
-//Goal2: have github spit out the HTML, the ws attempt, and loading screen + demo ready
-//attempt at connecting to local server
-const socket = new WebSocket(`ws://localhost:8080`);
-socket.onopen = function(event) {
-    console.log(event);
-    console.log("whoop?");
-    //TODO-
-}
-socket.onmessage = function(event) {
-    console.log(event);
-    console.log("whoopie?");
-}
+server.connect();
 
 window.onload = function() {
     //TODO - temporary -- to refactor as loading the entire board html
