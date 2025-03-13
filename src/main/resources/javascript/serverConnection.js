@@ -1,3 +1,5 @@
+import gameState from "./gameState.js";
+
 //Purpose: manage all (websocket) server connections
 //Example: updates received from server - gameActions or serverStatus
 //likely: all other modules imports server-connection.js
@@ -21,6 +23,10 @@
 
 const server = (function() {
 
+    //To push updates, texts, to frontpage reference
+    let frontPage = null;
+    let loading = null;
+
     //To hold the WebSocket reference
     let connection = null;
 
@@ -34,17 +40,19 @@ const server = (function() {
         connection = socket;
 
         socket.onopen = function(event) {
-            console.log(event);
-            console.log("whoop?");
+            console.log("Server connection secured!");
             //TODO - update frontPage buttons/headers of connection
+            frontPage.send("Server connection secured!");
         }
 
         socket.onclose = function(event) {
             if(event.wasClean) {
                 console.log("Disconnected successfully");
+                frontPage.send("Disconnected successfully");
             } else {
                 //also triggers if connection attempt fails (server offline)
-                console.log("Something went wrong!")
+//                console.log("Something went wrong!")
+                frontPage.send("Server not found, or closed unexpectedly!");
             }
 
             //TODO - update frontPage buttons/headers of connection
@@ -60,7 +68,17 @@ const server = (function() {
         connection.close();
     }
 
-    return { connect, connection, disconnect };
+    //purpose: receive relevant UI elements for visual updates
+    //TODO TBD: when to connect to our gameState (on loadscreen? on connect (single lobby?)
+    function initialize(frontObj, loadObj) {
+        frontPage = frontObj;
+        loading = loadObj;
+
+        //Immediately try default server
+        connect();
+    }
+
+    return { connect, connection, disconnect, initialize, loading };
 })();
 
 export default server;

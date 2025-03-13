@@ -3,7 +3,8 @@ import gameState from "./gameState.js";
 //import main from "./itemFactory.js";
 import { loadAssets, assets } from "./assets.js";
 import * as userInterface from "./boardInterface.js";
-import server from "./serverConnection.js";
+//import server from "./serverConnection.js";
+import * as pregameInterface from "./frontPageInterface.js";
 
 //Variables
 const board = document.getElementById("gameBoard");
@@ -19,10 +20,23 @@ let strictPanMode = false; //hold-CTRL: strict pan mode
 let pinBoard = false;
 
 //TODO- to move to an appropriate file/module + incorporate into user interface, e.g. select desired expansions...
+
+
+//server.connect();
+
+//TODO- ordering initialization
+//First; frontpage loads, then connects to Server immediately for a connection;
+    //ALL WHILST also connects to assets loading misc/ loading page for expansions
+//lastly, gameState <-> server = fetch player info, gameState.items from server copy
+    //gameState loads as empty players, fetches server playerList (if any), then adds self
+
+//TODO- frontpage(+loadscreen) connects with serverConnection
+pregameInterface.initialize();
+//TODO- assets connects with frontpage/loadscreen
+//TODO- gameState connects with serverConnection
 const expansionsToLoad = ["Base Deck"];
 loadAssets(expansionsToLoad);
 
-server.connect();
 
 window.onload = function() {
     //TODO - temporary -- to refactor as loading the entire board html

@@ -136,35 +136,43 @@ function populateProperties() {
     //Include the expansion name (key), and file prefix and duplicates (value)
     expansionProperties.set("Base Deck",
         { prefix: "HtS-PnP-Base-",
-            duplicates: new Map()
+            duplicates: new Map(),
+            uniqueCount: 95
         });
     expansionProperties.set("Warrior and Druid Expansion",
         { prefix: "HtS-WarDruid-",
-            duplicates: new Map()
+            duplicates: new Map(),
+            uniqueCount: 35
         });
     expansionProperties.set("Monster Expansion",
         { prefix: "HtS-PnP-Mon-",
-            duplicates: new Map()
+            duplicates: new Map(),
+            uniqueCount: 13
         });
     expansionProperties.set("Berserkers and Necromancers Expansion",
         { prefix: "HtS-BersNecr-",
-            duplicates: new Map()
+            duplicates: new Map(),
+            uniqueCount: 33
         });
     expansionProperties.set("Dragon Sorcerer Expansion",
         { prefix: "HtS-PnP-Drag-",
-            duplicates: new Map()
+            duplicates: new Map(),
+            uniqueCount: 16
         });
     expansionProperties.set("Exclusive",
         { prefix: "HtS-ConCard-",
-            duplicates: new Map()
+            duplicates: new Map(),
+            uniqueCount: 3
         });
     expansionProperties.set("Blind Box Exclusive",
         { prefix: "HtS-NecBers-",
-            duplicates: new Map()
+            duplicates: new Map(),
+            uniqueCount: 2
         });
     expansionProperties.set("KickStarter Exclusive",
         { prefix: "HtS-PnP-KSE-",
-            duplicates: new Map()
+            duplicates: new Map(),
+            uniqueCount: 25
         });
 
     //Expansions without duplicates: WarDruids, Monsters, Exclusive, Dragon
@@ -228,10 +236,43 @@ let padHundred = function(number) {
 
 let baseAddress = "../Images";
 const loadAll = false; //testing variable: if true, loads all expansions
+
+//TODO- expansionCardsExpected, tested for ALL and ONE(base) line up along
+//TODO cont.- with #loaded expansionCards; same with expansionsLeft;
+//TODO cont.- use expansionsLeft as means to trigger board to create objects
+//"This won't take long.."
+
+//TODO future feature: broadcast progress to server/gameState
+//Purpose: references of javascript objects to show users asset loading progress
+const updateInterface = {
+    frontPage: null,
+    loading: null,
+    verbose: null,
+    assetCount: null
+}
+
+let count = {
+    expansionCards: 0,  //to track how many items have loaded in
+    expansionCardsExpected: 0, //purpose: to calculate asset loading %ge
+    expansionsLeft: 0,   //purpose: tracking %ge of all cards loaded (absolute number)
+    miscCards: 0,
+    miscCardsExpected: 39
+}
+
 //TODO - have this update an html view to update the user
 //TODO: only call array of chosen expansion names, for sake of fast load (temporary)? TBD
 //purpose: load all assets
 function loadAssets(chosenExpansions) {
+
+    expansionProperties.forEach( (value, key, map) => {
+        if(loadAll) {} else
+        if(!chosenExpansions.includes(key)) return;
+        updateInterface.assetCount.expansionCardsExpected += value.uniqueCount;
+    });
+
+    updateInterface.assetCount.expansionsLeft =
+    loadAll ? expansionProperties.size : chosenExpansions.length;
+
     let x = "Base Deck";
     let y = "leaders";
 //    console.log(refExpansionCards[x]);
@@ -245,9 +286,11 @@ function loadAssets(chosenExpansions) {
 
         loadExpansionCards(1, key, value.prefix);
     });
+}
 
-    console.log(`Unpacking PlayMats...`);
-    loadGameMats(1, "PlayMats");
+//Purpose: load first, and separately from 'loadAssets'
+//track count of playmats (gameMat, playerMat) for purpose of tracking
+function loadMisc() {
 
     console.log("Expect a few 'GET 404's (necessary) while we set this up...");
 
@@ -263,6 +306,9 @@ function loadAssets(chosenExpansions) {
     image = new Image(sizes.medium.width, sizes.medium.height);
     image.src = `${baseAddress}/Misc/backMonster.jpg`;
     miscRef.get("back")["backMonster"] = image;
+
+    console.log(`Unpacking PlayMats...`);
+    loadGameMats(1, "PlayMats");
 }
 
 function getBack(type) {
@@ -287,16 +333,19 @@ function getBack(type) {
     return img;
 }
 
+//test code for counting
 let itemCount = {
     "Base Deck": 0,
     "Berserkers and Necromancers Expansion": 0,
+    "Blind Box Exclusive": 0,
     "Dragon Sorcerer Expansion": 0,
     "Exclusive": 0,
+    "KickStarter Exclusive": 0,
     "Monster Expansion": 0,
     "Warrior and Druid Expansion": 0,
     "PlayMats": 0
 }
-let countsToGo = 6;
+//let countsToGo = 9 - 1; //expansion count -1
 
 const countVerbose = false;
 
@@ -311,6 +360,10 @@ function loadExpansionCards(number, folderName, prefix) {
         itemCount[folderName]++;
 
         processRefCard(card, folderName);
+
+        //TODO- push an incremented count, and/or filename
+//        console.log(`${prefix}${padHundred(number)}.png: received`);
+        if(updateInterface.loading) updateInterface.loading.increment();
     };
 
     card.onerror = () => {
@@ -324,10 +377,11 @@ function loadExpansionCards(number, folderName, prefix) {
                 loadExpansionCards(201, folderName, prefix);
                 break;
             default:
-                if(--countsToGo == 0) {
+                if(--count.expansionsLeft == 0) {
                     console.log("Finished loading all expansions");
-                    console.log(Object.entries(refExpansionCards));
-                } else if (countVerbose) {
+//                    console.log(count.expansionCards);
+                }
+                if (countVerbose) {
                     console.log(itemCount);
                 }
                 return;
@@ -382,6 +436,9 @@ function loadGameMats(number, folderName) {
         loadGameMats(card.magicId + 1, folderName);
         itemCount[folderName]++; //"PlayMats" folderName
         processPlayMat(card);
+
+        if(updateInterface.frontPage) updateInterface.frontPage.increment();
+//        count.miscCards++;
     };
 
     card.onerror = () => {
@@ -393,6 +450,9 @@ function loadGameMats(number, folderName) {
         }
 
         //terminate
+        //TODO: ping loading that miscs have been done
+//        console.log(count.miscCards);
+
 
         //TBD if needed- this already sorts itself;
         miscRef.get("playMat").sort();
@@ -490,5 +550,33 @@ function prepareImages(expansions) {
     return preItems;
 }
 
-//export default {assets as assets, loadAssets};
-export {assets, loadAssets, getMiscImages, prepareImages, sizes};
+//TODO- purpose: references to loadscreen, interface is passed
+//to also pass to the objects 'ref numbers', like expected counts
+//TODO- we have a dynamic expectedCount for variable expansion choice at loadAssets()
+function initialize(frontObj, loadObj, verbose, assetCount) {
+    updateInterface.frontPage = frontObj; //show Misc updates
+    updateInterface.loading = loadObj; //show overall expansion updates
+    updateInterface.assetCount = assetCount;
+
+    if(verbose) {
+        updateInterface.verbose = verbose; //potential 'detailed' progress
+    }
+
+//    Object.entries(count).forEach((key, value) => {
+//
+//    });
+    for(const [key, value] of Object.entries(count)) {
+        assetCount[`${key}`] = value;
+    }
+//    console.log(assetCount);
+
+    //Immediately load misc
+    loadMisc();
+}
+
+export {assets, loadAssets, getMiscImages, prepareImages, sizes, initialize};
+
+
+//TODO- add a way have assets "misc" load during frontPage,
+//TODO- add a way to calculate "%ge" progress for load page,
+//taking into account misc + chosen expansions
