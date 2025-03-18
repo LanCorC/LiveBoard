@@ -131,48 +131,57 @@ let refExpansionCards = {
 //store in hashmap - key is the image file directory, value is prefix to use on the images
 const expansionProperties = new Map();
 
+//TODO: add a per-type count on each value, incl: startIndex,endIndex
 //Placed in method to encapsulate function:
 function populateProperties() {
     //Include the expansion name (key), and file prefix and duplicates (value)
     expansionProperties.set("Base Deck",
         { prefix: "HtS-PnP-Base-",
             duplicates: new Map(),
-            uniqueCount: 95
+            uniqueCount: 95,
+            perType: [[1, 74], [101, 106], [201,215]]
         });
     expansionProperties.set("Warrior and Druid Expansion",
         { prefix: "HtS-WarDruid-",
             duplicates: new Map(),
-            uniqueCount: 35
+            uniqueCount: 35,
+            perType: [[1, 31], [101, 102], [201,202]]
         });
     expansionProperties.set("Monster Expansion",
         { prefix: "HtS-PnP-Mon-",
             duplicates: new Map(),
-            uniqueCount: 13
+            uniqueCount: 13,
+            perType: [[201,213]]
         });
     expansionProperties.set("Berserkers and Necromancers Expansion",
         { prefix: "HtS-BersNecr-",
             duplicates: new Map(),
-            uniqueCount: 33
+            uniqueCount: 33,
+            perType: [[1, 29], [101, 102], [201,202]]
         });
     expansionProperties.set("Dragon Sorcerer Expansion",
         { prefix: "HtS-PnP-Drag-",
             duplicates: new Map(),
-            uniqueCount: 16
+            uniqueCount: 16,
+            perType: [[1, 14], [101, 101], [201,201]]
         });
     expansionProperties.set("Exclusive",
         { prefix: "HtS-ConCard-",
             duplicates: new Map(),
-            uniqueCount: 3
+            uniqueCount: 3,
+            perType: [[101, 103]]
         });
     expansionProperties.set("Blind Box Exclusive",
         { prefix: "HtS-NecBers-",
             duplicates: new Map(),
-            uniqueCount: 2
+            uniqueCount: 2,
+            perType: [[1, 2]]
         });
     expansionProperties.set("KickStarter Exclusive",
         { prefix: "HtS-PnP-KSE-",
             duplicates: new Map(),
-            uniqueCount: 25
+            uniqueCount: 25,
+            perType: [[1, 21], [101, 104]]
         });
 
     //Expansions without duplicates: WarDruids, Monsters, Exclusive, Dragon
@@ -235,7 +244,7 @@ let padHundred = function(number) {
 }
 
 let baseAddress = "../Images";
-const loadAll = false; //testing variable: if true, loads all expansions
+const loadAll = true; //testing variable: if true, loads all expansions
 
 //TODO- expansionCardsExpected, tested for ALL and ONE(base) line up along
 //TODO cont.- with #loaded expansionCards; same with expansionsLeft;
@@ -284,7 +293,9 @@ function loadAssets(chosenExpansions) {
 
         console.log(`Unpacking ${key}...`);
 
-        loadExpansionCards(1, key, value.prefix);
+        //TODO - instead of chain, bulk-call; -- additional parameter: per-type numbers
+//        loadExpansionCards(1, key, value.prefix);
+        loadExpansionCards(key, value);
     });
 }
 
@@ -308,7 +319,8 @@ function loadMisc() {
     miscRef.get("back")["backMonster"] = image;
 
     console.log(`Unpacking PlayMats...`);
-    loadGameMats(1, "PlayMats");
+//    loadGameMats(1, "PlayMats");
+    loadGameMats();
 }
 
 function getBack(type) {
@@ -349,48 +361,76 @@ let itemCount = {
 
 const countVerbose = false;
 
-function loadExpansionCards(number, folderName, prefix) {
-    //'magicId' required as reference for recursion
-    const card = new Image();
-    card.magicId = number;
+//function loadExpansionCards(number, folderName, prefix) {
+//    //'magicId' required as reference for recursion
+//    const card = new Image();
+//    card.magicId = number;
+//
+//    //propagage recursion along 'bucket'
+//    card.onload = () => {
+//        loadExpansionCards(card.magicId + 1, folderName, prefix);
+//        itemCount[folderName]++;
+//
+//        processRefCard(card, folderName);
+//
+//        //TODO- push an incremented count, and/or filename
+////        console.log(`${prefix}${padHundred(number)}.png: received`);
+//        if(updateInterface.loading) updateInterface.loading.increment();
+//    };
+//
+//    card.onerror = () => {
+//        //transition to next bucket, X01
+//        //0XX is 'cards', 1XX is 'leaders', 2XX is 'monsters'
+//        switch(Math.floor(card.magicId / 100)) {
+//            case 0:
+//                loadExpansionCards(101, folderName, prefix);
+//                break;
+//            case 1:
+//                loadExpansionCards(201, folderName, prefix);
+//                break;
+//            default:
+//                if(--count.expansionsLeft == 0) {
+//                    console.log("Finished loading all expansions");
+////                    console.log(count.expansionCards);
+//                }
+//                if (countVerbose) {
+//                    console.log(itemCount);
+//                }
+//                return;
+//        }
+//    };
+//
+//    card.src = `${baseAddress}/Game/${folderName}/${prefix}${padHundred(number)}.png`;
+//}
 
-    //propagage recursion along 'bucket'
+function loadExpansionCards(folderName, properties) {
+    //where startEnd = [integerStart, integerEnd]
+    properties.perType.forEach((startEnd) => {
+        for(let i = startEnd[0]; i <= startEnd[1]; i++) {
+            const card = new Image();
+            card.magicId = i;
+            preProcessRefCard(card, folderName, properties.prefix);
+        }
+    });
+}
+
+function preProcessRefCard(card, expansion, prefix) {
     card.onload = () => {
-        loadExpansionCards(card.magicId + 1, folderName, prefix);
-        itemCount[folderName]++;
+        itemCount[expansion]++; //"PlayMats" folderName
+        processRefCard(card,expansion);
 
-        processRefCard(card, folderName);
-
-        //TODO- push an incremented count, and/or filename
-//        console.log(`${prefix}${padHundred(number)}.png: received`);
-        if(updateInterface.loading) updateInterface.loading.increment();
+        if(updateInterface.frontPage) updateInterface.loading.increment();
     };
 
     card.onerror = () => {
-        //transition to next bucket, X01
-        //0XX is 'cards', 1XX is 'leaders', 2XX is 'monsters'
-        switch(Math.floor(card.magicId / 100)) {
-            case 0:
-                loadExpansionCards(101, folderName, prefix);
-                break;
-            case 1:
-                loadExpansionCards(201, folderName, prefix);
-                break;
-            default:
-                if(--count.expansionsLeft == 0) {
-                    console.log("Finished loading all expansions");
-//                    console.log(count.expansionCards);
-                }
-                if (countVerbose) {
-                    console.log(itemCount);
-                }
-                return;
-        }
-    };
+        console.log(`Something went wrong: ${card.magicId} ${expansion}`);
+        console.log(`Something went wrong: ${card.magicId} ${expansion}`);
+    }
 
-    card.src = `${baseAddress}/Game/${folderName}/${prefix}${padHundred(number)}.png`;
+    card.src = `${baseAddress}/Game/${expansion}/${prefix}${padHundred(card.magicId)}.png`;
 }
 
+//Note: assumes there can only be x01 -> x99 of a type
 //needs the card; (card's id),
 function processRefCard(card, expansion) {
     let size;
@@ -425,41 +465,76 @@ function processRefCard(card, expansion) {
     );
 }
 
-//some duplicate code, but modularized for clarity
-function loadGameMats(number, folderName) {
-    //'magicId' required as reference for recursion
-    const card = new Image();
-    card.magicId = number;
+////some duplicate code, but modularized for clarity
+//function loadGameMats(number, folderName) {
+//    //'magicId' required as reference for recursion
+//    const card = new Image();
+//    card.magicId = number;
+//
+//    //propagate recursion along 'bucket'
+//    card.onload = () => {
+//        loadGameMats(card.magicId + 1, folderName);
+//        itemCount[folderName]++; //"PlayMats" folderName
+//        processPlayMat(card);
+//
+//        if(updateInterface.frontPage) updateInterface.frontPage.increment();
+////        count.miscCards++;
+//    };
+//
+//    card.onerror = () => {
+//        //transition to next bucket, X01
+//        //0XX is gameMat, 1XX is playmat
+//        if(card.magicId < 100) {
+//            loadGameMats(101, folderName);
+//            return;
+//        }
+//
+//        //terminate
+//        //TODO: ping loading that miscs have been done
+////        console.log(count.miscCards);
+//
+//
+//        //TBD if needed- this already sorts itself;
+//        miscRef.get("playMat").sort();
+//        miscRef.get("gameMat").sort();
+//    };
+//
+//    card.src = `${baseAddress}/${folderName}/${padHundred(number)}.png`;
+//}
 
-    //propagate recursion along 'bucket'
+//hard coded 'folderName' (=PlayMats) and start/end indexes
+function loadGameMats() {
+
+    //gameMats 001->005
+    for(let i = 1; i <= 5; i++) {
+        const card = new Image();
+        card.magicId = i;
+        preProcessPlaymat(card, "PlayMats");
+    }
+
+    //playMats 101->134
+    for(let i = 101; i <= 134; i++) {
+        const card = new Image();
+        card.magicId = i;
+        preProcessPlaymat(card, "PlayMats");
+    }
+}
+
+//purpose: assign all related .onload, push to UI, assigning SRC
+function preProcessPlaymat(card, folderName) {
     card.onload = () => {
-        loadGameMats(card.magicId + 1, folderName);
         itemCount[folderName]++; //"PlayMats" folderName
         processPlayMat(card);
 
+        //TODO? track when misc is finished, maybe unimportant
         if(updateInterface.frontPage) updateInterface.frontPage.increment();
-//        count.miscCards++;
     };
 
     card.onerror = () => {
-        //transition to next bucket, X01
-        //0XX is gameMat, 1XX is playmat
-        if(card.magicId < 100) {
-            loadGameMats(101, folderName);
-            return;
-        }
+        console.log(`Something went wrong: ${card.magicId} ${folderName}`);
+    }
 
-        //terminate
-        //TODO: ping loading that miscs have been done
-//        console.log(count.miscCards);
-
-
-        //TBD if needed- this already sorts itself;
-        miscRef.get("playMat").sort();
-        miscRef.get("gameMat").sort();
-    };
-
-    card.src = `${baseAddress}/${folderName}/${padHundred(number)}.png`;
+    card.src = `${baseAddress}/${folderName}/${padHundred(card.magicId)}.png`;
 }
 
 //use card's Magic ID to distinguish from gameMat, playMat

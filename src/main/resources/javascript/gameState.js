@@ -683,7 +683,7 @@ const gameState = (function() {
     }
 
     //TODO - checks 'persist' storage if gameState 'items' already exists to load from
-    const loadAll = false; //testing code; 'false' for live
+    const loadAll = true; //testing code; 'false' for live
     const allExpansions = [ //testing code, in conjunction with loadAll
         'Base Deck',
         'Berserkers and Necromancers Expansion',
