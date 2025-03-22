@@ -3,7 +3,7 @@ import gameState from "./gameState.js";
 //import main from "./itemFactory.js";
 import { loadAssets, assets } from "./assets.js";
 import * as userInterface from "./boardInterface.js";
-//import server from "./serverConnection.js";
+import server from "./serverConnection.js";
 import * as pregameInterface from "./frontPageInterface.js";
 
 //Variables
@@ -150,7 +150,8 @@ window.onload = function() {
             return;
         }
         //TODO to become item.getImage() under 'genericFactory'
-        let image = isPreview ? item.getImage() : gameState.getImage(item);
+//        let image = isPreview ? item.getImage() : gameState.getImage(item);
+        let image = gameState.getImage(item, isPreview); //if preview, force: frontImg
         if(!image) return;
 
         inspectImage.style.visibility = `visible`;
@@ -413,6 +414,7 @@ window.onload = function() {
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
         gameState.hoverIsCanvas(hoverElement instanceof HTMLCanvasElement);
 //        console.log(itemFocus);
+//        console.log(gameState.itemFromRGB(contextTouch, mouse));
 
         //handle tooltip hover- if canvas, finds object
         handleImageTooltip();
@@ -713,6 +715,21 @@ window.onload = function() {
                 break;
             case "KeyR":
                 rollDice();
+                break;
+            //Test code
+            case "KeyT":
+
+                let oldCard = { deck: { isDeck: true }, id: 1 };
+//                console.log(oldCard);
+                let newCard = { deck: null, id: 1 };
+                Object.assign(oldCard, newCard);
+                console.log(oldCard);
+                break;
+            //TODO temp- testing on-demand board refresh 'from server'
+            case "KeyU":
+                console.log("Here we go...");
+                gameState.rebuildBoard();
+                redraw();
                 break;
             case "ControlLeft":
             case "ControlRight":

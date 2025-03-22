@@ -1,10 +1,11 @@
 import {assets, sizes} from "./assets.js";
 import {loadCards, loadMisc, deckify} from "./itemFactory.js";
 import {userInterface} from "./boardInterface.js";
+import server from "./serverConnection.js";
 
 const gameState = (function() {
     //in order to render
-    const items = {
+    let items = {
         playMats: [],
         decks: [], //decks and cards could be merged;
         cards: [],
@@ -12,7 +13,14 @@ const gameState = (function() {
         players: [] //mouse, etc
     };
 
-    const players = new Map();
+    //Purpose: faster recall for serverUpdates or rebuilding gameState via server
+    let quickRef = [];
+
+    let players = new Map();
+
+    //Note re: rebuilding, this contains HAND OBJ with .ref
+    //on rebuild, check THIS and players (Map obj) for hand with matching id,
+    //then transfer cards
     let clientUser = {
         id: "0",
         color: "white",
@@ -20,6 +28,9 @@ const gameState = (function() {
     };
 
     let itemCount = 0;
+
+    //purpose: all in one, send to Server
+    const payload = [items, players, itemCount];
 
     function getID() {
         return ++itemCount;
@@ -107,6 +118,8 @@ const gameState = (function() {
 
     //turn to array input at some stage, for sake of 'deck'
     function push(item) {
+        //add to quickRef
+        quickRef[item.id] = item;
         return findList(item).push(item);
     }
 
@@ -191,8 +204,6 @@ const gameState = (function() {
         if(!Array.isArray(items)) items = new Array(items);
         if(items[0] == undefined) return;
 
-        let cardHolders = [];
-
         items.forEach((item) => {
             if(item.isDeck && item.browsing) return;
 
@@ -207,18 +218,10 @@ const gameState = (function() {
                 item.deck.selected = false;
             }
 
-            if(!hoverIsCanvas() && Object.hasOwn(item, "ref")) {
+            if(Object.hasOwn(item, "ref")) {
                 item.ref.deselect();
             }
-
-            if(item.deck.ref) {
-                cardHolders.push(item.deck.ref);
-            }
-
         });
-
-        //fixes visual: selected previewItem remains selected when moving back to canvas
-        cardHolders.forEach((ref) => ref.update());
     }
 
     //TODO: replace to 'tap' binary 0* rotation or 90*
@@ -321,9 +324,9 @@ const gameState = (function() {
 
                 if(hoverIsCanvas()
                 //to filter 'Hand' type, prevents error
-                && Object.hasOwn(item.deck, "getX")) {
-                    item.dragStart.x = item.deck.getX();
-                    item.dragStart.y = item.deck.getY();
+                && !Object.hasOwn(item.deck, "isHand")) {
+                    item.dragStart.x = item.deck.coord.x;
+                    item.dragStart.y = item.deck.coord.y;
                 } else {
                     //Purpose: dragging from Hand or Preview (nonCanvas)
                     fromDeckCards.push(item);
@@ -428,17 +431,14 @@ const gameState = (function() {
         });
     }
 
-    function getImage(item) {
+    //typeof force "boolean", true->frontImg
+    function getImage(item, force) {
         if(!item || (!item.index && item.index != 0)) return;
         if(item.isDeck) {
-//            return item.getImage();
-            const card = item.images[0];
-            return card.images[card.index];
+            item = item.images[0];
         }
 
-        return item.images[item.index];
-
-        //TODO: to become item.getImage() under 'genericFactory'
+        return force ? item.images[assets.frontImg] : item.images[item.index];
     }
 
     //to replace 'flip' function
@@ -530,7 +530,7 @@ const gameState = (function() {
                 if(item.selected) {
                     //server-wide clarity
                     //TODO- filter for user with id match, use user's .color
-                    color = players.get(item.selected).color || 'white';
+                    color = players.get(item.selected) ? players.get(item.selected).color : 'white';
                     visual.shadowColor = `${color}`;
                     visual.shadowBlur = 25;
                 } else {
@@ -582,7 +582,7 @@ const gameState = (function() {
             let color = 'white';
 
             if(deck.selected) {
-                color = players.get(deck.selected).color || 'white';
+                color = players.get(deck.selected) ? players.get(deck.selected).color : 'white';
                 visual.shadowColor = `${color}`;
                 visual.shadowBlur = 25;
             } else {
@@ -640,7 +640,8 @@ const gameState = (function() {
                 visual.save();
 
                 visual.filter = "blur(10px)";
-                visual.fillStyle = players.get(item.selected || item.browsing)["color"];
+                visual.fillStyle = players.get(item.selected || item.browsing) ?
+                players.get(item.selected || item.browsing)["color"] : "white";
                 visual.beginPath();
                 visual.arc(x + width/2, y + height/2, img.height/2,//radius
                     0, 2* Math.PI);
@@ -694,16 +695,27 @@ const gameState = (function() {
         'Monster Expansion',
         'Warrior and Druid Expansion',
     ];
+
+    //TODO- only call if server not connected OR server connected + no game existing OR loading solo OR loading demo
     function loadBoard(expansions) {
         //todo - from objectFactory, in conjunction with assets - hard coded set of objects - mats, dice
-        loadMisc().forEach((misc)=> push(misc));
+
+        let timeStamp = Date.now();
+
+        loadMisc().forEach((misc) => {
+            push(misc);
+            misc.timeStamp = timeStamp;
+        });
 
         //if loadAll, load all expansions- NOTE: make sure all assets are loaded
         let freshCards = loadCards(loadAll ? allExpansions: expansions);
 
         //push cards into gamestate
         for(const value of Object.values(freshCards)) {
-            value.forEach((item) => push(item));
+            value.forEach((item) => {
+                push(item);
+                item.timeStamp = timeStamp;
+            });
         }
 
         //decks- Card, Leader, Monster -- not hard coded
@@ -725,14 +737,147 @@ const gameState = (function() {
         //create decks -
         console.log(decks);
         for(const [key, value] of decks) {
-            push(deckify(value));
+            let deck = deckify(value);
+            push(deck);
+            deck.timeStamp = timeStamp;
         }
 
         items.decks.forEach(deck => deck.shuffle());
 
-        //TODO: set up player hand (starts empty)
+        //TODO- push to server; -- likely do processing at server
+        //TODO- likely keep all non-server module interactions abstracted
+        server.pushGame("testing!sayHiBack");
+    }
 
-        //then, finally load in cards?
+    //if connecting from a game in session OR fetching server's copy of gameState
+    function rebuildBoard(gameObjects, playerObjects) {
+
+        //TODO temporary testing: simulated data
+        let data = JSON.stringify(payload, server.replacer());
+        console.log(data);
+
+        data = JSON.parse(data);
+        gameObjects = data[0];
+        playerObjects = data[1];
+
+//        console.log(gameObjects);
+//        return;
+
+//        //TODO temp: simulate an empty gameState
+        console.log(items);
+        for(const [key, value] of Object.entries(items)) {
+//            while(value.length > 0) value.pop; //empty everything
+//            console.log(value);
+        }
+//        itemCount = 0; //set to 0 //NOTE: if not reverted, will cause "NEW ITEM [see deckify]" issue
+//        players.clear();
+
+        //Purpose: new client joining existing game, proceed as if quickRef empty, items empty
+        let oldRef = quickRef; //TODO important: strictly for testing comparisons
+        quickRef = {}; //empty everything
+
+        //Populate items object (renders list)
+        let reconstructionItems = {}; //equivalent of "items" obj
+        for(const [key, value] of Object.entries(gameObjects)) {
+            reconstructionItems[key] = [];
+            console.log(value);
+            value.forEach((item)=>{reconstructionItems[key].push(item)});
+            value.forEach((item)=>quickRef[item.id] = item);
+        }
+
+        //This far, card already have deck references...
+//        return;
+        console.log(reconstructionItems);
+
+        //Populate players map (list)
+        let reconstructionPlayers = new Map();
+        playerObjects.forEach((player) => reconstructionPlayers.set(player.id, player));
+
+        //Reconnect circular references, and JSON restructured properties
+        for(const [key, value] of Object.entries(reconstructionItems)) {
+            value.forEach((item) => {
+                //TODO- .deck can be a large number, as when in user.hand (user.id);
+                if(!item.isDeck && typeof item.deck === "number") {
+                    //NOTE: arbitrary, large, fit most cases
+                    if(item.deck > 10000) {
+                        item.deck = reconstructionPlayers.get(item.deck).hand; //check players IDs
+                    } else {
+                        item.deck = quickRef[item.deck];
+                    }
+                }
+                if(item.isDeck && item.images[0]) { //assumes (isDeck) ? any images=int
+                    let newImages = [];
+                    item.images.forEach((id) => newImages.push(quickRef[id]));
+                    item.images = newImages;
+                } else { //assumes if NOT deck.. then images need re-organizing
+                    let newImages = [];
+                    item.images.forEach((src) => {
+                        const image = new Image();
+                        image.src = src;
+                        image.height = item.height;
+                        image.width = item.width;
+                        newImages.push(image);
+                    });
+
+                    item.images = newImages;
+                }
+            })
+        }
+
+        //reconstruct "hand" (separate from renders list) circular references and JSON omitted
+        reconstructionPlayers.forEach((v,k,m) =>{
+            if(!v.hand.images) v.hand.images = []; //if was empty, JSON omitted, so initialize
+            if(v.hand.images.length != 0) { //assumes hand.images[] are all ids (int, number)
+                let newImages = [];
+                v.hand.images.forEach((id) => newImages.push(quickRef[id]));
+                v.hand.images = newImages;
+            }
+        });
+
+        //Apply all: renders
+        console.log(items);
+
+//        for(const [key, value] of Object.entries(items)) {
+//            items[key] = reconstructionItems[key];
+//        }
+        Object.assign(items, reconstructionItems);
+
+        //TODO- also fix hand.images[], still stuck integers
+        //TODO- ensure hand.images[] and refs of cards are all OK
+        reconstructionPlayers.forEach((v,k,m) => {
+            //Apply to user
+            if(k == clientUser.id) {
+                //pre-repair
+                let ref = clientUser.hand.ref;
+
+                //total overwrite
+                Object.assign(clientUser, v);
+
+                //repair
+                clientUser.hand.ref = ref;
+                ref.newSrc(clientUser.hand);
+            }
+        });
+        Object.assign(players, reconstructionPlayers);
+
+        console.log(items);
+
+//        //iter2.2: check user hands for .images to re-pointer
+        //NOTE: .ref is ommited; if .id == clientUser.id, transfer other properties;
+        //NOTE: never delete clientUser- this is the current client's identity
+
+        //TODO-attempt at isolating preview; if left for last, will this fix issues?
+//        quickRef.forEach((newItem) => {
+//            if(newItem.isDeck && newItem.browsing && newItem.browsing == clientUser.id) {
+//                //TODO refreshes OK, but is broken. deselect, reselect fixes.
+//                //common issues... images.forEach => getImage() not a function
+//                //common issues... images.forEach => "id" undefined
+//                console.log(newItem.images[0]);
+
+//            }
+//        })
+
+        console.log(userInterface.preview.cardModel);
     }
 
     //returns true: method was successful, proceed to purge selected (index.js)
@@ -816,7 +961,6 @@ const gameState = (function() {
     //actually, [random] likely just self inserts into calling person
     //'s hand
     function takeFromDeck(card) {
-//        console.log("took from deck");
         let {id, deck} = card;
         if(!id) console.log("no id found! takeFromDeck()");
         if(!deck) console.log("no deck found! takeFromDeck()");
@@ -850,8 +994,10 @@ const gameState = (function() {
             setCardDefaults(card);
         }
         items.decks.splice(items.decks.findIndex((entry) => entry == deck), 1);
+        quickRef[deck.id] = null; //or undefined
 
-        if(userInterface.preview.getView() == deck) selectView();
+        let view = userInterface.preview.getView();
+        if(view && view.id == deck.id) selectView();
     }
 
     //NOTE: deck.coord == undefined/null, set according to offset/mouse is on 'setStart()'
@@ -885,6 +1031,7 @@ const gameState = (function() {
         //null item, not a deck, is the same (deselect, above)
         if(!deck || current == deck || current == deck.deck || (deck.selected && deck.selected != clientUser.id)){
             //Note: if not selected, selected == false
+//            console.log("oh man...");
             return;
         };
 
@@ -967,7 +1114,6 @@ const gameState = (function() {
         if(!items) return;
         if(!Array.isArray(items)) items = new Array(items);
 
-
         items.forEach((item) => {
             //Whitelist: ["Card", "Leader", "Monster"]
             if(item.isDeck || item.deck || typeWhiteList.includes(item.type)) return;
@@ -997,6 +1143,7 @@ const gameState = (function() {
         drawItems,
         getImage,
         loadBoard,
+        rebuildBoard,
         purgeHoverItem,
         startPoint,
         offset,

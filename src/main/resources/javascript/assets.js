@@ -303,8 +303,6 @@ function loadAssets(chosenExpansions) {
 //track count of playmats (gameMat, playerMat) for purpose of tracking
 function loadMisc() {
 
-    console.log("Expect a few 'GET 404's (necessary) while we set this up...");
-
     //load miscellaneous, hardcoded: tokens, image backs
     let image = new Image(sizes.small.width, sizes.small.height);
     image.src = `${baseAddress}/Misc/backCard.jpg`;

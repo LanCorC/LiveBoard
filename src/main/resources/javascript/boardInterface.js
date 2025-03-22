@@ -103,7 +103,8 @@ class PreviewBox {
            //create img element + ref Card for selection+hoverInspect
             //+ ref cardModel 'deck' for deck-interactions
             const childImg = new Image();
-            childImg.src = card.getImage().src;
+//            childImg.src = card.getImage().src;
+            childImg.src = card.images[1].src
             childImg.card = card;
             card.ref = childImg;
             childImg.deck = this.cardModel;
@@ -174,6 +175,16 @@ class MyHand extends PreviewBox {
     enlargeBody() {
         super.enlargeBody();
         this.cardHolder.setAttribute("empty-hand-text", this.emptyHandText);
+    }
+
+    //Purpose: on full server update of hand
+    newSrc(cardModel) {
+        cardModel.ref = this;
+        this.cardModel = cardModel;
+        this.update();
+
+        this.cardHolder.deck = cardModel;
+        this.container.deck = cardModel;
     }
 
     //TODO: additional methods that enforce being locked out; and being returned access

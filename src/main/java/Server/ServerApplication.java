@@ -19,7 +19,6 @@ public class ServerApplication extends WebSocketServer {
     public static void main(String[] args) {
         var server = new ServerApplication();
         server.start();
-//        System.out.println(server.getAddress());
     }
 
     //Called after a handshake is established
@@ -44,8 +43,15 @@ public class ServerApplication extends WebSocketServer {
         }
 
         System.out.println(clients);
+
+        //
+        System.out.println("test");
         System.out.println(this.getConnections());
+        System.out.println(clientHandshake.getResourceDescriptor());
         //* then send the html/css/js?
+
+        broadcast("hiiii!");
+        System.out.println(getConnections());
     }
 
     @Override
@@ -55,7 +61,9 @@ public class ServerApplication extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket webSocket, String s) {
-
+        System.out.println("Message!");
+        System.out.printf("webSocket: %s; message: %s ", webSocket.toString(), s);
+        webSocket.send(s + " received");
     }
 
     @Override

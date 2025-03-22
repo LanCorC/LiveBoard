@@ -21,64 +21,209 @@ import gameState from "./gameState.js";
 //attempt at connecting to local server
 
 
-const server = (function() {
+//const server = (function() {
+//
+//    //To push updates, texts, to frontpage reference
+//    let frontPage = null;
+//    let loading = null;
+//
+//    //To hold the WebSocket reference
+//    let connection = null;
+//
+//    function connect(address, port) {
+//        if(!address) address = "localhost";
+//        if(!port) port = "8080";
+//
+//        let socket;
+//        //`ws://localhost:8080`
+//        socket = new WebSocket(`ws://${address}:${port}`);
+//        connection = socket;
+//
+//        socket.onopen = function(event) {
+//            console.log("Server connection secured!");
+//            //TODO - update frontPage buttons/headers of connection
+//            frontPage.connectionSuccess();
+//        }
+//
+//        socket.onclose = function(event) {
+//            if(event.wasClean) {
+//                console.log("Disconnected successfully");
+//                frontPage.connectionFailed();
+//            } else {
+//                //also triggers if connection attempt fails (server offline)
+////                console.log("Something went wrong!")
+////                frontPage.send("Server not found, or closed unexpectedly!");
+//                frontPage.connectionFailed();
+//            }
+//
+//            //TODO - update frontPage buttons/headers of connection
+//        }
+//
+////        socket.onmessage = function(event) {
+////            console.log(event);
+////            console.log("whoopie?");
+////        }
+//    }
+//
+//    function disconnect() {
+//        connection.close();
+//    }
+//
+//    //purpose: receive relevant UI elements for visual updates
+//    //TODO TBD: when to connect to our gameState (on loadscreen? on connect (single lobby?)
+//    function initialize(frontObj, loadObj) {
+//        frontPage = frontObj;
+//        loading = loadObj;
+//
+//        //Immediately try default server
+//        connect();
+//    }
+//
+//    function pushGame(data) {
+//        connection.send(data);
+//    }
+//
+//    return { connect, connection, disconnect, initialize, loading, pushGame };
+//})();
+
+class Server {
+
+    constructor() {
+    }
 
     //To push updates, texts, to frontpage reference
-    let frontPage = null;
-    let loading = null;
+    frontPage;
+    loading;
+    game;
 
     //To hold the WebSocket reference
-    let connection = null;
+    connection;
 
-    function connect(address, port) {
+    connect(address, port) {
         if(!address) address = "localhost";
         if(!port) port = "8080";
 
         let socket;
         //`ws://localhost:8080`
         socket = new WebSocket(`ws://${address}:${port}`);
-        connection = socket;
+        this.connection = socket;
+
+        //Note: necessary local variable for 'nested' (see below) methods
+        let frontUI = this.frontPage;
+        let loadingUI = this.loading;
 
         socket.onopen = function(event) {
             console.log("Server connection secured!");
             //TODO - update frontPage buttons/headers of connection
-            frontPage.send("Server connection secured!");
+            frontUI.connectionSuccess();
         }
 
         socket.onclose = function(event) {
             if(event.wasClean) {
                 console.log("Disconnected successfully");
-                frontPage.send("Disconnected successfully");
+                frontUI.connectionFailed();
             } else {
                 //also triggers if connection attempt fails (server offline)
-//                console.log("Something went wrong!")
-                frontPage.send("Server not found, or closed unexpectedly!");
+                //                console.log("Something went wrong!")
+                //                frontPage.send("Server not found, or closed unexpectedly!");
+                frontUI.connectionFailed();
             }
 
             //TODO - update frontPage buttons/headers of connection
         }
 
-//        socket.onmessage = function(event) {
-//            console.log(event);
-//            console.log("whoopie?");
-//        }
+        //TODO: differentiate between messages: chat, fullGameState refresh, gameUpdate
+        socket.onmessage = function(event) {
+            console.log(event.data);
+            console.log("whoopie?");
+        }
     }
 
-    function disconnect() {
-        connection.close();
+    disconnect() {
+        this.connection.close();
     }
 
     //purpose: receive relevant UI elements for visual updates
     //TODO TBD: when to connect to our gameState (on loadscreen? on connect (single lobby?)
-    function initialize(frontObj, loadObj) {
-        frontPage = frontObj;
-        loading = loadObj;
+    initialize(frontObj, loadObj, gameObj) {
+        this.frontPage = frontObj;
+        this.loading = loadObj;
+        this.game = gameState;
+
+//        console.log(this.frontPage);
+//        console.log(this.loading);
 
         //Immediately try default server
-        connect();
+        this.connect();
     }
 
-    return { connect, connection, disconnect, initialize, loading };
-})();
+    //TODO- validate if connected; additional: way to handle if connection drops?
+    //or leave for unlikely
+    pushGame(data) {
+        //'1' => Websocket.OPEN; '0' => Webocket.CONNECTING
+        if(this.connection == undefined || this.connection.readyState != 1) return;
+        console.log(data);
+        console.log(this.connection);
+        this.connection.send(data);
+    }
+
+    //cleanup function; private? for JSON
+    //TODO- our purpose: deck.image -> only array integers
+    //TODO- our purpose: card.deck (if any) -> only the id of deck
+    //TODO- our purpose: any.ref -> omit (only important to relevant client)
+    JSONreplacer() {
+        let isInitial = true;
+
+        return (key, value) => {
+            if(value instanceof Map) { //handle Map object, in case of "players"
+                let newVal = [];
+                value.forEach((v,k,m) => newVal.push(v));
+                return newVal;
+            }
+
+            if (isInitial) {
+                isInitial = false;
+                return value;
+            }
+
+            if (key === "") {
+                // Omit all properties with name "" (except the initial object)
+                return undefined;
+            }
+            switch(key) {
+                case "ref":     //of objects with UI references
+                    return undefined;
+                case "deck":    //of card.deck which contains said card in .deck.images
+                    //TODO- turned value -> value.id
+                    return value.id;
+                case "images":  //of 'decks' and 'hands' with backreferences
+                    //TODO-check is actually related to deck
+                    let newImagesRef = [];
+                    if(value.length == 0) return newImagesRef;  //handle "empty" hand
+                    if(!Object.hasOwn(value[0], "index")) {     //are NOT card objects
+                        value.forEach(card => newImagesRef.push(card.src));
+                    } else {            //else, are CARD objects
+                        value.forEach(card => newImagesRef.push(card.id));
+                    }
+                    return newImagesRef;
+                case "players":
+                    //TODO- test if i can handle MAP to just return arr objs values
+//                    console.log(key);
+                default:
+                    return value;
+            }
+
+            return value;
+        };
+    }
+
+    //note: Use this as second arg in JSON.stringify
+    //Returns TypeError "not a function", but work for purposes of reusability
+    replacer() {
+        return this.JSONreplacer();
+    }
+}
+
+const server = new Server();
 
 export default server;

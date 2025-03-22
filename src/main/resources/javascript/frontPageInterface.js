@@ -1,4 +1,5 @@
 import server from "./serverConnection.js";
+import gameState from "./gameState.js";
 import { initialize as initializeAssets } from "./assets.js";
 
 //import
@@ -42,6 +43,13 @@ const frontPage = (function() {
         frontPage.innerHTML += message;
     }
 
+    function connectionFailed() {
+        frontPage.innerHTML += "Connection failed";
+    }
+    function connectionSuccess() {
+        frontPage.innerHTML += "Connection successful";
+    }
+
     function increment() { //Purpose: subtle 'miscAssets' loading
         //TODO - reference of frontPage outside of  frontPageInterface.js finds .count obj
         //TODO - but fails to work inside. i've seen this before        //TODO- separate divs
@@ -61,7 +69,7 @@ const frontPage = (function() {
 
     //animation: fade out (transition to gameboard)
 
-    return { send, increment };
+    return { send, increment, connectionSuccess, connectionFailed };
 })();
 
 //purpose: handle all loading page,elements: connection to assets on loadscr
@@ -102,7 +110,7 @@ const loading = (function() {
 //TODO- purpose to make sure all reference are passed; i.e. 'serverConnection.js' receives its c
 function initialize() {
     //connect to server
-    server.initialize(frontPage, loading);
+    server.initialize(frontPage, loading, gameState);
 
     //connect to assets, loadscreen
     initializeAssets(frontPage, loading, false, assetCount);
