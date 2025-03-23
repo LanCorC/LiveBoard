@@ -31,23 +31,70 @@ const frontPage = (function() {
     //element reference
     //TODO- front page elements, objects
     //TODO testing: preliminary test to demonstrate "Loaded asset tracking" for loading page; add to div
-    const frontPage = document.getElementById("textHere1"); //topHalf div
+    const frontPage = document.getElementById("frontPage");
 
-    //tracking properties (array of updates? e.g. list of assets received)
+    const miscLoading = document.getElementById("miscLoad");
+    const connectionStatus = document.getElementById("connectionStatus"); //topHalf div
 
-    //apply properties
+    const serverConnectButton = document.getElementById("connectButton");
+    const addressInput = document.getElementById("address");
+    const portInput = document.getElementById("port");
+
+    //TODO- if server.gameState exists, reword to "Join Game"; client loads gameState from server
+    //TODO- if not already, reword to "Start Game"; this client creates then passes to server
+    const serverJoinButton = document.getElementById("serverJoin");
+    //TODO: soloButton loads from scratch;
+    //TODO: demoButton loads from a "simulated" snapshot
+    const demoButton = document.getElementById("loadDemo");
+    const soloButton = document.getElementById("loadSolo");
+
+    //TEMPORARY: testing for buttons, accessibility
+    let btns = [serverJoinButton, demoButton, soloButton];
+    btns.forEach((btn) => {
+        btn.addEventListener("click",
+            () => {
+                frontPage.style.pointerEvents = "none";
+                frontPage.style.opacity = "0";
+            });
+    })
+
+    serverConnectButton.addEventListener("click",
+        () => server.connect(addressInput.value, portInput.value));
 
     //update methods
     function send(message) {
-//        frontPage.appendChild(message);
-        frontPage.innerHTML += message;
+        miscLoading.innerHTML += message;
     }
 
-    function connectionFailed() {
-        frontPage.innerHTML += "Connection failed";
+    function connectionFailed(message) {
+        if(!message) message =
+        `Connection to ${addressInput.value}:${portInput.value} failed!`;
+        connectionStatus.innerHTML = message;
+        serverJoinButton.setAttribute("disabled","");
+
+        enableManualsConnects();
     }
     function connectionSuccess() {
-        frontPage.innerHTML += "Connection successful";
+        connectionStatus.innerHTML = "Connection successful!";
+        serverJoinButton.removeAttribute("disabled");
+
+        disableManualsConnects();
+    }
+    function connectionStarted(address, port) {
+        connectionStatus.innerHTML = `Establishing connection... ${address}:${port}`;
+        addressInput.value = address;
+        portInput.value = port;
+
+        disableManualsConnects();
+    }
+
+    function disableManualsConnects() {
+        let arr = [serverConnectButton, addressInput, portInput];
+        arr.forEach((ele) => ele.setAttribute("disabled",""));
+    }
+    function enableManualsConnects() {
+        let arr = [serverConnectButton, addressInput, portInput];
+        arr.forEach((ele) => ele.removeAttribute("disabled"));
     }
 
     function increment() { //Purpose: subtle 'miscAssets' loading
@@ -56,20 +103,16 @@ const frontPage = (function() {
 
         assetCount.miscCards++;
 
-        let message = `<p>Loading miscellaneous assets...
-        ${assetCount.miscCards}/${assetCount.miscCardsExpected}`;
+        let message =
+        `Loading miscellaneous assets...${assetCount.miscCards}/${assetCount.miscCardsExpected}`;
 
-        const pElement = document.createElement("p");
-        pElement.innerHTML = message;
-        frontPage.appendChild(pElement);
-        pElement.scrollIntoView();
+        if(assetCount.miscCards==assetCount.miscCardsExpected) {
+            message = "Misc loading: Complete!";
+        }
+        miscLoading.innerText = message;
     }
 
-    //clear methods
-
-    //animation: fade out (transition to gameboard)
-
-    return { send, increment, connectionSuccess, connectionFailed };
+    return { send, increment, connectionSuccess, connectionFailed, connectionStarted };
 })();
 
 //purpose: handle all loading page,elements: connection to assets on loadscr
@@ -77,32 +120,31 @@ const loading = (function() {
     //element reference
     //TODO- front page elements, objects
     //TODO testing: preliminary test to demonstrate "Loaded asset tracking" for loading page; add to div
-    const loadingScreen = document.getElementById("textHere2"); //bottomHalf div
-
+    const loadingScreen = document.getElementById("assetLoad"); //bottomHalf div
+    const demoButton = document.getElementById("loadDemo");
+    const soloButton = document.getElementById("loadSolo");
     //tracking properties (array of updates? e.g. list of assets received)
 
     //apply properties
 
     //update methods
     function send(message) {
-//        loadingScreen.appendChild(message);
         loadingScreen.innerHTML += message;
     }
 
     function increment() {
         assetCount.expansionCards++;
 
-        let message = `<p>Retrieving card image assets...
-        ${assetCount.expansionCards}/${assetCount.expansionCardsExpected}`;
-        const pElement = document.createElement("p");
-        pElement.innerHTML = message;
-        loadingScreen.appendChild(pElement);
-        pElement.scrollIntoView();
+        let message =
+        `Retrieving card image assets...${assetCount.expansionCards}/${assetCount.expansionCardsExpected}`;
+
+        if(assetCount.expansionCards==assetCount.expansionCardsExpected) {
+            message = "Asset loading: Complete!";
+            demoButton.removeAttribute("disabled");
+            soloButton.removeAttribute("disabled");
+        }
+        loadingScreen.innerText = message;
     }
-
-    //clear methods
-
-    //animation: fade out (transition to gameboard)
 
     return { send, increment };
 })();
@@ -114,6 +156,10 @@ function initialize() {
 
     //connect to assets, loadscreen
     initializeAssets(frontPage, loading, false, assetCount);
+
+    //connect gameState to frontPage
+    //TODO: have gameState push updates, "Fetching gameState..." "Setting up board..."
+    gameState.frontPage = {frontPage, loading};
 }
 
 //TODO more elements

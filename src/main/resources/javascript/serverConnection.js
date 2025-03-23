@@ -20,72 +20,6 @@ import gameState from "./gameState.js";
 //Goal2: have github spit out the HTML, the ws attempt, and loading screen + demo ready
 //attempt at connecting to local server
 
-
-//const server = (function() {
-//
-//    //To push updates, texts, to frontpage reference
-//    let frontPage = null;
-//    let loading = null;
-//
-//    //To hold the WebSocket reference
-//    let connection = null;
-//
-//    function connect(address, port) {
-//        if(!address) address = "localhost";
-//        if(!port) port = "8080";
-//
-//        let socket;
-//        //`ws://localhost:8080`
-//        socket = new WebSocket(`ws://${address}:${port}`);
-//        connection = socket;
-//
-//        socket.onopen = function(event) {
-//            console.log("Server connection secured!");
-//            //TODO - update frontPage buttons/headers of connection
-//            frontPage.connectionSuccess();
-//        }
-//
-//        socket.onclose = function(event) {
-//            if(event.wasClean) {
-//                console.log("Disconnected successfully");
-//                frontPage.connectionFailed();
-//            } else {
-//                //also triggers if connection attempt fails (server offline)
-////                console.log("Something went wrong!")
-////                frontPage.send("Server not found, or closed unexpectedly!");
-//                frontPage.connectionFailed();
-//            }
-//
-//            //TODO - update frontPage buttons/headers of connection
-//        }
-//
-////        socket.onmessage = function(event) {
-////            console.log(event);
-////            console.log("whoopie?");
-////        }
-//    }
-//
-//    function disconnect() {
-//        connection.close();
-//    }
-//
-//    //purpose: receive relevant UI elements for visual updates
-//    //TODO TBD: when to connect to our gameState (on loadscreen? on connect (single lobby?)
-//    function initialize(frontObj, loadObj) {
-//        frontPage = frontObj;
-//        loading = loadObj;
-//
-//        //Immediately try default server
-//        connect();
-//    }
-//
-//    function pushGame(data) {
-//        connection.send(data);
-//    }
-//
-//    return { connect, connection, disconnect, initialize, loading, pushGame };
-//})();
-
 class Server {
 
     constructor() {
@@ -105,12 +39,16 @@ class Server {
 
         let socket;
         //`ws://localhost:8080`
-        socket = new WebSocket(`ws://${address}:${port}`);
+//        console.log(this.game.clientUser.id);
+        socket = new WebSocket(
+            `ws://${address}:${port}/user=${localStorage.getItem("id")}`);
         this.connection = socket;
 
         //Note: necessary local variable for 'nested' (see below) methods
         let frontUI = this.frontPage;
         let loadingUI = this.loading;
+
+        frontUI.connectionStarted(address, port);
 
         socket.onopen = function(event) {
             console.log("Server connection secured!");
@@ -120,8 +58,8 @@ class Server {
 
         socket.onclose = function(event) {
             if(event.wasClean) {
-                console.log("Disconnected successfully");
-                frontUI.connectionFailed();
+                console.log(`Disconnected successfully: ${event.reason}`);
+                frontUI.connectionFailed(event.reason);
             } else {
                 //also triggers if connection attempt fails (server offline)
                 //                console.log("Something went wrong!")
@@ -135,7 +73,6 @@ class Server {
         //TODO: differentiate between messages: chat, fullGameState refresh, gameUpdate
         socket.onmessage = function(event) {
             console.log(event.data);
-            console.log("whoopie?");
         }
     }
 
@@ -154,7 +91,8 @@ class Server {
 //        console.log(this.loading);
 
         //Immediately try default server
-        this.connect();
+        //TODO- not just yet. establish clientUser first, as server-conn identifier
+//        this.connect();
     }
 
     //TODO- validate if connected; additional: way to handle if connection drops?

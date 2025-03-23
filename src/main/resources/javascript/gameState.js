@@ -1,6 +1,6 @@
 import {assets, sizes} from "./assets.js";
 import {loadCards, loadMisc, deckify} from "./itemFactory.js";
-import {userInterface} from "./boardInterface.js";
+import {userInterface, initializeBoardInterface} from "./boardInterface.js";
 import server from "./serverConnection.js";
 
 const gameState = (function() {
@@ -15,6 +15,8 @@ const gameState = (function() {
 
     //Purpose: faster recall for serverUpdates or rebuilding gameState via server
     let quickRef = [];
+
+    let frontPage = null;
 
     let players = new Map();
 
@@ -1127,6 +1129,29 @@ const gameState = (function() {
         //purge selection (index.js) after
     }
 
+    function initializeUser() {
+        //check storage for existing unique id, regardless, store this;
+        let id = localStorage.getItem("id");
+        if(!id) {
+            id = Date.now();
+            localStorage.setItem("id", id);
+        };
+
+        //create user, then add to player list
+        const user = {
+            id: id,
+            color: "white",
+            name: "Player1",
+            position: 0 //purposes of myHand default, card rotation
+        };
+
+        addPlayer(user);
+        initializeBoardInterface(user);
+
+        //return user
+        return user;
+    }
+
     return {
         getID,
         idToRGB,
@@ -1153,7 +1178,10 @@ const gameState = (function() {
         translateDimensions,
         correctCoords,
         tapItem,
-        anchorItem
+        anchorItem,
+        initializeUser,
+        clientUser,
+        frontPage
     };
 })();
 

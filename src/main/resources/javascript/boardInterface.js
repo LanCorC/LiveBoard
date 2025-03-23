@@ -290,7 +290,7 @@ function createTopView() {
 }
 
 //TODO- wip, see comments
-export function initializeBoard(clientUser) {
+export function initializeBoardInterface(clientUser) {
     createBottomRow(clientUser);
 
     createTopView();

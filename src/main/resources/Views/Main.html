@@ -147,27 +147,28 @@
             z-index: 6;
             position: absolute;
             height: 100vh;
-            width: 100vh;
-            /*            temp*/
-            pointer-events: none;
-            opacity: 0.1;
+            width: 100vw;
+
+            opacity: 0.8;
+            background-color: rgba(255, 255, 255, 0.9);
+            text-align: center;
         }
 
         .textHere {
-            height: 50vh; /* half the page each */
-            width: 100vw;
+/*            height: 20vh;  half the page each */
+/*            width: 100vw;*/
             overflow-y: auto; /* is default anyways? TBD */
             overflow-wrap: break-word;
         }
 
-        #textHere1 {
+        #miscLoad {
         /*current: grey ash, 50% transparent*/
-            background-color: rgba(52, 218, 93, 0.1);
+            background-color: rgba(52, 218, 93, 0.5);
         }
 
-        #textHere2 {
+        #assetLoad {
         /*current: grey ash, 50% transparent*/
-            background-color: rgba(255, 0, 250, 0.1);
+            background-color: rgba(255, 0, 250, 0.5);
         }
 
     </style>
@@ -180,12 +181,26 @@
                 <img id="inspectImage" >
         </div>
         <div id="frontPage">
-            <div class="textHere" id="textHere1">
+            <h1>Virtual Table Top: Here To Slay!</h1>
 
-            </div>
-            <div class="textHere" id="textHere2">
+            <!-- inputs to hold default as placeholder via javascript -->
+            <label>Address: </label><input type="text" id="address" disabled>
+            <label>Port: </label><input type="text" id="port" disabled>
+            <button type="button" id="connectButton" disabled>Manual Connect</button>
+            <p id="connectionStatus" disabled>Please wait while we set up.</p>
 
-            </div>
+            <!-- serverJoin to change text or availability based on server connection -->
+            <button type="button" id="serverJoin" disabled>Start Game</button>
+            <button type="button" id="loadDemo" disabled>Load Demo</button>
+            <button type="button" id="loadSolo" disabled>Load Solo</button>
+
+            <!-- misc assets - card assets - board setup -->
+            <p class="textHere" id="miscLoad">
+            </p>
+            <p class="textHere" id="assetLoad">
+            </p>
+            <p class="textHere" id="gameLoad">
+            </p>
         </div>
     </body>
 

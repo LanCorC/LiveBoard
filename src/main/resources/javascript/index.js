@@ -43,16 +43,10 @@ window.onload = function() {
     gameState.loadBoard(expansionsToLoad);
 
     //TODO - create ID, check server (if server, add to server, retrieve gameState; else create gameState)
-    const user = {
-        id: Date.now(),
-        //TODO - UI to choose own color
-        color: "red",
-        //TODO - UI to choose own name
-        name: "Player1",
-        position: 0 //purposes of myHand default, card rotation
-    };
-    gameState.addPlayer(user);
-    userInterface.initializeBoard(user);
+    //TODO- keep copy of user here, but have it be created via gameState
+    const user = gameState.initializeUser();
+    //Placeholder probing for conncetion once user unique ID established
+    server.connect();
 
     //Load all event interactions, draws,
     const contextVis = board.getContext("2d");
