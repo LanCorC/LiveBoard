@@ -2,29 +2,18 @@ import server from "./serverConnection.js";
 import gameState from "./gameState.js";
 import { initialize as initializeAssets } from "./assets.js";
 
-//import
-
 //Purpose: control frontPage controls, 'loading screen', and server status (on/offline)
-
-
-//TODO- store copy of server? - serve "Server is offline" or "Game: 3 players online"
-//if "Reconnect" button -> attempts to call again;
-
-//TODO- pass on "Loading Screen" to assets; or import Assets.js
-
-//TODO: have assets.js have any number of "interface", an object
-//TODO cont: have frontPageInterface.js assign all relevant "visual interface"
-//TODO: on each specific assets.js interfaceType,
-    //if(interface) interface.update("updateMsgString")
-
-//said 'interfaceObj' in THIS module .update() takes the input,
-//then manipulates frontPage data
-
-
-//TODO- load screen elements, objects
 
 //purpose: tracking number of obj assets to load, for user display
 let assetCount = {};
+let tools = {
+    disable: function(element) {
+        element.setAttribute("disabled","");
+    },
+    enable: function(element) {
+        element.removeAttribute("disabled");
+    }
+}; //store 'outside functions' like context redraw
 
 //purpose: handle all frontPage - connect button, load board, [join lobby?]
 const frontPage = (function() {
@@ -48,18 +37,57 @@ const frontPage = (function() {
     const demoButton = document.getElementById("loadDemo");
     const soloButton = document.getElementById("loadSolo");
 
-    //TEMPORARY: testing for buttons, accessibility
-    let btns = [serverJoinButton, demoButton, soloButton];
-    btns.forEach((btn) => {
-        btn.addEventListener("click",
-            () => {
-                frontPage.style.pointerEvents = "none";
-                frontPage.style.opacity = "0";
-            });
-    })
+    const gameLoading = document.getElementById("gameLoad");
+
+    //TODO- fetch gameState from server, then set up board
+    //OR set up board and send new gameState to server
+    serverJoinButton.addEventListener("click", ()=>{
+//        revealGame();
+        gameLoadMessage("Oops, we haven't quite made that yet!");
+
+        tools.disable(serverJoinButton);
+    });
+
+    demoButton.addEventListener("click", async() => {
+        server.disconnect(1000, "Client is loading: DEMO");
+        gameLoadMessage("Setting up board...");
+        await gameState.rebuildBoard("","",true);
+        tools.redraw();
+        gameLoadMessage("Revealing board!");
+        revealGame();
+
+        tools.disable(demoButton);
+    });
+
+    //Note: not async, never had an issue with redraw() and asset onload mismatch
+    soloButton.addEventListener("click", () => {
+        server.disconnect(1000, "Client is loading: SOLO");
+
+        gameLoadMessage("Setting up board...");
+        gameState.loadBoard();
+        tools.redraw();
+        gameLoadMessage("Revealing board!");
+        revealGame();
+
+        //Keep: Important; if you dont click out + !disabled, spacebar retriggers
+        tools.disable(soloButton);
+    });
+
+    function revealGame() {
+        frontPage.style.pointerEvents = "none";
+        frontPage.style.opacity = "0";
+    }
+    function hideGame() {
+        frontPage.style.pointerEvents = "default";
+        frontPage.style.opacity = "1";
+    }
 
     serverConnectButton.addEventListener("click",
         () => server.connect(addressInput.value, portInput.value));
+
+    function gameLoadMessage(message) {
+        gameLoading.innerHTML = message;
+    }
 
     //update methods
     function send(message) {
@@ -70,13 +98,14 @@ const frontPage = (function() {
         if(!message) message =
         `Connection to ${addressInput.value}:${portInput.value} failed!`;
         connectionStatus.innerHTML = message;
-        serverJoinButton.setAttribute("disabled","");
+
+        tools.disable(serverJoinButton);
 
         enableManualsConnects();
     }
     function connectionSuccess() {
         connectionStatus.innerHTML = "Connection successful!";
-        serverJoinButton.removeAttribute("disabled");
+        tools.enable(serverJoinButton);
 
         disableManualsConnects();
     }
@@ -90,11 +119,12 @@ const frontPage = (function() {
 
     function disableManualsConnects() {
         let arr = [serverConnectButton, addressInput, portInput];
-        arr.forEach((ele) => ele.setAttribute("disabled",""));
+        arr.forEach((ele) => tools.disable(ele));
+
     }
     function enableManualsConnects() {
         let arr = [serverConnectButton, addressInput, portInput];
-        arr.forEach((ele) => ele.removeAttribute("disabled"));
+        arr.forEach((ele) => tools.enable(ele));
     }
 
     function increment() { //Purpose: subtle 'miscAssets' loading
@@ -163,4 +193,4 @@ function initialize() {
 }
 
 //TODO more elements
-export {frontPage, loading, initialize};
+export {frontPage, loading, initialize, tools};

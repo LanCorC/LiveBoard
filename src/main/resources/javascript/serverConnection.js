@@ -76,8 +76,8 @@ class Server {
         }
     }
 
-    disconnect() {
-        this.connection.close();
+    disconnect(code, reason) {
+        this.connection.close(code, reason);
     }
 
     //purpose: receive relevant UI elements for visual updates

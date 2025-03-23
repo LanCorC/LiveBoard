@@ -2,6 +2,7 @@ import {assets, sizes} from "./assets.js";
 import {loadCards, loadMisc, deckify} from "./itemFactory.js";
 import {userInterface, initializeBoardInterface} from "./boardInterface.js";
 import server from "./serverConnection.js";
+import presets from "./presets.js";
 
 const gameState = (function() {
     //in order to render
@@ -752,43 +753,44 @@ const gameState = (function() {
     }
 
     //if connecting from a game in session OR fetching server's copy of gameState
-    function rebuildBoard(gameObjects, playerObjects) {
+    //demo-boolean, "true" => load from presets
+    function rebuildBoard(gameObjects, playerObjects, demo) {
 
-        //TODO temporary testing: simulated data
-        let data = JSON.stringify(payload, server.replacer());
+        let data;
+        if(demo) {
+            data = presets.demo1;
+        } else if(!gameObjects && !playerObjects) {
+            data = JSON.stringify(payload, server.replacer());
+        }
+
         console.log(data);
 
         data = JSON.parse(data);
         gameObjects = data[0];
         playerObjects = data[1];
 
-//        console.log(gameObjects);
-//        return;
+        console.log(gameObjects);
 
-//        //TODO temp: simulate an empty gameState
         console.log(items);
-        for(const [key, value] of Object.entries(items)) {
-//            while(value.length > 0) value.pop; //empty everything
-//            console.log(value);
-        }
-//        itemCount = 0; //set to 0 //NOTE: if not reverted, will cause "NEW ITEM [see deckify]" issue
-//        players.clear();
 
         //Purpose: new client joining existing game, proceed as if quickRef empty, items empty
-        let oldRef = quickRef; //TODO important: strictly for testing comparisons
+        let oldRef = quickRef; //Note important: strictly for testing comparisons
         quickRef = {}; //empty everything
 
         //Populate items object (renders list)
         let reconstructionItems = {}; //equivalent of "items" obj
+        let largestId = 0; //purpose: correcting gameState id; TODO: refer to server for gameId
+
         for(const [key, value] of Object.entries(gameObjects)) {
             reconstructionItems[key] = [];
             console.log(value);
-            value.forEach((item)=>{reconstructionItems[key].push(item)});
-            value.forEach((item)=>quickRef[item.id] = item);
+            value.forEach((item)=>{
+                reconstructionItems[key].push(item);
+                quickRef[item.id] = item;
+                largestId = Math.max(largestId, item.id);
+            });
         }
 
-        //This far, card already have deck references...
-//        return;
         console.log(reconstructionItems);
 
         //Populate players map (list)
@@ -839,9 +841,6 @@ const gameState = (function() {
         //Apply all: renders
         console.log(items);
 
-//        for(const [key, value] of Object.entries(items)) {
-//            items[key] = reconstructionItems[key];
-//        }
         Object.assign(items, reconstructionItems);
 
         //TODO- also fix hand.images[], still stuck integers
@@ -871,15 +870,17 @@ const gameState = (function() {
         //TODO-attempt at isolating preview; if left for last, will this fix issues?
 //        quickRef.forEach((newItem) => {
 //            if(newItem.isDeck && newItem.browsing && newItem.browsing == clientUser.id) {
-//                //TODO refreshes OK, but is broken. deselect, reselect fixes.
-//                //common issues... images.forEach => getImage() not a function
-//                //common issues... images.forEach => "id" undefined
 //                console.log(newItem.images[0]);
 
 //            }
 //        })
 
-        console.log(userInterface.preview.cardModel);
+        //TODO- rely or link to server, if (server.connection)
+        itemCount = largestId;
+
+        //arbitrary timer, just enough time to allow assets to 'reload'
+        //Note: codeblock finishes ~instantly. onload (cached) is 'near instant'.
+        return new Promise(resolve => {setTimeout(()=> resolve(true), 500)});
     }
 
     //returns true: method was successful, proceed to purge selected (index.js)

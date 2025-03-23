@@ -39,13 +39,10 @@ loadAssets(expansionsToLoad);
 
 
 window.onload = function() {
-    //TODO - temporary -- to refactor as loading the entire board html
-    gameState.loadBoard(expansionsToLoad);
-
-    //TODO - create ID, check server (if server, add to server, retrieve gameState; else create gameState)
-    //TODO- keep copy of user here, but have it be created via gameState
+    //TODO - check server (if server, add to server, retrieve gameState; else create gameState)
+    //Establishes uniqueID to storage if not already
     const user = gameState.initializeUser();
-    //Placeholder probing for conncetion once user unique ID established
+    //Connection 'requires' uniqueID to gauge new or old connection
     server.connect();
 
     //Load all event interactions, draws,
@@ -72,7 +69,6 @@ window.onload = function() {
     }
     centerBoard();
 
-
     //mouse tracking
     let mouse = {
         x: board.width,
@@ -97,6 +93,8 @@ window.onload = function() {
 //        gameState.drawItems(itemFocus, dragging, contextVis, contextTouch);
         gameState.drawItems(dragging, contextVis, contextTouch);
     };
+
+    pregameInterface.tools.redraw = redraw;
 
     let inspectImgSize = 1;
     let iISizeMin = 0.2;
@@ -201,6 +199,7 @@ window.onload = function() {
         } else if (document.elementFromPoint(mouse.x, mouse.y) instanceof HTMLCanvasElement) {
             //for purposes of: looking at items on board
 
+            //TODO- suspected cause, hoverElement reassigned
             let item = gameState.itemFromRGB(contextTouch, mouse);
             //used in downstream of 'mousemove'
             hoverElement = item;
@@ -639,9 +638,6 @@ window.onload = function() {
             case "KeyX":
                 decreaseInspectSize();
                 break;
-            case "KeyI":
-                toggleTooltip();
-                break;
             case "ControlLeft":
             case "ControlRight":
                 strictPanMode = true;
@@ -701,6 +697,10 @@ window.onload = function() {
             case "KeyD":
                 handleBoardRotate(true);
                 break;
+            //TODO- disabled until bug fixed: turn off, hoverItems/itemFocus breaks
+//            case "KeyI":
+//                toggleTooltip();
+//                break;
             case "KeyL":
                 anchorItem();
                 break;
