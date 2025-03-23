@@ -306,14 +306,19 @@ function loadMisc() {
     //load miscellaneous, hardcoded: tokens, image backs
     let image = new Image(sizes.small.width, sizes.small.height);
     image.src = `${baseAddress}/Misc/backCard.jpg`;
+    image.source = `${baseAddress}/Misc/backCard.jpg`;
     miscRef.get("back")["backCard"] = image;
 
     image = new Image(sizes.medium.width, sizes.medium.height);
     image.src = `${baseAddress}/Misc/backLeader.jpg`;
+    image.source = `${baseAddress}/Misc/backLeader.jpg`;
+
     miscRef.get("back")["backLeader"] = image;
 
     image = new Image(sizes.medium.width, sizes.medium.height);
     image.src = `${baseAddress}/Misc/backMonster.jpg`;
+    image.source = `${baseAddress}/Misc/backMonster.jpg`;
+
     miscRef.get("back")["backMonster"] = image;
 
     console.log(`Unpacking PlayMats...`);
@@ -426,6 +431,9 @@ function preProcessRefCard(card, expansion, prefix) {
     }
 
     card.src = `${baseAddress}/Game/${expansion}/${prefix}${padHundred(card.magicId)}.png`;
+    card.source = `${baseAddress}/Game/${expansion}/${prefix}${padHundred(card.magicId)}.png`;
+
+
 }
 
 //Note: assumes there can only be x01 -> x99 of a type
@@ -533,6 +541,8 @@ function preProcessPlaymat(card, folderName) {
     }
 
     card.src = `${baseAddress}/${folderName}/${padHundred(card.magicId)}.png`;
+    card.source = `${baseAddress}/${folderName}/${padHundred(card.magicId)}.png`;
+
 }
 
 //use card's Magic ID to distinguish from gameMat, playMat

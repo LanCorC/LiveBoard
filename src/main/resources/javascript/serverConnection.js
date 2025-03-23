@@ -139,7 +139,9 @@ class Server {
                     let newImagesRef = [];
                     if(value.length == 0) return newImagesRef;  //handle "empty" hand
                     if(!Object.hasOwn(value[0], "index")) {     //are NOT card objects
-                        value.forEach(card => newImagesRef.push(card.src));
+                        value.forEach(card => {
+                            newImagesRef.push(card.source);
+                        });
                     } else {            //else, are CARD objects
                         value.forEach(card => newImagesRef.push(card.id));
                     }

@@ -758,7 +758,10 @@ const gameState = (function() {
 
         let data;
         if(demo) {
-            data = presets.demo1;
+            data = presets.demo3;
+//            console.log(data);
+//            data = data.replaceAll(`http://localhost:63342/LiveBoard`,`..`);
+//            data = data.replaceAll(`%20`, " ");
         } else if(!gameObjects && !playerObjects) {
             data = JSON.stringify(payload, server.replacer());
         }
@@ -820,6 +823,7 @@ const gameState = (function() {
                         image.src = src;
                         image.height = item.height;
                         image.width = item.width;
+                        image.source = src;
                         newImages.push(image);
 
                         image.onerror = () => {
