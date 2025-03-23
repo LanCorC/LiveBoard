@@ -821,6 +821,10 @@ const gameState = (function() {
                         image.height = item.height;
                         image.width = item.width;
                         newImages.push(image);
+
+                        image.onerror = () => {
+                            console.log(image.src);
+                        }
                     });
 
                     item.images = newImages;
