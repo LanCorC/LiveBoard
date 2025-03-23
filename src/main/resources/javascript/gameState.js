@@ -759,9 +759,6 @@ const gameState = (function() {
         let data;
         if(demo) {
             data = presets.demo3;
-//            console.log(data);
-//            data = data.replaceAll(`http://localhost:63342/LiveBoard`,`..`);
-//            data = data.replaceAll(`%20`, " ");
         } else if(!gameObjects && !playerObjects) {
             data = JSON.stringify(payload, server.replacer());
         }
@@ -1140,7 +1137,7 @@ const gameState = (function() {
 
     function initializeUser() {
         //check storage for existing unique id, regardless, store this;
-        let id = localStorage.getItem("id");
+        let id = Number(localStorage.getItem("id"));
         if(!id) {
             id = Date.now();
             localStorage.setItem("id", id);
