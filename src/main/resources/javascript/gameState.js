@@ -1130,7 +1130,7 @@ const gameState = (function() {
             } else {
                 item.anchored = true; //the value does not matter
             }
-        })
+        });
 
         //purge selection (index.js) after
     }

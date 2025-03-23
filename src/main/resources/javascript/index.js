@@ -175,6 +175,8 @@ window.onload = function() {
     const handleImageTooltip = function(event) {
 
         if(!inspectMode || hoverElement == null) {
+            if (document.elementFromPoint(mouse.x, mouse.y) instanceof HTMLCanvasElement)
+                hoverElement = gameState.itemFromRGB(contextTouch, mouse);
             return;
         }
 
@@ -193,10 +195,7 @@ window.onload = function() {
         inspectImage.style.left = `${x}px`;
 
         //Canvas route
-        if (!inspectMode) {
-            console.log("Inspect mode is off");
-            return;
-        } else if (document.elementFromPoint(mouse.x, mouse.y) instanceof HTMLCanvasElement) {
+        if (document.elementFromPoint(mouse.x, mouse.y) instanceof HTMLCanvasElement) {
             //for purposes of: looking at items on board
 
             //TODO- suspected cause, hoverElement reassigned
@@ -697,10 +696,9 @@ window.onload = function() {
             case "KeyD":
                 handleBoardRotate(true);
                 break;
-            //TODO- disabled until bug fixed: turn off, hoverItems/itemFocus breaks
-//            case "KeyI":
-//                toggleTooltip();
-//                break;
+            case "KeyI":
+                toggleTooltip();
+                break;
             case "KeyL":
                 anchorItem();
                 break;
