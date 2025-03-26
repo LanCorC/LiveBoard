@@ -175,8 +175,6 @@ window.onload = function() {
     const handleImageTooltip = function(event) {
 
         if(!inspectMode || hoverElement == null) {
-            if (document.elementFromPoint(mouse.x, mouse.y) instanceof HTMLCanvasElement)
-                hoverElement = gameState.itemFromRGB(contextTouch, mouse);
             return;
         }
 
@@ -198,8 +196,7 @@ window.onload = function() {
         if (document.elementFromPoint(mouse.x, mouse.y) instanceof HTMLCanvasElement) {
             //for purposes of: looking at items on board
 
-            //TODO- suspected cause, hoverElement reassigned
-            let item = gameState.itemFromRGB(contextTouch, mouse);
+            let item = hoverElement;
             //used in downstream of 'mousemove'
             hoverElement = item;
 
@@ -408,6 +405,9 @@ window.onload = function() {
 //        console.log(itemFocus);
 //        console.log(gameState.itemFromRGB(contextTouch, mouse));
 
+        if (document.elementFromPoint(mouse.x, mouse.y) instanceof HTMLCanvasElement)
+        hoverElement = gameState.itemFromRGB(contextTouch, mouse);
+
         //handle tooltip hover- if canvas, finds object
         handleImageTooltip();
 
@@ -501,8 +501,7 @@ window.onload = function() {
 
         //on mousedown, if available, valid item, select and redraw
         if(itemFocus) {
-            //'anchored' unique to gameMat, playMat => filter out
-            if(!itemFocus.selected && !Object.hasOwn(itemFocus, "anchored")) {
+            if(!itemFocus.selected && !itemFocus.anchored) {
                 gameState.select(itemFocus, user);
                 redraw();
             //else- already claimed by us, de-select
@@ -559,8 +558,7 @@ window.onload = function() {
             purgeSelected();
             gameState.cycleImage(itemFocus);
 
-            //unique to gameMat, playMat; prevent gameMat, playMat from being selected
-            if(!Object.hasOwn(itemFocus, "anchored")) {
+            if(!itemFocus.anchored) {
                 handleImageTooltip(itemFocus);
                 selected.push(itemFocus);
 

@@ -42,8 +42,21 @@ const frontPage = (function() {
     //TODO- fetch gameState from server, then set up board
     //OR set up board and send new gameState to server
     serverJoinButton.addEventListener("click", ()=>{
-//        revealGame();
-        gameLoadMessage("Oops, we haven't quite made that yet!");
+
+        //if server has NOT returned any "gameStates"s already,
+        //Create game
+        if(!server.gameStatus) {
+            gameState.loadBoard(); //also pushes to gameState
+        } else { //fetch
+            //TODO somehow; reveal only after loaded; maybe connect to after rebuildBoard
+            server.fetchGameState();
+            console.log("Fetching gamestate...");
+            gameLoadMessage("Fetching gameState from server");
+        }
+
+        revealGame();
+
+        //server.gameStatus
 
         tools.disable(serverJoinButton);
     });
@@ -142,7 +155,18 @@ const frontPage = (function() {
         miscLoading.innerText = message;
     }
 
-    return { send, increment, connectionSuccess, connectionFailed, connectionStarted };
+    function gameBoardReady(boolean) {
+        if(boolean) {
+            //true, - "Join Game";      //future: default for 'non PartyLeader'
+            serverJoinButton.innerText = "Join Game";
+        } else {
+            //false, - "Start Game"     //future: default for 'PartyLeader'
+            serverJoinButton.innerText = "Start Game";
+        }
+    }
+
+    return { send, increment, connectionSuccess, connectionFailed, connectionStarted, gameLoadMessage
+    gameBoardReady};
 })();
 
 //purpose: handle all loading page,elements: connection to assets on loadscr

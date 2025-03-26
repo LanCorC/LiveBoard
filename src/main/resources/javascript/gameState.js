@@ -211,14 +211,14 @@ const gameState = (function() {
             if(item.isDeck && item.browsing) return;
 
             //TODO: notify server release of 'lock';
-            item.selected = false;
+            item.selected = 0;
 
             if(!item.deck) return;
 
             //additional: if 'topcard' was selected,
             //the deck will visually be selected
             if(!item.deck.browsing) {
-                item.deck.selected = false;
+                item.deck.selected = 0;
             }
 
             if(Object.hasOwn(item, "ref")) {
@@ -701,6 +701,7 @@ const gameState = (function() {
 
     //TODO- only call if server not connected OR server connected + no game existing OR loading solo OR loading demo
     function loadBoard(expansions) {
+        console.log("Loading board...");
         //todo - from objectFactory, in conjunction with assets - hard coded set of objects - mats, dice
 
         let timeStamp = Date.now();
@@ -749,25 +750,28 @@ const gameState = (function() {
 
         //TODO- push to server; -- likely do processing at server
         //TODO- likely keep all non-server module interactions abstracted
-        server.pushGame("testing!sayHiBack");
+        server.pushGame([items, players, itemCount]);
     }
 
     //if connecting from a game in session OR fetching server's copy of gameState
     //demo-boolean, "true" => load from presets
-    function rebuildBoard(gameObjects, playerObjects, demo) {
+    //TODO- implement numCount
+    function rebuildBoard(gameObjects, playerObjects, numCount, demo) {
+
+        console.log("Rebuilding board..");
 
         let data;
         if(demo) {
             data = presets.demo3;
+            data = JSON.parse(data);
+            gameObjects = data[0];
+            playerObjects = data[1];
         } else if(!gameObjects && !playerObjects) {
             data = JSON.stringify(payload, server.replacer());
+            data = JSON.parse(data);
+            gameObjects = data[0];
+            playerObjects = data[1];
         }
-
-        console.log(data);
-
-        data = JSON.parse(data);
-        gameObjects = data[0];
-        playerObjects = data[1];
 
         console.log(gameObjects);
 
@@ -984,7 +988,7 @@ const gameState = (function() {
         //set 'leavingDeck' defaults
         setCardDefaults(card);
         //TODO: deck view terminates as soon as we takeFrom
-        if(!deck.browsing) deck.selected = false;
+        if(!deck.browsing) deck.selected = 0;
 
         if(deck.images.length == 1) dissolveDeck(deck, false);
 
@@ -1024,7 +1028,8 @@ const gameState = (function() {
         if(card.deck.isHand) {
             card.index = assets.backImg;
         }
-        delete card.deck;
+//        delete card.deck;
+        card.deck = 0; //falsy
     }
 
     function selectView(deck) {
@@ -1063,7 +1068,7 @@ const gameState = (function() {
         const cardModel = preview.cardModel;
 
         //deselect() requires .browsing to be false to work
-        cardModel.browsing = false;
+        cardModel.browsing = 0;
         deselect(cardModel);
 
         //decouple
@@ -1072,7 +1077,6 @@ const gameState = (function() {
 
     //purpose: at end of dragging, on mouseup, to keep cards within boundaries
     function correctCoords(items, itemFocus) {
-        if(itemFocus && Object.hasOwn(itemFocus, "anchored")) itemFocus = null;
 
         //consolidate itemFocus if applicable
         if(itemFocus && !items.includes(itemFocus)) items.push(itemFocus);
@@ -1103,7 +1107,7 @@ const gameState = (function() {
         if(!Array.isArray(items)) items = new Array(items);
 
         items.forEach((item) => {
-            if(Object.hasOwn(item, "anchored")) return;
+            if(item.anchored) return;
             if(Object.hasOwn(item, "flipMe")) {
                 if(item.flipMe == 0) {
                     item.flipMe = 3;
@@ -1125,8 +1129,8 @@ const gameState = (function() {
         items.forEach((item) => {
             //Whitelist: ["Card", "Leader", "Monster"]
             if(item.isDeck || item.deck || typeWhiteList.includes(item.type)) return;
-            if(Object.hasOwn(item, "anchored")) {
-                delete item.anchored;
+            if(item.anchored) {
+                item.anchored = false;
             } else {
                 item.anchored = true; //the value does not matter
             }

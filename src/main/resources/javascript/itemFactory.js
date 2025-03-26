@@ -105,11 +105,13 @@ const genericFactory = function(type, images, coord) {
         y: 0
     };
 
+    let timeStamp = -1;
+
     //true on 'deck'
     let isDeck = false;
     let disabled = false;
     //dual purpose: mock-ReentrantLock using userId AND visual marker
-    let selected = false;
+    let selected = 0; //falsy integer, do not use boolean
     let flipMe = 0; //purpose: range(0,3), 1=90*, 2=180*, 3=270*, 0=(0*/360*) rotations
 
     let getImage = function() {
@@ -135,7 +137,7 @@ const genericFactory = function(type, images, coord) {
         case "deck":
             return {type: images[0].type, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, disabled, selected,
-                browsing: false,
+                browsing: 0, //falsy integer, do not use boolean
                 isDeck: true,
                 getImage: function() {
                     //TODO- discontinue? see if required outside of canvas

@@ -30,6 +30,11 @@ class Server {
     loading;
     game;
 
+    //boolean- if gameState exists on server
+    gameStatus = false;
+    //TODO 'gameConnected' boolean;
+    //TODO: for game actions check server.gameConnected() for executions
+
     //To hold the WebSocket reference
     connection;
 
@@ -67,12 +72,40 @@ class Server {
                 frontUI.connectionFailed();
             }
 
-            //TODO - update frontPage buttons/headers of connection
+            this.server.gameStatus = false;
         }
+
+        //Note: needed to be passed to websocket obj so it can access vars
+        socket.server = this;
 
         //TODO: differentiate between messages: chat, fullGameState refresh, gameUpdate
         socket.onmessage = function(event) {
             console.log(event.data);
+
+            try {
+                let data = JSON.parse(event.data);
+                console.log(data);
+                let header = data.messageHeader;
+                switch(header) {
+                    case "GameStatus":
+                        //return to user interface
+                        frontUI.gameBoardReady(data.bool);
+                        this.server.gameStatus = data.bool;
+
+                        console.log(`GameStatus: ${this.server.gameStatus}`);
+                        break;
+                    case "GameSetup":
+                        this.server.game.rebuildBoard(data.gameState, data.players, data.itemCount, false);
+                        break;
+                    default:
+                        console.log(`"${header}" header not defined`);
+                        break;
+                }
+            } catch (e) {
+                console.log(e);
+            }
+
+
         }
     }
 
@@ -100,9 +133,40 @@ class Server {
     pushGame(data) {
         //'1' => Websocket.OPEN; '0' => Webocket.CONNECTING
         if(this.connection == undefined || this.connection.readyState != 1) return;
-        console.log(data);
-        console.log(this.connection);
-        this.connection.send(data);
+
+        //data[0] - Object  -> GameState (items)
+        //data[1] - Array   -> List<Users>
+        //data[2] - number  -> Integer
+
+        //prepare data into appropriate "message"
+        let message = {};
+        message.messageHeader = "GameSetup";
+        message.gameState = data[0];
+        message.players = data[1];
+        message.itemCount = data[2];
+        message.bool = false;
+        message.explicit =
+        "This message holds gameState, playerList that initializes server copy.";
+
+        message = JSON.stringify(message, this.replacer());
+        console.log(message)
+
+        this.connection.send(message);
+    }
+
+    fetchGameState() {
+        //'1' => Websocket.OPEN; '0' => Webocket.CONNECTING
+        if(this.connection == undefined || this.connection.readyState != 1
+        || !this.gameStatus) return;
+
+        let message = {};
+        message.messageHeader = "GameSetup";
+        message.bool = true;
+        message.explicit = "This is a request to be sent back the gameState";
+
+        message = JSON.stringify(message);
+
+        this.connection.send(message);
     }
 
     //cleanup function; private? for JSON

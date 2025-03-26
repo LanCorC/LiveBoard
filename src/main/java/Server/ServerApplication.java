@@ -1,5 +1,6 @@
 package Server;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -11,6 +12,8 @@ public class ServerApplication extends WebSocketServer {
     public static final int SERVER_PORT = 8080;
     private static HashMap<String, WebSocket> clients = new HashMap<>();
     public static int CLIENT_COUNT = 0;
+    private static ObjectMapper objMapper = new ObjectMapper();
+    public static RequestProcessor requestProcessor = RequestProcessor.RequestProcessor();
 
     public ServerApplication() {
         super(new InetSocketAddress(SERVER_PORT));
@@ -18,6 +21,7 @@ public class ServerApplication extends WebSocketServer {
 
     public static void main(String[] args) {
         var server = new ServerApplication();
+        requestProcessor.setServer(server);
         server.start();
     }
 
@@ -25,11 +29,10 @@ public class ServerApplication extends WebSocketServer {
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
         var resource = webSocket.getResourceDescriptor();
-        //make a validator - as it is, it assumes there will be data
-        //currently something, but not perfect. handles 'null' URI, a
 
         System.out.println(webSocket.getResourceDescriptor());
 
+        //Verify unique ID
         String name;
         if(resource.equals("/")) {
             name = String.valueOf(CLIENT_COUNT++);
@@ -37,49 +40,53 @@ public class ServerApplication extends WebSocketServer {
             name = resource.split("=")[1];
         }
 
+        //If reconnecting, replace and purge 'older' connection
         if(clients.containsKey(name)) {
             WebSocket oldConnection = clients.put(name, webSocket); //replaces old websocket
             if(oldConnection != null) oldConnection.close(1001,
                     "Reconnection successful in a new instance. Terminating this connection.");
             webSocket.send("Reconnection successful. Terminating older instance.");
-            System.out.printf("Please welcome our returning player: %s!%n", name);
+            System.out.printf("Please welcome a returning player: %s!%n", name);
         } else {
             clients.put(name, webSocket);
             System.out.printf("Let's welcome the newcomer, %s!%n", name);
         }
 
+        broadcast("new connection: %s".formatted(name));
+
+        //Inform new client regarding gameState
+        requestProcessor.sendGameStateStatus(webSocket);
+
         System.out.println(clients);
-
-        //
-//        System.out.println("test");
-//        System.out.println(this.getConnections());
-//        System.out.println(clientHandshake.getResourceDescriptor());
-        //* then send the html/css/js?
-
-        broadcast("hiiii!");
-//        System.out.println("hiiiii!");
-//        System.out.println(getConnections().iterator().next().getRemoteSocketAddress().getPort());
-//        System.out.println(getConnections().iterator().next().getLocalSocketAddress());
-//        System.out.println(webSocket.getRemoteSocketAddress().getPort());
-//
-//        System.out.println(clientHandshake);
+        System.out.println(getConnections().toString());
     }
 
     @Override
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
-        System.out.printf("Connection terminated: %s", webSocket.toString());
+        System.out.printf("Connection terminated: %s%n", webSocket.toString());
+
+        //Purpose: instead of a 'fresh' connection terminating 'old' (see onOpen)
+        //cont.d: this clears leaving clients from server record
+        //TODO- rework to list only 'joined' players;
+//        if(clients.containsValue(webSocket)) {
+//            clients.forEach((key, value) -> {
+//                if (value == webSocket) clients.remove(key);
+//            });
+//        }
     }
 
     @Override
     public void onMessage(WebSocket webSocket, String s) {
         System.out.println("Message!");
-        System.out.printf("webSocket: %s; message: %s ", webSocket.toString(), s);
-        webSocket.send(s + " received");
+        System.out.printf("webSocket: %s; message: %s%n", webSocket.toString(), s);
+
+        requestProcessor.handleMessage(webSocket, s);
     }
 
     @Override
     public void onError(WebSocket webSocket, Exception e) {
-        System.out.printf("whoop, poop: %s%n", e);
+        System.out.printf("onError triggered by %s: %s%n", webSocket, e);
+        System.out.println(e.getMessage());
     }
 
     @Override

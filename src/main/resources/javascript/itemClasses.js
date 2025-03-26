@@ -11,12 +11,12 @@ export class Hand {
             this.id = user.id;
 
             this.isDeck = true;
-            this.selected = false;
+            this.selected = 0; //falsy integer, do not use boolean
             this.images = []; //empty array, stores the cards
             this.type = "Card";
             this.disabled = true;
             this.isHand = true;
-            this.browsing = false;
+            this.browsing = 0; //falsy integer, do not use boolean
         }
 
     //purpose: data manipulation to find out ref visualInterface exists,
