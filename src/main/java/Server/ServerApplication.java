@@ -5,7 +5,9 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 
 public class ServerApplication extends WebSocketServer {
@@ -15,6 +17,8 @@ public class ServerApplication extends WebSocketServer {
     private static ObjectMapper objMapper = new ObjectMapper();
     public static RequestProcessor requestProcessor = RequestProcessor.RequestProcessor();
 
+    public static String ServerAddress = null;
+
     public ServerApplication() {
         super(new InetSocketAddress(SERVER_PORT));
     }
@@ -23,6 +27,15 @@ public class ServerApplication extends WebSocketServer {
         var server = new ServerApplication();
         requestProcessor.setServer(server);
         server.start();
+
+        try {
+            ServerApplication.ServerAddress = InetAddress.getLocalHost().getHostAddress();
+            System.out.printf("The server address is: %s%n", ServerApplication.ServerAddress);
+        } catch (UnknownHostException e) {
+            System.out.println("We could not determine the localHost");
+            System.out.println(e.getMessage());
+        }
+
     }
 
     //Called after a handshake is established
@@ -52,6 +65,8 @@ public class ServerApplication extends WebSocketServer {
             System.out.printf("Let's welcome the newcomer, %s!%n", name);
         }
 
+        webSocket.send("We are hosting at: %s".formatted(ServerApplication.ServerAddress));
+        requestProcessor.sendHostAddress(webSocket);
         broadcast("new connection: %s".formatted(name));
 
         //Inform new client regarding gameState

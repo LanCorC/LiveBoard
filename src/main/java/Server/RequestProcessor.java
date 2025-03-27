@@ -156,6 +156,17 @@ public class RequestProcessor {
     //TODO: "receiveGameState" - sender gives GameState JSON, Map to JavaObject,
     //then ping to all connected "gameState == OK" or equivalent, {gameState: true}
 
+    public void sendHostAddress(WebSocket webSocket)  {
+        SimpleRequest sr = new SimpleRequest();
+        sr.setMessageHeader("ServerAddress")
+                .setExplicit(ServerApplication.ServerAddress);
+
+        try {
+            webSocket.send(objMapper.writeValueAsString(sr));
+        } catch (JsonProcessingException e) {
+            System.out.println(e.getMessage());
+        }
+    }
 }
 
 class SimpleRequest {

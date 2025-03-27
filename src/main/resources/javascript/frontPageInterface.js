@@ -116,8 +116,17 @@ const frontPage = (function() {
 
         enableManualsConnects();
     }
-    function connectionSuccess() {
-        connectionStatus.innerHTML = "Connection successful!";
+
+    let hostAddress = "";
+    function connectionSuccess(address) {
+        let innerHtml;
+        if(!hostAddress){
+            hostAddress = address || "";
+        }
+
+        innerHtml = "Connected successfully! Hosting at: " + hostAddress;
+
+        connectionStatus.innerHTML = innerHtml;
         tools.enable(serverJoinButton);
 
         disableManualsConnects();

@@ -84,7 +84,6 @@ class Server {
 
             try {
                 let data = JSON.parse(event.data);
-                console.log(data);
                 let header = data.messageHeader;
                 switch(header) {
                     case "GameStatus":
@@ -96,6 +95,9 @@ class Server {
                         break;
                     case "GameSetup":
                         this.server.game.rebuildBoard(data.gameState, data.players, data.itemCount, false);
+                        break;
+                    case "ServerAddress":
+                        this.server.frontPage.connectionSuccess(data.explicit);
                         break;
                     default:
                         console.log(`"${header}" header not defined`);
