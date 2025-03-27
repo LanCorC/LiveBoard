@@ -5,16 +5,11 @@ package Server;
 //TODO- is singleton, copy kept in ServerApp for if(RequestProcessor.gameState)
     //like when a client first connects, checks to see if a "game in progress" or not
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.java_websocket.WebSocket;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.stream.Stream;
 
 public class RequestProcessor {
     private static RequestProcessor instance = null;
@@ -45,18 +40,23 @@ public class RequestProcessor {
     }
     public void sendGameStateStatus(WebSocket conn) {
         //TODO: return a 'ping' that informs about current gameState- null or set
-        SimpleRequest request = new SimpleRequest(
-                "GameStatus",
-                null,
-                null,
-                null,
-                null,
-                gameState != null,
-                null,
-                null,
-                null,
-                "If bool == true, server GameState established, players can now join."
-        );
+//        SimpleRequest request = new SimpleRequest(
+//                "GameStatus",
+//                null,
+//                null,
+//                null,
+//                null,
+//                gameState != null,
+//                null,
+//                null,
+//                null,
+//                "If bool == true, server GameState established, players can now join."
+//        );
+
+        SimpleRequest request = new SimpleRequest();
+        request.setMessageHeader("GameStatus")
+                .setBool(gameState != null)
+                .setExplicit("If bool == true, server GameState established, players can now join.");
 
         try {
             String stringRequest = objMapper.writeValueAsString(request);
@@ -75,13 +75,14 @@ public class RequestProcessor {
         try{
             SimpleRequest message = objMapper.readValue(s, SimpleRequest.class);
 
-            switch (message.messageHeader()) {
-                case "GameSetup":
+            switch (message.messageHeader) {
+
+                    case "GameSetup":
                     gameSetup(conn, message);
 //                    ServerApplication.originalGameState = s;
                     break;
                 default:
-                    System.out.printf("Header '%s' not recognized%n", message.messageHeader());
+                    System.out.printf("Header '%s' not recognized%n", message.messageHeader);
                     break;
             }
         } catch (JsonProcessingException e) {
@@ -93,7 +94,7 @@ public class RequestProcessor {
 
     private void gameSetup(WebSocket conn, SimpleRequest message) {
         //Determine: is player sending GameState, or asking for it
-        if(message.bool()) { //true, asking
+        if(message.bool) { //true, asking
             returnGameState(conn);
             return;
         }
@@ -102,11 +103,11 @@ public class RequestProcessor {
             System.out.println("Warning: Existing gameState will be overwritten");
         }
 
-        gameState = message.gameState();
-        for(User user : message.players()) {
+        gameState = message.gameState;
+        for(User user : message.players) {
             players.put(user.id, user);
         }
-        itemCount = message.itemCount();
+        itemCount = message.itemCount;
 
         //TODO create quickRef for items;
         gameState.cards.forEach((card)->quickRef.put((long) card.id,card));
@@ -128,18 +129,13 @@ public class RequestProcessor {
         //.gameState = data[0], aka items, aka gameState
         //.players = array players
 
-        SimpleRequest sr = new SimpleRequest(
-                "GameSetup",
-                gameState,
-                itemCount,
-                null,
-                players.values().stream().toList(),
-                null,
-                null,
-                null,
-                null,
-                "This message hold information required to 'set up' the game."
-        );
+        SimpleRequest sr = new SimpleRequest();
+        sr.setMessageHeader("GameSetup")
+                .setGameState(gameState)
+                .setItemCount(itemCount)
+                .setPlayers(players.values().stream().toList())
+                .setExplicit("This message holds information required to 'set up' the game.");
+
 
         try {
             String message = objMapper.writeValueAsString(sr);
@@ -162,17 +158,110 @@ public class RequestProcessor {
 
 }
 
-record SimpleRequest(
-        String messageHeader,         //Identify messages in client
-        GameState gameState,          //Connecting to server
-        Integer itemCount,          //Connecting to server
-        User player,                  //Player joining the game
-        List<User> players,       //Connecting to server
-        Boolean bool,                 //messageHeader dependent
+class SimpleRequest {
+    String messageHeader;         //Identify messages in client
+    GameState gameState;          //Connecting to server
+    Integer itemCount;          //Connecting to server
+    User player;                  //Player joining the game
+    List<User> players;       //Connecting to server
+    Boolean bool;                 //messageHeader dependent
 
-        List<Card> cards,             //Specific game updates
-        List<PlayMat> playMats,       //Specific game updates
-        List<Deck> decks,             //Specific game updates
+    List<Card> cards;             //Specific game updates
+    List<PlayMat> playMats;       //Specific game updates
+    List<Deck> decks;             //Specific game updates
 
-        String explicit               //Clarity
-) {}
+    String explicit;               //Clarity
+
+    public SimpleRequest () {
+    }
+
+    public String getMessageHeader() {
+        return messageHeader;
+    }
+
+    public SimpleRequest setMessageHeader(String messageHeader) {
+        this.messageHeader = messageHeader;
+        return this;
+    }
+
+    public GameState getGameState() {
+        return gameState;
+    }
+
+    public SimpleRequest setGameState(GameState gameState) {
+        this.gameState = gameState;
+        return this;
+    }
+
+    public Integer getItemCount() {
+        return itemCount;
+    }
+
+    public SimpleRequest setItemCount(Integer itemCount) {
+        this.itemCount = itemCount;
+        return this;
+    }
+
+    public User getPlayer() {
+        return player;
+    }
+
+    public SimpleRequest setPlayer(User player) {
+        this.player = player;
+        return this;
+    }
+
+    public List<User> getPlayers() {
+        return players;
+    }
+
+    public SimpleRequest setPlayers(List<User> players) {
+        this.players = players;
+        return this;
+    }
+
+    public Boolean getBool() {
+        return bool;
+    }
+
+    public SimpleRequest setBool(Boolean bool) {
+        this.bool = bool;
+        return this;
+    }
+
+    public List<Card> getCards() {
+        return cards;
+    }
+
+    public SimpleRequest setCards(List<Card> cards) {
+        this.cards = cards;
+        return this;
+    }
+
+    public List<PlayMat> getPlayMats() {
+        return playMats;
+    }
+
+    public SimpleRequest setPlayMats(List<PlayMat> playMats) {
+        this.playMats = playMats;
+        return this;
+    }
+
+    public List<Deck> getDecks() {
+        return decks;
+    }
+
+    public SimpleRequest setDecks(List<Deck> decks) {
+        this.decks = decks;
+        return this;
+    }
+
+    public String getExplicit() {
+        return explicit;
+    }
+
+    public SimpleRequest setExplicit(String explicit) {
+        this.explicit = explicit;
+        return this;
+    }
+}

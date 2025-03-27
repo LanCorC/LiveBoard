@@ -165,7 +165,7 @@ const frontPage = (function() {
         }
     }
 
-    return { send, increment, connectionSuccess, connectionFailed, connectionStarted, gameLoadMessage
+    return { send, increment, connectionSuccess, connectionFailed, connectionStarted, gameLoadMessage,
     gameBoardReady};
 })();
 
