@@ -39,20 +39,6 @@ public class RequestProcessor {
         server.getConnections().forEach(this::sendGameStateStatus);
     }
     public void sendGameStateStatus(WebSocket conn) {
-        //TODO: return a 'ping' that informs about current gameState- null or set
-//        SimpleRequest request = new SimpleRequest(
-//                "GameStatus",
-//                null,
-//                null,
-//                null,
-//                null,
-//                gameState != null,
-//                null,
-//                null,
-//                null,
-//                "If bool == true, server GameState established, players can now join."
-//        );
-
         SimpleRequest request = new SimpleRequest();
         request.setMessageHeader("GameStatus")
                 .setBool(gameState != null)
@@ -60,12 +46,7 @@ public class RequestProcessor {
 
         try {
             String stringRequest = objMapper.writeValueAsString(request);
-
-            System.out.println("String request:");
-            System.out.println(stringRequest);
-
             conn.send(stringRequest);
-
         } catch(JsonProcessingException e) {
             System.out.println(e.getMessage());
         }
@@ -159,7 +140,8 @@ public class RequestProcessor {
     public void sendHostAddress(WebSocket webSocket)  {
         SimpleRequest sr = new SimpleRequest();
         sr.setMessageHeader("ServerAddress")
-                .setExplicit(ServerApplication.ServerAddress);
+                .setExplicit("%s:%s".formatted(
+                        ServerApplication.ServerAddress, ServerApplication.SERVER_PORT));
 
         try {
             webSocket.send(objMapper.writeValueAsString(sr));

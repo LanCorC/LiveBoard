@@ -30,7 +30,9 @@ public class ServerApplication extends WebSocketServer {
 
         try {
             ServerApplication.ServerAddress = InetAddress.getLocalHost().getHostAddress();
-            System.out.printf("The server address is: %s%n", ServerApplication.ServerAddress);
+            System.out.printf(
+                    "Server Address: %s Server Port: %s%n",
+                    ServerApplication.ServerAddress, SERVER_PORT);
         } catch (UnknownHostException e) {
             System.out.println("We could not determine the localHost");
             System.out.println(e.getMessage());
@@ -43,7 +45,7 @@ public class ServerApplication extends WebSocketServer {
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
         var resource = webSocket.getResourceDescriptor();
 
-        System.out.println(webSocket.getResourceDescriptor());
+//        System.out.println(webSocket.getResourceDescriptor());
 
         //Verify unique ID
         String name;
