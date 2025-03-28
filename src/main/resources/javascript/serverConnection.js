@@ -171,10 +171,44 @@ class Server {
         this.connection.send(message);
     }
 
+    //TODO- server update on gameAction
+    pushGameAction(stringAction, items)  {
+        //Select (mousedown) - store copy of itemFocus, itemFocus.deck (if any)
+        //Deselect (mouseup) - store copy of item/s, items.forEach(item->item.deck) if any
+        //TakeFromDeck* with care, if last card;
+
+        //for now, just push
+
+        //TODO preview all actions are being read
+        console.log(stringAction);
+
+        //items assumed array, make (items.deck)[]
+        if(!Array.isArray(items)) items = new Array(items);
+
+        //TODO important: separate decks and items
+        let itemsDecks = [];
+        let itemsCards = [];
+        items.forEach((item) => {
+            if(item.deck) {
+                itemsDecks.push(item.deck);
+            }
+            if(item.isDeck) {
+                itemsDecks.push(item);
+            } else {
+                itemsCards.push(item);
+            }
+        });
+
+        let message = {};
+        message.messageHeader = stringAction;
+        message.cards = itemsCards;
+        message.decks = itemsDecks;
+        //TODO- make sure itemsCards and itemsDecks seem accurate
+
+        message = JSON.stringify(message, this.replacer());
+    }
+
     //cleanup function; private? for JSON
-    //TODO- our purpose: deck.image -> only array integers
-    //TODO- our purpose: card.deck (if any) -> only the id of deck
-    //TODO- our purpose: any.ref -> omit (only important to relevant client)
     JSONreplacer() {
         let isInitial = true;
 
@@ -198,7 +232,6 @@ class Server {
                 case "ref":     //of objects with UI references
                     return undefined;
                 case "deck":    //of card.deck which contains said card in .deck.images
-                    //TODO- turned value -> value.id
                     return value.id;
                 case "images":  //of 'decks' and 'hands' with backreferences
                     //TODO-check is actually related to deck

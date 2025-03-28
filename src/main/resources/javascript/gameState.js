@@ -201,6 +201,8 @@ const gameState = (function() {
                 if(Object.hasOwn(item, "ref")) item.ref.select();
             }
         });
+
+        server.pushGameAction("select", items);
     }
 
     function deselect(items) {
@@ -225,12 +227,16 @@ const gameState = (function() {
                 item.ref.deselect();
             }
         });
+
+        server.pushGameAction("deselect", items);
     }
 
     //TODO: replace to 'tap' binary 0* rotation or 90*
     function flip(items) {
         if(!Array.isArray(items)) items = new Array(items);
         items.forEach((item) => item.flipped = !item.flipped);
+
+        server.pushGameAction("deselect", items);
         return items[0].flipped;
     }
 
@@ -390,6 +396,7 @@ const gameState = (function() {
         selectedTypes = new Set();
     }
 
+    //NOTE: hoverObject is hoverElement in index.js
     let selectedTypes = new Set();
     function dragItems(dx, dy, dragItem, correct, hoverObject, itemFocus) {
         if(!Array.isArray(dragItem)) dragItem = new Array(dragItem);
@@ -432,6 +439,8 @@ const gameState = (function() {
             item.coord.x = dx + item.dragStart.x;
             item.coord.y = dy + item.dragStart.y;
         });
+
+        server.pushGameAction("drag", dragItem);
     }
 
     //typeof force "boolean", true->frontImg
@@ -482,6 +491,7 @@ const gameState = (function() {
 
         });
 
+        server.pushGameAction("cycleImage", items);
     }
 
     //'selected' for clarity, (game-wide)
@@ -924,12 +934,16 @@ const gameState = (function() {
 
         let donorCards = [];
 
+        //Purpose: server updates
+        let relevant = [];
+
         donor.forEach((item) => {
             //filter
             if(item.type != type || item.browsing) return;
 
             if(item.isDeck) {
                 item.images.forEach((card) => donorCards.push(card));
+                relevant.push(item);
                 dissolveDeck(item, true);
             //checks if item is already in; prevents duplicates
             } else if (!recipient.images.includes(item)){
@@ -946,6 +960,11 @@ const gameState = (function() {
         //!isDeck only happens in Canvas interaction, no index
         if(!recipient.isDeck) {
             push(deckify(donorCards, recipient));
+
+            donor.push(donorCards[0].deck); //new deck
+            if(!donor.includes(recipient)) donor.push(recipient); //include old deck/basecard
+            if(relevant.length != 0) relevant.forEach((deck) => donor.push(deck));
+            server.pushGameAction("addToDeck", donor);
             return true;
         }
 
@@ -963,6 +982,10 @@ const gameState = (function() {
 
         if(recipient.ref) recipient.ref.update();
 
+        donor.push(donorCards[0].deck); //new deck
+        if(!donor.includes(recipient)) donor.push(recipient); //include old deck/basecard
+        if(relevant.length != 0) relevant.forEach((deck) => donor.push(deck));
+        server.pushGameAction("addToDeck", donor);
         return true;
     }
 
@@ -976,6 +999,13 @@ const gameState = (function() {
         let {id, deck} = card;
         if(!id) console.log("no id found! takeFromDeck()");
         if(!deck) console.log("no deck found! takeFromDeck()");
+
+        //Purpose: server update
+        let otherCard;
+        if(deck.images.length == 2) {
+            //if 'card' is the 0th image, otherCard is [1]th. vice versa
+            otherCard = card == deck.images[0] ? deck.images[1] : deck.images[0];
+        }
 
         //deliberate use of 'id', in case other properties may differ
         let i = -1;
@@ -996,6 +1026,10 @@ const gameState = (function() {
         if(deck.ref) {
             deck.ref.update();
         }
+
+        let relevant = [card, deck];
+        if(otherCard) relevant.push(otherCard);
+        server.pushGameAction("takeFromDeck", relevant);
     }
 
     //used in takeFromDec, isMerging (optional param) from addToDeck
@@ -1059,6 +1093,8 @@ const gameState = (function() {
 
         select(deck, clientUser);
         userInterface.preview.setView(deck);
+
+        server.pushGameAction("selectView", deck);
     }
 
     function deselectView() {
@@ -1073,6 +1109,8 @@ const gameState = (function() {
 
         //decouple
         preview.setView();
+
+        server.pushGameAction("deselectView", cardModel);
     }
 
     //purpose: at end of dragging, on mouseup, to keep cards within boundaries
@@ -1118,6 +1156,8 @@ const gameState = (function() {
         });
 
         correctCoords(items);
+
+        server.pushGameAction("anchorItem", items);
     }
 
     //Purpose: mousehover + button will anchor/unanchor item, allowing it to be dragged and selected
@@ -1125,6 +1165,9 @@ const gameState = (function() {
     function anchorItem(items) {
         if(!items) return;
         if(!Array.isArray(items)) items = new Array(items);
+
+        //Purpose: server update
+        let relevant = [];
 
         items.forEach((item) => {
             //Whitelist: ["Card", "Leader", "Monster"]
@@ -1134,9 +1177,11 @@ const gameState = (function() {
             } else {
                 item.anchored = true; //the value does not matter
             }
+            relevant.push(item);
         });
 
         //purge selection (index.js) after
+        server.pushGameAction("tapItem", relevant);
     }
 
     function initializeUser() {
