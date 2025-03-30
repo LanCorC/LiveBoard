@@ -1157,7 +1157,7 @@ const gameState = (function() {
 
         correctCoords(items);
 
-        server.pushGameAction("anchorItem", items);
+        server.pushGameAction("tapItem", items);
     }
 
     //Purpose: mousehover + button will anchor/unanchor item, allowing it to be dragged and selected
@@ -1181,7 +1181,7 @@ const gameState = (function() {
         });
 
         //purge selection (index.js) after
-        server.pushGameAction("tapItem", relevant);
+        server.pushGameAction("anchorItem", relevant);
     }
 
     function initializeUser() {
