@@ -19,6 +19,12 @@ public class RequestProcessor {
     private static ObjectMapper objMapper = new ObjectMapper();
     private static Integer itemCount = null;
 
+    //TODO: key=userID, value: last 'parentRequest' ID;
+    //Purpose: if a parentRequest is accepted, stored here;
+    //Childrequest holding parentRequestID entry? apply + broadcast changes
+    //Childrequest holding parentRequestID has no entry? discard request
+    private static HashMap<Long, Long> requestTracker = new HashMap<>();
+
     //purpose: quick key=id, value=object; does NOT hold players (players Map exists)
     private static HashMap<Long, Object> quickRef = new HashMap<>();
 
@@ -55,12 +61,112 @@ public class RequestProcessor {
     public void handleMessage(WebSocket conn, String s) {
         try{
             SimpleRequest message = objMapper.readValue(s, SimpleRequest.class);
+            System.out.printf("New request! %s %s%n", message.explicit, message.timeStamp);
 
             switch (message.messageHeader) {
 
-                    case "GameSetup":
+                case "GameSetup":
                     gameSetup(conn, message);
 //                    ServerApplication.originalGameState = s;
+                    break;
+                //TODO note: for now, allow all updates; push to all clients
+                case "GameUpdate":
+                    //Verify (TODO) + track on requestTracker as successful parentRequestID
+
+
+                    //Apply changes
+                        //items
+                    if(!message.cards.isEmpty()) {
+
+                        //Filter and store old values
+                        ArrayList<Card> cards = new ArrayList<Card>();
+                        message.cards.forEach((card) -> {
+                            quickRef.put((long) card.id, card);
+                            gameState.cards.stream()
+                                    .filter(serverCopy -> serverCopy.id == (long) card.id)
+                                    .forEach(cards::add);
+                        });
+
+                        //Remove old values, add updated values
+                        cards.forEach(gameState.cards::remove);
+                        gameState.cards.addAll(message.cards);
+                    }
+
+                    if(!message.decks.isEmpty()) {
+//                        System.out.println("decks != null");
+
+                        //Filter and store old values
+                        ArrayList<Deck> decks = new ArrayList<Deck>();
+                        message.decks.forEach((deck) -> {
+                        quickRef.put((long) deck.id, deck);
+                            gameState.decks.stream()
+                                    .filter(serverCopy -> serverCopy.id == (long) deck.id)
+                                    .forEach(decks::add);
+                        });
+
+                        //Remove old values, add updated values
+                        decks.forEach(gameState.decks::remove);
+
+                        message.decks.stream()
+                                .filter((deck) -> deck.images.size() >= 2)
+                                .forEach(gameState.decks::add);
+                    }
+
+                    if(!message.playMats.isEmpty()) {
+//                        System.out.println("playmats != null");
+
+                        //Filter and store old values
+                        ArrayList<PlayMat> playMats = new ArrayList<PlayMat>();
+                        message.playMats.forEach((playMat) -> {
+                            quickRef.put((long) playMat.id, playMat);
+                            gameState.playMats.stream()
+                                    .filter(serverCopy -> serverCopy.id == (long) playMat.id)
+                                    .forEach(playMats::add);
+                        });
+
+                        //Remove old values, add updated values
+                        playMats.forEach(gameState.playMats::remove);
+                        gameState.playMats.addAll(message.playMats);
+                    }
+
+                    if(!message.hands.isEmpty()) {
+//                        System.out.printf("hands != null, %s%n", message.timeStamp);
+
+                        System.out.println(message.hands.getFirst().id);
+                        System.out.println(players.keySet());
+
+                        //Filter and store old values
+                        ArrayList<Hand> hands = new ArrayList<Hand>();
+                        message.hands.forEach((hand) -> {
+                            quickRef.put((long) hand.id, hand); //replace old value with new
+                            //TODO- gameState.players is for VISUAL TOKEN
+                            //TODO- USE players hashmap
+                            gameState.players.stream()
+                                    .filter(user -> user.id == (long) hand.id)
+                                    .forEach(user -> {
+                                        hands.add(user.hand);
+                                        user.hand = hand; //replace old value with new
+                                        System.out.println("processing hand! match found!");
+                                    });
+                        });
+
+                        //Remove old values, add updated values
+                        //
+//                        hands.forEach(gameState.playMats::remove);
+//                        gameState.playMats.addAll(message.playMats);
+
+                        //TODO temporary: also return server's initial copy
+//                        message.hands.add(hands.getFirst());
+                    }
+
+                        //players(visual token)
+
+                    //broadcast to all
+                    try {
+                        server.broadcast(objMapper.writeValueAsString(message));
+                    } catch (Exception e) {
+                        System.out.println("Error at mapping");
+                    }
                     break;
                 default:
                     System.out.printf("Header '%s' not recognized%n", message.messageHeader);
@@ -90,6 +196,9 @@ public class RequestProcessor {
         }
         itemCount = message.itemCount;
 
+        System.out.println("Received initial gameState!");
+//        System.out.println(message.players.size());
+
         //TODO create quickRef for items;
         gameState.cards.forEach((card)->quickRef.put((long) card.id,card));
         gameState.playMats.forEach((card)->quickRef.put((long) card.id,card));
@@ -114,14 +223,15 @@ public class RequestProcessor {
         sr.setMessageHeader("GameSetup")
                 .setGameState(gameState)
                 .setItemCount(itemCount)
-                .setPlayers(players.values().stream().toList())
+//                .setPlayers(players.values().stream().toArray())
+                .setPlayers(new ArrayList<>(players.values()))
                 .setExplicit("This message holds information required to 'set up' the game.");
-
-
         try {
             String message = objMapper.writeValueAsString(sr);
 //            assert Objects.equals(message, ServerApplication.originalGameState);
             conn.send(message);
+
+            System.out.println("Sending client current gameState!");
 
         } catch (JsonProcessingException e) {
             System.out.println(e.getMessage());
@@ -153,15 +263,19 @@ public class RequestProcessor {
 
 class SimpleRequest {
     String messageHeader;         //Identify messages in client
+    String subHeader;             //Specific requests
     GameState gameState;          //Connecting to server
     Integer itemCount;          //Connecting to server
     User player;                  //Player joining the game
-    List<User> players;       //Connecting to server
+   ArrayList<User> players;       //Connecting to server
     Boolean bool;                 //messageHeader dependent
+    Long senderId;              //track message sender
+    Long timeStamp;             //kept as 'long' type for simplicity
 
-    List<Card> cards;             //Specific game updates
-    List<PlayMat> playMats;       //Specific game updates
-    List<Deck> decks;             //Specific game updates
+   ArrayList<Card> cards;             //Specific game updates
+   ArrayList<PlayMat> playMats;       //Specific game updates
+   ArrayList<Deck> decks;             //Specific game updates
+   ArrayList<Hand> hands;             //Specific game updates
 
     String explicit;               //Clarity
 
@@ -204,11 +318,11 @@ class SimpleRequest {
         return this;
     }
 
-    public List<User> getPlayers() {
+    public ArrayList<User> getPlayers() {
         return players;
     }
 
-    public SimpleRequest setPlayers(List<User> players) {
+    public SimpleRequest setPlayers(ArrayList<User> players) {
         this.players = players;
         return this;
     }
@@ -222,29 +336,29 @@ class SimpleRequest {
         return this;
     }
 
-    public List<Card> getCards() {
+    public ArrayList<Card> getCards() {
         return cards;
     }
 
-    public SimpleRequest setCards(List<Card> cards) {
+    public SimpleRequest setCards(ArrayList<Card> cards) {
         this.cards = cards;
         return this;
     }
 
-    public List<PlayMat> getPlayMats() {
+    public ArrayList<PlayMat> getPlayMats() {
         return playMats;
     }
 
-    public SimpleRequest setPlayMats(List<PlayMat> playMats) {
+    public SimpleRequest setPlayMats(ArrayList<PlayMat> playMats) {
         this.playMats = playMats;
         return this;
     }
 
-    public List<Deck> getDecks() {
+    public ArrayList<Deck> getDecks() {
         return decks;
     }
 
-    public SimpleRequest setDecks(List<Deck> decks) {
+    public SimpleRequest setDecks(ArrayList<Deck> decks) {
         this.decks = decks;
         return this;
     }
@@ -255,6 +369,42 @@ class SimpleRequest {
 
     public SimpleRequest setExplicit(String explicit) {
         this.explicit = explicit;
+        return this;
+    }
+
+    public String getSubHeader() {
+        return subHeader;
+    }
+
+    public SimpleRequest setSubHeader(String subHeader) {
+        this.subHeader = subHeader;
+        return this;
+    }
+
+    public Long getSenderId() {
+        return senderId;
+    }
+
+    public SimpleRequest setSenderId(Long senderId) {
+        this.senderId = senderId;
+        return this;
+    }
+
+    public Long getTimeStamp() {
+        return timeStamp;
+    }
+
+    public SimpleRequest setTimeStamp(Long timeStamp) {
+        this.timeStamp = timeStamp;
+        return this;
+    }
+
+    public ArrayList<Hand> getHands() {
+        return hands;
+    }
+
+    public SimpleRequest setHands(ArrayList<Hand> hands) {
+        this.hands = hands;
         return this;
     }
 }

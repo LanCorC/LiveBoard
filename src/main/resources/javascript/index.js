@@ -11,7 +11,7 @@ const board = document.getElementById("gameBoard");
 const touch = document.getElementById("touchBoard");
 //const table = new Image();
 const background = new Image();
-let selected = [];
+let selected = gameState.selected;
 let itemFocus; //current item of "mousedown"; added to 'selected' if mouseUp successful
 let inspectMode = true; //toggle for InspectMode
 let inspectImage = document.getElementById("inspectImage");
@@ -424,28 +424,27 @@ window.onload = function() {
     },false);
 
     window.addEventListener("mousedown", function(event) {
-        //rightclick detected - create 'detached' inspect image
 
+        //Hover references
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
-        let isPreviewCard = Object.hasOwn(hoverElement, "card");
+        let isPreviewCard = hoverElement ? Object.hasOwn(hoverElement, "card") : false;
+
+        //New request ID
+        server.parentRequestID = Date.now();
 
         if(event.buttons == 2) {
             rightClick = true;
 
-//            pinInspect(event);
-
             return;
-        //TODO- exception for HTMLImageElement when dragging in-deck/hand cards
-        //"card" property unique to preview image HTML elements
         } else if (!(hoverElement instanceof HTMLCanvasElement) && !isPreviewCard) {
+            //Invalid drag/select point - not Canvas nor PreviewCard
             startPoint = null;
             gameState.startPoint(null);
             gameState.offset(null);
-            //TODO- attempt to stop clickthrough to canvas; works; problems TBD
         } else {
+            //Valid drag/select point
             startPoint = contextVis.transformPoint(mouse.x, mouse.y);
             gameState.startPoint(startPoint);
-            //divide by cardscale reverses preview distortion added when canvasObj->element
             gameState.offset(
                 {x: event.offsetX, y: event.offsetY}
             );
@@ -453,15 +452,8 @@ window.onload = function() {
 
         dragging = false;
 
-        //purpose: determine coords to use for canvas render,
-        //dragStart for topOfDeck- to choose deck coords or
-        //translate mouseOffset + element offset (within deck preview)
-//        gameState.hoverIsCanvas = document.elementFromPoint(
-//            mouse.x, mouse.y) instanceof HTMLCanvasElement;
-//        console.log(gameState.hoverIsCanvas);
-
-        //exception for MyHand and PreviewDeck imgs
-        //"card" property unique to preview image HTML elements
+        //Unused, does not cause issues to keep
+        //If ImageElement + not preview, not valid
         if((itemFocus = hoverElement)
             instanceof HTMLImageElement && !isPreviewCard) {
 
@@ -476,31 +468,31 @@ window.onload = function() {
             return;
         }
 
-        //TODO - specify for canvas - TODO- for cards in hand/preview; assign to .card property; else rework above
-//        if(gameState.hoverIsCanvas()) {
-//            itemFocus = gameState.itemFromRGB(contextTouch, mouse);
-//
-//            if(itemFocus && Object.hasOwn(itemFocus, "deck") && itemFocus.deck.browsing) {
-//                itemFocus = null;
-//            }
-//
-//        } else if (isPreviewCard) {
-//            itemFocus = hoverElement.card;
-//        } else {
-//            itemFocus = null;
-//        }
-
         if(isPreviewCard) {
             itemFocus = hoverElement.card;
         } else if(gameState.hoverIsCanvas() &&
         (itemFocus = gameState.itemFromRGB(contextTouch, mouse)) &&
-        Object.hasOwn(itemFocus, "deck") && itemFocus.deck.browsing){
+        itemFocus.deck && itemFocus.deck.browsing){
             //itemFocus set to null if itemFromRGB null, or itemFocus.deck.browsing==true
             itemFocus = null;
         }
 
+        //TODO important- itemFocus is received, special note for server/VIP requests
         //on mousedown, if available, valid item, select and redraw
-        if(itemFocus) {
+        if(itemFocus && !(itemFocus instanceof HTMLElement)) {
+
+            //TODO- test with 1+ players, if still valid on items selected by OTHER client
+            if(itemFocus.selected == user.id                            //Generic shallow check
+            || itemFocus.deck && (itemFocus.deck.selected == user.id    //Deck check
+            || itemFocus.deck.isHand && itemFocus.deck.id == user.id && !itemFocus.deck.browsing) //ownHand check
+            ) {
+                server.requestFreePass = true;
+                console.log("VIP request! Already selected by clientUser.");
+            } else {
+                server.requestFreePass = false;
+                console.log("Guest request! Requires server permission. Not already selected by clientUser.");
+            }
+
             if(!itemFocus.selected && !itemFocus.anchored) {
                 gameState.select(itemFocus, user);
                 redraw();
@@ -510,6 +502,8 @@ window.onload = function() {
             }
             //where .selected == user.id:
             //handled in 'mouseup', for cases where dragStart
+        } else {
+            itemFocus = null; //insurance: if HTMLElement, remove from ref;
         }
 
     }, false);
@@ -555,15 +549,17 @@ window.onload = function() {
 
         } else {
         //NODRAG noCtrl
-            purgeSelected();
+            selected.forEach((item) => {
+                if(item != itemFocus) {
+                    gameState.deselect(item);
+                    selected.splice(selected.indexOf(item), 1);
+                }
+            })
             gameState.cycleImage(itemFocus);
 
             if(!itemFocus.anchored) {
                 handleImageTooltip(itemFocus);
-                selected.push(itemFocus);
-
-                //if item was already in 'selected', it needs to be reconfirmed
-                gameState.select(itemFocus, user);
+                if(!selected.includes(itemFocus)) selected.push(itemFocus);
             }
         }
 
@@ -708,18 +704,29 @@ window.onload = function() {
                 break;
             //Test code
             case "KeyT":
-
-                let oldCard = { deck: { isDeck: true }, id: 1 };
-//                console.log(oldCard);
-                let newCard = { deck: null, id: 1 };
-                Object.assign(oldCard, newCard);
-                console.log(oldCard);
+                console.log(gameState.items);
+                redraw();
                 break;
-            //TODO temp- testing on-demand board refresh 'from server'
+            //TODO temp- testing on-demand board refresh 'from JSON'
             case "KeyU":
                 console.log("Here we go...");
                 gameState.rebuildBoard();
                 redraw();
+                break;
+            //TODO temp- testing purgeSelected, ifItemfocus= user.id, deselect; then itemFocus = null
+            //Purpose of testing: in event of 'rejected' request chain (gameActions denied by server)
+            case "KeyY":
+//                if(itemFocus.selected == user.id) selected.push(itemFocus);
+//                purgeSelected();
+//                itemFocus = null;
+
+                //Iteration2: clear itemFocus + dragging=false, as opposed to wiping selected[]
+                if(itemFocus.selected == user.id) itemFocus.selected = 0; //simulating this is taken by someone else in a gameupdate
+                itemFocus = null;
+                startPoint = null; //make dragging invalid - works good
+
+                if(selected.includes(itemFocus)) selected.splice(selected.indexOf(itemFocus), 1); //insurance
+
                 break;
             case "ControlLeft":
             case "ControlRight":

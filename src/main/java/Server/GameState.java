@@ -1,6 +1,6 @@
 package Server;
 
-import java.util.List;
+import java.util.ArrayList;
 
 class Coord
 {
@@ -20,7 +20,7 @@ class PlayMat
     public int id;
     public String touchStyle;
     public int index;
-    public List<String> images;
+    public ArrayList<String> images;
     public int height;
     public int width;
     public Coord coord;
@@ -39,7 +39,7 @@ class Deck
     public int id;
     public String touchStyle;
     public int index;
-    public List<Integer> images;
+    public ArrayList<Integer> images;
     public int height;
     public int width;
     public Coord coord;
@@ -59,7 +59,7 @@ class Card
     public int id;
     public String touchStyle;
     public int index;
-    public List<String> images;
+    public ArrayList<String> images;
     public int height;
     public int width;
     public Coord coord;
@@ -78,7 +78,7 @@ class Hand
     public long id;
     public boolean isDeck;
     public long selected;
-    public List<Integer> images;
+    public ArrayList<Integer> images;
     public String type;
     public boolean disabled;
     public long browsing;
@@ -95,9 +95,9 @@ class User
 
 public class GameState
 {
-    public List<PlayMat> playMats;
-    public List<Deck> decks;
-    public List<Card> cards;
-    public List<Object> tokens;
-    public List<Object> players;
+    public ArrayList<PlayMat> playMats;
+    public ArrayList<Deck> decks;
+    public ArrayList<Card> cards;
+    public ArrayList<Object> tokens;
+    public ArrayList<User> players;
 }

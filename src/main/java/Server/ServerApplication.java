@@ -94,8 +94,8 @@ public class ServerApplication extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket webSocket, String s) {
-        System.out.println("Message!");
-        System.out.printf("webSocket: %s; message: %s%n", webSocket.toString(), s);
+//        System.out.println("Message!");
+//        System.out.printf("webSocket: %s; message: %s%n", webSocket.toString(), s);
 
         requestProcessor.handleMessage(webSocket, s);
     }

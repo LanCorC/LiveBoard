@@ -14,6 +14,9 @@ const gameState = (function() {
         players: [] //mouse, etc
     };
 
+    let selected = new Array();
+
+
     //Purpose: faster recall for serverUpdates or rebuilding gameState via server
     let quickRef = [];
 
@@ -68,7 +71,6 @@ const gameState = (function() {
 
     function addPlayer(user) {
         players.set(user.id, user);
-        clientUser = user;
     }
 
     //on disconnect, 'deactivate' player? - set all 'selected' on player to null
@@ -183,7 +185,18 @@ const gameState = (function() {
         if(!Array.isArray(items)) items = new Array(items);
         if(items[0] == undefined) return;
 
-        let size = items.length;
+        let changes = new Set();
+        let initialState = new Set();
+        items.forEach(item => {
+            initialState.add(JSON.parse(JSON.stringify(item, server.replacer())));
+            //TODO- test to see how objects compare
+            console.log(item);
+//            console.log(item instanceof HTMLElement);
+            console.log(initialState);
+            if(item.deck)
+            initialState.add(JSON.parse(JSON.stringify(item.deck, server.replacer())));
+        });
+
         items.forEach((item) => {
             if(item.deck && item.deck.browsing && hoverIsCanvas()) {
                 //reject if onCanvas, taking from deck being browsed
@@ -192,9 +205,11 @@ const gameState = (function() {
             }
             //TODO: ask server for permission; if denied, do not add to 'selected'
             item.selected = user.id;
+            changes.add(item);
 
             if(item.deck) {
                 item.deck.selected = user.id;
+                changes.add(item.deck);
             }
 
             if(item.deck && !hoverIsCanvas()) {
@@ -202,7 +217,7 @@ const gameState = (function() {
             }
         });
 
-        server.pushGameAction("select", items);
+        server.pushGameAction("select", new Array(...changes), new Array(...initialState));
     }
 
     function deselect(items) {
@@ -229,15 +244,6 @@ const gameState = (function() {
         });
 
         server.pushGameAction("deselect", items);
-    }
-
-    //TODO: replace to 'tap' binary 0* rotation or 90*
-    function flip(items) {
-        if(!Array.isArray(items)) items = new Array(items);
-        items.forEach((item) => item.flipped = !item.flipped);
-
-        server.pushGameAction("deselect", items);
-        return items[0].flipped;
     }
 
     //for performing accurate to mouse-position drags
@@ -435,7 +441,8 @@ const gameState = (function() {
         }
 
         dragItem.forEach((item) => {
-            if(!item.selected) return;
+//            if(!item.selected) return;
+            if(item.selected != clientUser.id) return;
             item.coord.x = dx + item.dragStart.x;
             item.coord.y = dy + item.dragStart.y;
         });
@@ -1000,7 +1007,7 @@ const gameState = (function() {
         if(!id) console.log("no id found! takeFromDeck()");
         if(!deck) console.log("no deck found! takeFromDeck()");
 
-        //Purpose: server update
+        //Purpose: server update in anticipation of 'dissolve()'
         let otherCard;
         if(deck.images.length == 2) {
             //if 'card' is the 0th image, otherCard is [1]th. vice versa
@@ -1144,9 +1151,14 @@ const gameState = (function() {
         if(!items) return;
         if(!Array.isArray(items)) items = new Array(items);
 
+        let changes = new Set();
+
         items.forEach((item) => {
             if(item.anchored) return;
             if(Object.hasOwn(item, "flipMe")) {
+
+                changes.add(item);
+
                 if(item.flipMe == 0) {
                     item.flipMe = 3;
                 } else {
@@ -1157,7 +1169,7 @@ const gameState = (function() {
 
         correctCoords(items);
 
-        server.pushGameAction("tapItem", items);
+        server.pushGameAction("tapItem", new Array(...changes));
     }
 
     //Purpose: mousehover + button will anchor/unanchor item, allowing it to be dragged and selected
@@ -1193,18 +1205,22 @@ const gameState = (function() {
         };
 
         //create user, then add to player list
-        const user = {
-            id: id,
-            color: "white",
-            name: "Player1",
-            position: 0 //purposes of myHand default, card rotation
-        };
+//        const user = {
+//            id: id,
+//            color: "white",
+//            name: "Player1",
+//            position: 0
+//        };
 
-        addPlayer(user);
-        initializeBoardInterface(user);
+        clientUser.id = id;
+        clientUser.color = "white";
+        clientUser.name = "Player1";
+        clientUser.position = 0; //purposes of myHand default, card rotation
+
+        initializeBoardInterface(clientUser);
 
         //return user
-        return user;
+        return clientUser;
     }
 
     return {
@@ -1216,8 +1232,8 @@ const gameState = (function() {
         removePlayer,
         push,
         select,
+        selected,
         deselect,
-        flip,
         cycleImage,
         dragItems,
         drawItems,

@@ -38,6 +38,13 @@ class Server {
     //To hold the WebSocket reference
     connection;
 
+    //Managing requests
+    parentRequestID = Date.now();
+    requestChains = {}; //key: parentRequestID, value: fallbackState,
+    //TODO- some variable that determines if a requestChain is "VIP" aka already client-selected pre-parent
+    //STEPS- see if i can do a "mousedown" gauge if item, card, was already selected ("VIP") or not (print all)
+    requestFreePass = false;
+
     connect(address, port) {
         if(!address) address = "localhost";
         if(!port) port = "8080";
@@ -80,7 +87,6 @@ class Server {
 
         //TODO: differentiate between messages: chat, fullGameState refresh, gameUpdate
         socket.onmessage = function(event) {
-            console.log(event.data);
 
             try {
                 let data = JSON.parse(event.data);
@@ -99,14 +105,37 @@ class Server {
                     case "ServerAddress":
                         this.server.frontPage.connectionSuccess(data.explicit);
                         break;
+                    case "GameUpdate":
+                        //Purpose messages received here are 'server approved'; we may apply immediately
+
+                        //TODO temp - print out items and compare; expect 'post change' and 'server initial copy'
+                        console.log("Game update received, printing .cards, .decks, .playMats:");
+                        console.log(data.cards);
+                        console.log(data.decks);
+                        console.log(data.playMats);
+                        console.log(data.hands);
+
+                        //TODO- apply changes if NOT from us
+                        if(data.senderId != this.server.game.clientUser.id) {
+                            console.log("returned!");
+                            break;
+                        }
+
+                        //TODO- apply timestamps regardless
+
+
+
+
+
+                        break;
                     default:
                         console.log(`"${header}" header not defined`);
+                        console.log(data);
                         break;
                 }
             } catch (e) {
-                console.log(e);
+                console.log(event.data);
             }
-
 
         }
     }
@@ -137,7 +166,7 @@ class Server {
         if(this.connection == undefined || this.connection.readyState != 1) return;
 
         //data[0] - Object  -> GameState (items)
-        //data[1] - Array   -> List<Users>
+        //data[1] - Array   ->ArrayList<Users>
         //data[2] - number  -> Integer
 
         //prepare data into appropriate "message"
@@ -172,40 +201,130 @@ class Server {
     }
 
     //TODO- server update on gameAction
-    pushGameAction(stringAction, items)  {
-        //Select (mousedown) - store copy of itemFocus, itemFocus.deck (if any)
-        //Deselect (mouseup) - store copy of item/s, items.forEach(item->item.deck) if any
-        //TakeFromDeck* with care, if last card;
+    pushGameAction(stringAction, items, ...fallbackState)  {
+        //TODO important note: uncomment when not testing
+        if(this.connection == undefined || this.connection.readyState != 1) return;
+
+        //TakeFromDeck* - permission based (wait for server response)
 
         //for now, just push
 
         //TODO preview all actions are being read
-        console.log(stringAction);
+//        console.log(stringAction);
+//        console.log(`VIP: ${this.requestFreePass}`);
 
         //items assumed array, make (items.deck)[]
         if(!Array.isArray(items)) items = new Array(items);
+        if(items.length == 0) {
+            console.log("Invalid request- no changes. scrapping.");
+            return;
+        }
+
+        let subHeader = ""; //parentRequest childRequest VIP permission
+        let requestChain = 0;
+
+        //Start of chain: filter for
+        if((stringAction == "select" || stringAction == "deselect") &&
+        this.requestFreePass) {
+            Object.entries(this.requestChains)
+                .forEach((keyValueArr) => { //[key, value]
+                items.forEach((item) => {
+
+                    //In all entries, find matching fallbackState item id
+                    //Note: Expect requestChains{ key=id, val=arr[arr,arr,arr] }
+                    let found = keyValueArr[1].find((entries) => {
+                        entries.forEach((entry)=>entry.id == item.id);
+                    });
+                    if(found) requestChain = keyValueArr[0];
+                });
+            });
+
+            //if requestChain assigned (see above)
+            if(requestChain) {
+                this.requestFreePass = false; //this new chain is linked
+                //TODO: is a parentRequest WITH a parent request ref
+                subHeader = "parentRequest";
+            } else {
+                subHeader = "VIP"; //else maintain VIP status
+            }
+        }
+
+        switch (stringAction) {
+            case "select": //only case for parentRequest
+                if(subHeader) break; //empty string falsy
+                subHeader = "parentRequest";
+
+                if(!requestChain) {
+                    this.requestChains[this.parentRequestID] = [fallbackState];
+                } else {
+                    this.requestChains[requestChain].push(fallbackState);
+                }
+
+                break;
+            //TODO- rework how permissions are called
+            //Intention: permissions wrapped, waits for server response,
+            //then if client receives "Yes", then run the command as a VIP gameUpdate
+            //If on permission, requestFreePass == true, run as VIP immediately
+            //If on permission, requestFreePass != true, run normally as permission
+            case "tapItem":
+            case "anchorItem":
+            case "selectView":
+            case "deselectView":
+                subHeader = "VIP"; //VIP- placeholder until permissions rework
+                break;
+            //Special: not always triggered by mousedown, or have a 'parentRequest'
+            //Note: if linked to a real parent request, it will be filtered above
+            case "deselect":
+                subHeader = "VIP";
+            default:
+                if(this.requestFreePass) subHeader = "VIP";
+                subHeader = this.requestFreePass ? "VIP" : "childRequest";
+                break;
+        }
 
         //TODO important: separate decks and items
-        let itemsDecks = [];
-        let itemsCards = [];
+        let itemsDecks = new Set();
+        let itemsCards = new Set();
+        let itemsPlayMats = new Set();
+        let itemsHands = new Set();
         items.forEach((item) => {
-            if(item.deck) {
-                itemsDecks.push(item.deck);
+            if(item.type == "playMat" || item.type == "gameMat") {
+                itemsPlayMats.add(item);
+                return;
             }
+
+            if(item.deck) {
+                item.deck.isHand ?
+                itemsHands.add(item.deck) : itemsDecks.add(item.deck);
+            }
+
             if(item.isDeck) {
-                itemsDecks.push(item);
+                item.isHand ?
+                itemsHands.add(item) : itemsDecks.add(item);
             } else {
-                itemsCards.push(item);
+                itemsCards.add(item);
             }
         });
 
         let message = {};
-        message.messageHeader = stringAction;
-        message.cards = itemsCards;
-        message.decks = itemsDecks;
-        //TODO- make sure itemsCards and itemsDecks seem accurate
-
+        message.messageHeader = "GameUpdate";
+        message.subHeader = subHeader;
+        message.senderId = this.game["clientUser"].id;
+        message.timeStamp = Date.now();
+        message.explicit = stringAction;
+        console.log(`Sending the following .cards, .decks, .playMats, .hands at command ${stringAction}`);
+        if(itemsCards) message.cards = new Array(...itemsCards);
+        console.log(message.cards);
+        if(itemsDecks) message.decks = new Array(...itemsDecks);
+        console.log(message.decks);
+        if(itemsPlayMats) message.playMats = new Array(...itemsPlayMats);
+        console.log(message.playMats);
+        if(itemsHands) message.hands = new Array(...itemsHands);
+        console.log(message.hands);
+        if(requestChain) message.itemCount = requestChain;
         message = JSON.stringify(message, this.replacer());
+
+        this.connection.send(message);
     }
 
     //cleanup function; private? for JSON
@@ -232,7 +351,8 @@ class Server {
                 case "ref":     //of objects with UI references
                     return undefined;
                 case "deck":    //of card.deck which contains said card in .deck.images
-                    return value.id;
+                    if(value && value.isDeck) return value.id; //value is deck, return its id
+                    return value; //or 0, if value != deck
                 case "images":  //of 'decks' and 'hands' with backreferences
                     //TODO-check is actually related to deck
                     let newImagesRef = [];
