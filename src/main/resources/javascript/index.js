@@ -174,7 +174,7 @@ window.onload = function() {
 
     const handleImageTooltip = function(event) {
 
-        if(!inspectMode || hoverElement == null) {
+        if(!inspectMode) {
             return;
         }
 
