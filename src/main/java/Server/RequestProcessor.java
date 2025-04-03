@@ -132,21 +132,18 @@ public class RequestProcessor {
                     if(!message.hands.isEmpty()) {
 //                        System.out.printf("hands != null, %s%n", message.timeStamp);
 
-                        System.out.println(message.hands.getFirst().id);
-                        System.out.println(players.keySet());
+//                        System.out.println(message.hands.getFirst().id);
+//                        System.out.println(players.keySet());
 
                         //Filter and store old values
                         ArrayList<Hand> hands = new ArrayList<Hand>();
                         message.hands.forEach((hand) -> {
                             quickRef.put((long) hand.id, hand); //replace old value with new
-                            //TODO- gameState.players is for VISUAL TOKEN
-                            //TODO- USE players hashmap
-                            gameState.players.stream()
+                            players.values().stream()
                                     .filter(user -> user.id == (long) hand.id)
                                     .forEach(user -> {
                                         hands.add(user.hand);
                                         user.hand = hand; //replace old value with new
-                                        System.out.println("processing hand! match found!");
                                     });
                         });
 
@@ -182,7 +179,7 @@ public class RequestProcessor {
     private void gameSetup(WebSocket conn, SimpleRequest message) {
         //Determine: is player sending GameState, or asking for it
         if(message.bool) { //true, asking
-            returnGameState(conn);
+            returnGameState(conn, message);
             return;
         }
 
@@ -193,11 +190,13 @@ public class RequestProcessor {
         gameState = message.gameState;
         for(User user : message.players) {
             players.put(user.id, user);
+            quickRef.put(user.id, user.hand);
         }
         itemCount = message.itemCount;
 
         System.out.println("Received initial gameState!");
 //        System.out.println(message.players.size());
+//        System.out.println(players.values().);
 
         //TODO create quickRef for items;
         gameState.cards.forEach((card)->quickRef.put((long) card.id,card));
@@ -214,10 +213,22 @@ public class RequestProcessor {
 
     //TODO- to fill in new 'joiners' of gameState.
     //TODO for now, testing, can we make an identical JSON string?
-    private void returnGameState(WebSocket conn) {
+    private void returnGameState(WebSocket conn, SimpleRequest request) {
         //Format was: .messageHeader = GameSetup
         //.gameState = data[0], aka items, aka gameState
         //.players = array players
+
+        //TODO- add sender user info to players; if already in, preserve hand;
+        //then broadcast new player to all clients - to say "here's a new person!"
+        User newPlayer = request.player;
+        if(players.containsKey(newPlayer.id)) {
+            //Already listed; apply new state, keep server copy of hand state
+            newPlayer.hand = (Hand) quickRef.get(newPlayer.id);
+        } else {
+            quickRef.put(newPlayer.id, newPlayer.hand);
+        }
+        players.put(newPlayer.id, newPlayer);
+        broadcastNewPlayer(newPlayer);
 
         SimpleRequest sr = new SimpleRequest();
         sr.setMessageHeader("GameSetup")
@@ -239,20 +250,29 @@ public class RequestProcessor {
         }
     }
 
-    //TODO: "readRequest" method; Objective: organize request, send to appropr. method
-    
-    //TODO: "getGameState" - return to sender, gameState JSON string
-    //turn gameState into JSON string that sender can translate into javascript obj
+    //TODO- send to all, new player; + if client == newplayer, disregard; else apply new player
+    private void broadcastNewPlayer(User newPlayer) {
+        SimpleRequest sr = new SimpleRequest();
+        sr.setMessageHeader("NewPlayer")
+                .setPlayer(newPlayer)
+                .setSenderId(newPlayer.id)
+                .setExplicit("Add this new player to all clients' player tracker.");
+        try {
+            String message = objMapper.writeValueAsString(sr);
+            server.broadcast(message);
 
-    //TODO: "receiveGameState" - sender gives GameState JSON, Map to JavaObject,
-    //then ping to all connected "gameState == OK" or equivalent, {gameState: true}
+        } catch(JsonProcessingException e) {
+            System.out.println("Could not JSONify 'broadcastNewPlayer'.");
+            System.out.println(e.getMessage());
+        }
+    }
+
 
     public void sendHostAddress(WebSocket webSocket)  {
         SimpleRequest sr = new SimpleRequest();
         sr.setMessageHeader("ServerAddress")
                 .setExplicit("%s:%s".formatted(
                         ServerApplication.ServerAddress, ServerApplication.SERVER_PORT));
-
         try {
             webSocket.send(objMapper.writeValueAsString(sr));
         } catch (JsonProcessingException e) {

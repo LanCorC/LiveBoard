@@ -71,6 +71,9 @@ const gameState = (function() {
 
     function addPlayer(user) {
         players.set(user.id, user);
+
+        console.log("adding player, here is the updated player map:")
+        console.log(players);
     }
 
     //on disconnect, 'deactivate' player? - set all 'selected' on player to null
@@ -778,21 +781,22 @@ const gameState = (function() {
         console.log("Rebuilding board..");
 
         let data;
-        if(demo) {
+        if(demo) { //
             data = presets.demo3;
             data = JSON.parse(data);
             gameObjects = data[0];
             playerObjects = data[1];
-        } else if(!gameObjects && !playerObjects) {
+        } else if(!gameObjects && !playerObjects) { //When refreshing from OWN client gameState
             data = JSON.stringify(payload, server.replacer());
             data = JSON.parse(data);
             gameObjects = data[0];
             playerObjects = data[1];
-        }
 
-        console.log(gameObjects);
+//            console.log(playerObjects);
+        } //else, called from being retrieved from Server
 
-        console.log(items);
+//        console.log(gameObjects);
+//        console.log(items);
 
         //Purpose: new client joining existing game, proceed as if quickRef empty, items empty
         let oldRef = quickRef; //Note important: strictly for testing comparisons
@@ -802,6 +806,7 @@ const gameState = (function() {
         let reconstructionItems = {}; //equivalent of "items" obj
         let largestId = 0; //purpose: correcting gameState id; TODO: refer to server for gameId
 
+        console.log("Printing new gameState ref:")
         for(const [key, value] of Object.entries(gameObjects)) {
             reconstructionItems[key] = [];
             console.log(value);
@@ -812,11 +817,16 @@ const gameState = (function() {
             });
         }
 
+        console.log("Reconstruction Items:");
         console.log(reconstructionItems);
 
         //Populate players map (list)
         let reconstructionPlayers = new Map();
         playerObjects.forEach((player) => reconstructionPlayers.set(player.id, player));
+
+        console.log("Reconstruction Players:");
+//        console.log(...reconstructionPlayers.entries());
+        console.log(reconstructionPlayers);
 
         //Reconnect circular references, and JSON restructured properties
         for(const [key, value] of Object.entries(reconstructionItems)) {
@@ -853,6 +863,11 @@ const gameState = (function() {
                 }
             })
         }
+
+        //If any decks are being viewed by clientUser, update UI
+        reconstructionItems["decks"]
+            .filter((deck) => deck.browsing == clientUser.id)
+            .forEach((deck) => userInterface.preview.setView(deck)); //expecting one match at most
 
         //reconstruct "hand" (separate from renders list) circular references and JSON omitted
         reconstructionPlayers.forEach((v,k,m) =>{
@@ -904,9 +919,28 @@ const gameState = (function() {
         //TODO- rely or link to server, if (server.connection)
         itemCount = largestId;
 
-        //arbitrary timer, just enough time to allow assets to 'reload'
-        //Note: codeblock finishes ~instantly. onload (cached) is 'near instant'.
-        return new Promise(resolve => {setTimeout(()=> resolve(true), 500)});
+        //TODO- if selected, select;
+        //First: store all selected cards; and corresponding .deck if any
+        //Second: if .deck is selected and NOT stored in 'First', also add to select
+        let decksOfSelected = [];
+        items.cards
+            .filter((card) => card.selected == clientUser.id)
+            .forEach((card) => {
+                selected.push(card);
+                if(card.deck != 0) decksOfSelected.push(card.deck);
+            });
+        items.decks.filter((deck) =>
+                deck.selected == clientUser.id && !decksOfSelected.includes(deck))
+            .forEach((deck) => {
+                selected.push(deck);
+            });
+        items.playMats
+            .filter((playMat) => playMat.selected == clientUser.id)
+            .forEach((playMat) => {
+            selected.push(playMat);
+        });
+
+        console.log(selected);
     }
 
     //returns true: method was successful, proceed to purge selected (index.js)
@@ -1216,6 +1250,8 @@ const gameState = (function() {
         clientUser.color = "white";
         clientUser.name = "Player1";
         clientUser.position = 0; //purposes of myHand default, card rotation
+
+        addPlayer(clientUser);
 
         initializeBoardInterface(clientUser);
 

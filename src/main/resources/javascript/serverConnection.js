@@ -117,15 +117,25 @@ class Server {
 
                         //TODO- apply changes if NOT from us
                         if(data.senderId != this.server.game.clientUser.id) {
-                            console.log("returned!");
+                            console.log("update not from us! WIP");
                             break;
+                        } else {
+                            console.log("update from us! WIP");
                         }
 
                         //TODO- apply timestamps regardless
 
+                        break;
+                    case "NewPlayer":
+                        if(data.senderId == this.server.game.clientUser.id) {
+                            console.log(`returned ${header}!`);
+                            //Do not process;
+                            break;
+                        }
 
+                        console.log(`New player received! ${data.senderId}`);
 
-
+                        this.server.game.addPlayer(data.player);
 
                         break;
                     default:
@@ -134,6 +144,7 @@ class Server {
                         break;
                 }
             } catch (e) {
+                console.log(e);
                 console.log(event.data);
             }
 
@@ -193,9 +204,10 @@ class Server {
         let message = {};
         message.messageHeader = "GameSetup";
         message.bool = true;
+        message.player = this.game.clientUser;
         message.explicit = "This is a request to be sent back the gameState";
 
-        message = JSON.stringify(message);
+        message = JSON.stringify(message, this.replacer());
 
         this.connection.send(message);
     }
