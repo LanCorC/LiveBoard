@@ -82,6 +82,10 @@ const gameState = (function() {
         //TODO
     }
 
+    function getPlayers() {
+        return players;
+    }
+
     //private, internal function
     function findList(item) {
         let type = item.isDeck ? "deck" : item.type;
@@ -898,7 +902,7 @@ const gameState = (function() {
         //TODO- also fix hand.images[], still stuck integers
         //TODO- ensure hand.images[] and refs of cards are all OK
         reconstructionPlayers.forEach((v,k,m) => {
-            //Apply to user
+            //Apply to user interface 'MyHand'
             if(k == clientUser.id) {
                 //pre-repair
                 let ref = clientUser.hand.ref;
@@ -909,9 +913,26 @@ const gameState = (function() {
                 //repair
                 clientUser.hand.ref = ref;
                 ref.newSrc(clientUser.hand);
+            } else {
+                players.set(k, v);
             }
         });
-        Object.assign(players, reconstructionPlayers);
+
+//        Object.assign(players, reconstructionPlayers);
+        //TODO ensure players are added; if same user, preserve reference
+//        console.log(clientUser);
+//        reconstructionPlayers.entries().forEach((entry) => {
+////            if(!players.has(userId)) addPlayer(user);
+////            if(player.has(userId)) Object.assign(clientUser.hand, user.hand); //is the player
+//            //[key, value] aka [userId, user]
+//            if(entry[0] == clientUser.id) {
+//                clientUser.hand.newSrc(entry[1].hand);
+//            } else {
+//                players.set(entry[0], entry[1]);
+//            }
+//        });
+
+
 
         console.log(items);
 
@@ -959,6 +980,9 @@ const gameState = (function() {
 
         console.log("quickref:")
         console.log(quickRef);
+
+        console.log("Players, supposedly:");
+        console.log(players);
     }
 
     //Purpose: take updates from server and apply to gameState, then ensure redraw()
@@ -994,7 +1018,7 @@ const gameState = (function() {
             //Find missing items, add, then repair
             let missingItems = {};
             newStateObjects
-                .filter((item) => quickRef[item.id] == undefined || players.get(id) == undefined)
+                .filter((item) => quickRef[item.id] == undefined || players.get(item.id) == undefined)
                 .forEach((item) => missingItems[item.id] == item);
 
             //if missing item, repair images, repair ref IDs (deck/hand .images) or "card".deck != 0
@@ -1075,8 +1099,13 @@ const gameState = (function() {
                 //to handle... temporary edge case: player tries to receive deck ALREADY destroyed
                 if(!players.get(item.id)) {
                     realItem = null;
+                    console.log("not found in players!");
+//                    console.log(players.keys());
+//                    console.log(players);
+//                    console.log(getPlayers());
                 } else {
                     realItem = players.get(item.id).hand;
+                    console.log("found in players!");
                 }
             }
             if(realItem == null) { //Error log
@@ -1167,7 +1196,7 @@ const gameState = (function() {
                     }
                     break;
                 case 'tapItem': //item.flipMe property
-                    realitem.flipMe = item.flipMe;
+                    realItem.flipMe = item.flipMe;
                     break;
                 case 'anchorItem': //item.anchored property
                     realItem.anchored = item.anchored;
@@ -1489,7 +1518,10 @@ const gameState = (function() {
 
         addPlayer(clientUser);
 
+        //TODO- see if we can PRESERVE the MyHand object,
         initializeBoardInterface(clientUser);
+
+//        console.log(clientUser);
 
         //return user
         return clientUser;
