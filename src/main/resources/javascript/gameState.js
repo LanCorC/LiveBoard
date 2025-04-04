@@ -204,6 +204,11 @@ const gameState = (function() {
             if(item.deck && item.deck.browsing && hoverIsCanvas()) {
                 //reject if onCanvas, taking from deck being browsed
                 console.log(`select() rejected: object is being browsed`);
+                let toDelete = null;
+                initialState.values()
+                    .filter((initItem) => initItem.id == item.id)
+                    .forEach((initItem) => toDelete = initItem); //expecting one match
+                initialState.delete(toDelete);
                 return;
             }
             //TODO: ask server for permission; if denied, do not add to 'selected'
@@ -227,10 +232,13 @@ const gameState = (function() {
         if(!Array.isArray(items)) items = new Array(items);
         if(items[0] == undefined) return;
 
+        let changes = [];
+
         items.forEach((item) => {
             if(item.isDeck && item.browsing) return;
 
             //TODO: notify server release of 'lock';
+            changes.push(item);
             item.selected = 0;
 
             if(!item.deck) return;
@@ -238,6 +246,7 @@ const gameState = (function() {
             //additional: if 'topcard' was selected,
             //the deck will visually be selected
             if(!item.deck.browsing) {
+                changes.push(item.deck)
                 item.deck.selected = 0;
             }
 
@@ -246,7 +255,7 @@ const gameState = (function() {
             }
         });
 
-        server.pushGameAction("deselect", items);
+        server.pushGameAction("deselect", changes);
     }
 
     //for performing accurate to mouse-position drags
@@ -846,6 +855,8 @@ const gameState = (function() {
                     item.images = newImages;
                 } else { //assumes if NOT deck.. then images need re-organizing
                     let newImages = [];
+//                    console.log(`Attempting ${item.id}`);
+//                    console.log(item);
                     item.images.forEach((src) => {
                         const image = new Image();
                         image.src = src;
@@ -917,9 +928,12 @@ const gameState = (function() {
 //        })
 
         //TODO- rely or link to server, if (server.connection)
+        //as it returns "Yes", take current itemCount on server, set to clientGamestate itemcount,
+        //then process callback function => callback function will send new obj to at the new id;
+        //on new nonHand, nonDeck item, if id > itemCount, server.itemCount = id
         itemCount = largestId;
 
-        //TODO- if selected, select;
+        //Recover 'selected' interface state
         //First: store all selected cards; and corresponding .deck if any
         //Second: if .deck is selected and NOT stored in 'First', also add to select
         let decksOfSelected = [];
@@ -930,7 +944,7 @@ const gameState = (function() {
                 if(card.deck != 0) decksOfSelected.push(card.deck);
             });
         items.decks.filter((deck) =>
-                deck.selected == clientUser.id && !decksOfSelected.includes(deck))
+                deck.selected == clientUser.id && !decksOfSelected.includes(deck) && !deck.browsing)
             .forEach((deck) => {
                 selected.push(deck);
             });
@@ -940,7 +954,232 @@ const gameState = (function() {
             selected.push(playMat);
         });
 
+        console.log("Selected:")
         console.log(selected);
+
+        console.log("quickref:")
+        console.log(quickRef);
+    }
+
+    //Purpose: take updates from server and apply to gameState, then ensure redraw()
+    function updateItems(data) { //as parsed from JSON
+        if(!data) {
+            console.log("no data found!");
+            return;
+        }
+
+        console.log("Updating items..");
+
+        //Apply timestamps, data.timeStamp
+            //cards, decks, playmats, hands,
+        //first, consolidate all, then forEach()
+            //note, impossible to not be 'found' if sender == this same client; would already be added/processed
+        let newStateObjects = [];
+        Object.values(data) //Collect all non empty arrays
+            .filter((value) => Array.isArray(value) && value.length != 0)
+            .forEach((array) => newStateObjects = newStateObjects.concat(array));
+        //second, apply to quickref the timestamp
+
+        //but first, fill in any 'holes'- if sender != clientUser.id,
+        //chances are there might be a new object;
+
+        if(data.senderId != clientUser.id) {
+            //if new object, also have to repair some properties;
+            //example:
+                    //image.src = src;              => repair image ref
+                    //image.height = item.height;   => reinitialize properties
+                    //image.width = item.width;     => reinitialize properties
+                    //image.source = src;           => reinitialize properties
+
+            //Find missing items, add, then repair
+            let missingItems = {};
+            newStateObjects
+                .filter((item) => quickRef[item.id] == undefined || players.get(id) == undefined)
+                .forEach((item) => missingItems[item.id] == item);
+
+            //if missing item, repair images, repair ref IDs (deck/hand .images) or "card".deck != 0
+            Object.values(missingItems).forEach((item) => {
+                //LARGELY COPY PASTED:
+                if(!item.isDeck && typeof item.deck === "number") {
+                    //NOTE: arbitrary, large, fit most cases
+                    if(item.deck > 10000) {
+                        item.deck = players.get(item.deck).hand; //check players IDs
+                    } else {
+                        if(quickRef[item.deck] == undefined) {
+                            //test code, just in case:
+                            if(missingItems[item.deck] == undefined)
+                                console.log("Error! Deck not found in updateItems!");
+                            item.deck = missingItems[item.deck];
+                        } else {
+                            item.deck = quickRef[item.deck];
+                        }
+                    }
+                }
+                if(item.isDeck && item.images[0]) { //assumes (isDeck) ? any images=int
+                    let newImages = [];
+                    item.images.forEach((id) => newImages.push(quickRef[id]));
+                    item.images = newImages;
+                } else { //assumes if NOT deck.. then images need re-organizing
+                    console.log("Strange: we found a previously unregistered gameItem");
+                    console.log(item);
+                    let newImages = [];
+                    item.images.forEach((src) => {
+                        const image = new Image();
+                        image.src = src;
+                        image.height = item.height;
+                        image.width = item.width;
+                        image.source = src;
+                        newImages.push(image);
+
+                        image.onerror = () => {
+                            console.log(image.src);
+                        }
+                    });
+
+                    item.images = newImages;
+                }
+            });
+
+            //after fixing objects, finally inject into client gameState
+            Object.values(missingItems).forEach((item) => {
+                if(item.isHand) {
+                    console.log(`New hand found, id: ${item.id}`);
+                    players.get(item.id).hand = item;
+                    return;
+                }
+                //anything further is a card, deck, or playmat *visual tokens not taken into account yet
+                push(item);
+                quickRef[item.id] = item;
+            });
+
+            console.log("All missing items inserted:");
+            console.log(Object.values(missingItems));
+        }
+
+        //finally apply changes, rest assured there are no missing objects
+        //if false, only apply timestamp; if true,
+            //done this way to minimize repeated 'searching' code
+        let fullChange = data.senderId != clientUser.id;
+
+        //TODO future- if own player's hand, update visual? in the event of future 'viewHand' 'takeRandomFromHand'
+                //will likely take a different path;
+        let skip = false;
+        newStateObjects.forEach((item) => {
+            console.log("Attempting changes in itemUpdate...");
+            if(skip) return;
+
+            let realItem = null;
+            if(quickRef[item.id]){
+                realItem = quickRef[item.id];
+            } else {
+                //to handle... temporary edge case: player tries to receive deck ALREADY destroyed
+                if(!players.get(item.id)) {
+                    realItem = null;
+                } else {
+                    realItem = players.get(item.id).hand;
+                }
+            }
+            if(realItem == null) { //Error log
+                console.log("Real item not found!");
+                console.log(item);
+                skip = true;
+                return;
+            }
+            if(realItem == item) {
+                console.log("New item added successfully");
+                console.log(item);
+                return;
+            }
+
+            //timeStamp
+            realItem.timeStamp = data.timeStamp;
+
+            //TODO note Important: enable !fullChange code when not testing
+            if(!fullChange) return;
+            console.log("Continuing with fullChange in itemUpdate...");
+
+            //how about we refine it per action? what could go wrong?
+            switch(data.explicit) {
+                case 'addToDeck': //only focus deck.images[], cards.coords, cards.deck, deck purge
+                case 'takeFromDeck': //cont: disabled, card.index;
+                    if(item.isDeck && !item.isHand && item.images.length < 2) {
+                        //Purge
+                        //Note: should come accompanied with 'otherCard', and it should have correct .deck = 0
+                        let findObj = (entry) => entry == realItem;
+                        quickRef.splice(quickRef.findIndex(findObj), 1);
+                        items.decks.splice(items.decks.findIndex(findObj), 1);
+                        break;
+                    }
+                    if(!item.isDeck) {
+                        realItem.coords = item.coords;
+                        if(typeof item.deck == "number") {
+                        //uses arbitrary number, should fit most use cases
+                            item.deck = item.deck > 10000 ? players.get(item.deck).hand : quickRef[item.deck];
+                        }
+                        realItem.deck = item.deck;
+                        realItem.disabled = item.disabled;
+                        realItem.index = item.index; //in the event of sent/taken from player hand
+                    } else {
+                        //is a deck or hand;
+                        if(item.images.length == 0) {
+                            realItem.images = [];
+                            break;
+                        }
+                        //else expect integers
+                        let newImages = [];
+                        item.images.forEach((number) => newImages.push(quickRef[number]));
+                        realItem.images = newImages;
+
+                        //TODO- if own hand, or own view, update
+                    }
+                    break;
+                case 'drag': //only focus coord; also forward!
+                    realItem.coord = item.coord;
+                    //note: order not 1:1 between sender/receiver, 'Set' used in processing
+                    //see if 'forward' is expensive, if ==true, add additional 'onetime' forward identifier
+                    //like the boolean
+                    forward(realItem);
+                    break;
+                case 'deselect': //only on .selected
+                case 'select': //only on .selected
+                    realItem.selected = item.selected;
+                    break;
+                case 'cycleImage': //only item.index
+                    realItem.index = item.index;
+                    break;
+                case 'selectView': //only deck.browsing, deck.selected; if == this client, update
+                case 'deselectView': //as in selectView
+                    if(realItem.isDeck) {
+                        let originalBrowsing = realItem.browsing;
+                        realItem.browsing = item.browsing;
+                        realitem.selected = item.selected;
+
+                        //UI:
+                        if(realItem.browsing == clientUser.id) {
+                            userInterface.preview.setView(realItem); //opponent's hand
+                        } else if(originalBrowsing == clientUser.id) {
+                            userInterface.preview.setView(); //deselect, this client's vieww overridden
+                        }
+                    } else {
+                        console.log("This is not a deck, how did it get here? Real, Update");
+                        console.log(realItem);
+                        console.log(item);
+                    }
+                    break;
+                case 'tapItem': //item.flipMe property
+                    realitem.flipMe = item.flipMe;
+                    break;
+                case 'anchorItem': //item.anchored property
+                    realItem.anchored = item.anchored;
+                    break;
+                default:
+                    console.log(`itemUpdate command '${data.explicit}' unaccounted for!`);
+                    console.log("Items affected:");
+                    console.log(newStateObjects);
+                    skip = true;
+                    break;
+            }
+        });
     }
 
     //returns true: method was successful, proceed to purge selected (index.js)
@@ -976,7 +1215,8 @@ const gameState = (function() {
         let donorCards = [];
 
         //Purpose: server updates
-        let relevant = [];
+        let relevant = new Set();
+        relevant.add(recipient);
 
         donor.forEach((item) => {
             //filter
@@ -984,11 +1224,12 @@ const gameState = (function() {
 
             if(item.isDeck) {
                 item.images.forEach((card) => donorCards.push(card));
-                relevant.push(item);
+                relevant.add(item);
                 dissolveDeck(item, true);
             //checks if item is already in; prevents duplicates
             } else if (!recipient.images.includes(item)){
                 donorCards.push(item);
+                relevant.add(item);
             }
         });
 
@@ -1002,10 +1243,8 @@ const gameState = (function() {
         if(!recipient.isDeck) {
             push(deckify(donorCards, recipient));
 
-            donor.push(donorCards[0].deck); //new deck
-            if(!donor.includes(recipient)) donor.push(recipient); //include old deck/basecard
-            if(relevant.length != 0) relevant.forEach((deck) => donor.push(deck));
-            server.pushGameAction("addToDeck", donor);
+            relevant.add(donorCards[0].deck);
+            server.pushGameAction("addToDeck", new Array(...relevant));
             return true;
         }
 
@@ -1023,10 +1262,7 @@ const gameState = (function() {
 
         if(recipient.ref) recipient.ref.update();
 
-        donor.push(donorCards[0].deck); //new deck
-        if(!donor.includes(recipient)) donor.push(recipient); //include old deck/basecard
-        if(relevant.length != 0) relevant.forEach((deck) => donor.push(deck));
-        server.pushGameAction("addToDeck", donor);
+        server.pushGameAction("addToDeck", new Array(...relevant));
         return true;
     }
 
@@ -1276,6 +1512,7 @@ const gameState = (function() {
         getImage,
         loadBoard,
         rebuildBoard,
+        updateItems,
         purgeHoverItem,
         startPoint,
         offset,

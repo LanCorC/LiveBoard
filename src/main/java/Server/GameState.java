@@ -30,7 +30,7 @@ class PlayMat
     public long selected;
     public boolean isDeck;
     public int flipMe;
-    public Object timeStamp;
+    public long timeStamp;
 }
 
 class Deck
@@ -50,7 +50,7 @@ class Deck
     public boolean isDeck;
     public boolean specialHover;
     public int flipMe;
-    public Object timeStamp;
+    public long timeStamp;
 }
 
 class Card
@@ -68,7 +68,7 @@ class Card
     public long selected;
     public boolean isDeck;
     public int flipMe;
-    public Object timeStamp;
+    public long timeStamp;
     public Object deck;
 }
 
@@ -82,6 +82,7 @@ class Hand
     public String type;
     public boolean disabled;
     public long browsing;
+    public long timeStamp;
 }
 
 class User

@@ -79,7 +79,7 @@ window.onload = function() {
     let dragging = false;
 
     const redraw = function() {
-//        console.log(contextVis.getTransform());
+//        console.log("aw man we drawin'");
         correctTranslation();
         //Clear
         contextVis.save();
@@ -320,31 +320,39 @@ window.onload = function() {
 
         let value = panRate * modifier;
 
+        let changed = false;
         if(clientLeft) {
             //pan left (board perspective, not client)
-            console.log("left");
+//            console.log("left");
             contextVis.translate(value, 0);
+            changed = true;
         }
         if(clientRight) {
             //pan right (board perspective, not client)
             contextVis.translate(-value, 0);
-            console.log("right");
+//            console.log("right");
+            changed = true;
         }
         if(clientTop) {
             //pan top (board perspective, not client)
             contextVis.translate(0, value);
-            console.log("top");
+//            console.log("top");
+            changed = true;
         }
         if(clientBottom) {
             //pan bottom (board perspective, not client)
             contextVis.translate(0, -value);
-            console.log("bottom");
+//            console.log("bottom");
+            changed = true;
         }
+
+        //limits draws to if mouse is at the edges;
+        if(changed) redraw();
+
         //redrawing twice? see: called by handleDrag
-        if(dragging){
+        if(dragging || pinBoard){
             window.setTimeout(handleEdgePan, recallTime);
             handleEdgePanlooping = true;
-            redraw();
         } else {
             handleEdgePanlooping = false;
         }
@@ -698,6 +706,11 @@ window.onload = function() {
                 break;
             case "KeyP": //toggle: prevent board pan
                 pinBoard = !pinBoard;
+                //This code turns on handleEdgePan loop check always; smooth
+                //TODO future- valid alternate mode; no need to drag-pan. hover-pan+scroll
+                if(pinBoard) {
+                    handleEdgePan();
+                }
                 break;
             case "KeyR":
                 rollDice();

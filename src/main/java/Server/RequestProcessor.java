@@ -61,7 +61,7 @@ public class RequestProcessor {
     public void handleMessage(WebSocket conn, String s) {
         try{
             SimpleRequest message = objMapper.readValue(s, SimpleRequest.class);
-            System.out.printf("New request! %s %s%n", message.explicit, message.timeStamp);
+//            System.out.printf("New request! %s %s%n", message.explicit, message.timeStamp);
 
             switch (message.messageHeader) {
 
@@ -90,6 +90,14 @@ public class RequestProcessor {
                         //Remove old values, add updated values
                         cards.forEach(gameState.cards::remove);
                         gameState.cards.addAll(message.cards);
+
+                        message.cards.forEach(card -> card.timeStamp = message.timeStamp);
+
+                        //Test code to log 'bugged' objects
+//                        message.cards.stream()
+//                                .filter(card -> card.id == 0)
+//                                .forEach(card ->
+//                                        System.out.printf("null card found: %s%n", message.explicit));
                     }
 
                     if(!message.decks.isEmpty()) {
@@ -110,6 +118,7 @@ public class RequestProcessor {
                         message.decks.stream()
                                 .filter((deck) -> deck.images.size() >= 2)
                                 .forEach(gameState.decks::add);
+                        message.decks.forEach((deck -> deck.timeStamp = message.timeStamp));
                     }
 
                     if(!message.playMats.isEmpty()) {
@@ -126,6 +135,7 @@ public class RequestProcessor {
 
                         //Remove old values, add updated values
                         playMats.forEach(gameState.playMats::remove);
+                        message.playMats.forEach((playMat -> playMat.timeStamp = message.timeStamp));
                         gameState.playMats.addAll(message.playMats);
                     }
 
@@ -144,6 +154,7 @@ public class RequestProcessor {
                                     .forEach(user -> {
                                         hands.add(user.hand);
                                         user.hand = hand; //replace old value with new
+                                        user.hand.timeStamp = message.timeStamp;
                                     });
                         });
 

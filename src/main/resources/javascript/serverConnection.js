@@ -108,23 +108,20 @@ class Server {
                     case "GameUpdate":
                         //Purpose messages received here are 'server approved'; we may apply immediately
 
-                        //TODO temp - print out items and compare; expect 'post change' and 'server initial copy'
-                        console.log("Game update received, printing .cards, .decks, .playMats:");
-                        console.log(data.cards);
-                        console.log(data.decks);
-                        console.log(data.playMats);
-                        console.log(data.hands);
+//                        console.log("Game update received, printing .cards, .decks, .playMats:");
+//                        console.log(data.cards);
+//                        console.log(data.decks);
+//                        console.log(data.playMats);
+//                        console.log(data.hands);
 
-                        //TODO- apply changes if NOT from us
                         if(data.senderId != this.server.game.clientUser.id) {
                             console.log("update not from us! WIP");
-                            break;
                         } else {
                             console.log("update from us! WIP");
                         }
 
-                        //TODO- apply timestamps regardless
-
+                        //TODO still in testing phase
+                        this.server.game.updateItems(data);
                         break;
                     case "NewPlayer":
                         if(data.senderId == this.server.game.clientUser.id) {
@@ -191,7 +188,7 @@ class Server {
         "This message holds gameState, playerList that initializes server copy.";
 
         message = JSON.stringify(message, this.replacer());
-        console.log(message)
+//        console.log(message)
 
         this.connection.send(message);
     }
@@ -300,6 +297,11 @@ class Server {
         let itemsPlayMats = new Set();
         let itemsHands = new Set();
         items.forEach((item) => {
+//            if(item.type == null) {
+//                console.log(`error found- item is null in action: ${stringAction}`);
+//                console.log(item);
+//                console.log("")
+//            }
             if(item.type == "playMat" || item.type == "gameMat") {
                 itemsPlayMats.add(item);
                 return;
@@ -324,15 +326,15 @@ class Server {
         message.senderId = this.game["clientUser"].id;
         message.timeStamp = Date.now();
         message.explicit = stringAction;
-        console.log(`Sending the following .cards, .decks, .playMats, .hands at command ${stringAction}`);
+//        console.log(`Sending the following .cards, .decks, .playMats, .hands at command ${stringAction}`);
         if(itemsCards) message.cards = new Array(...itemsCards);
-        console.log(message.cards);
+//        console.log(message.cards);
         if(itemsDecks) message.decks = new Array(...itemsDecks);
-        console.log(message.decks);
+//        console.log(message.decks);
         if(itemsPlayMats) message.playMats = new Array(...itemsPlayMats);
-        console.log(message.playMats);
+//        console.log(message.playMats);
         if(itemsHands) message.hands = new Array(...itemsHands);
-        console.log(message.hands);
+//        console.log(message.hands);
         if(requestChain) message.itemCount = requestChain;
         message = JSON.stringify(message, this.replacer());
 
