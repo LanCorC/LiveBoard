@@ -361,7 +361,10 @@ const gameState = (function() {
                 } else {
                     //Purpose: dragging from Hand or Preview (nonCanvas)
                     fromDeckCards.push(item);
-                    item.flipMe = clientUser.position;
+
+//                    item.flipMe = clientUser.position;
+                    //TODO: make this work
+                    tapItem(item, clientUser.position);
 
                     let multiplier = offsetMultipliers[item.type] || 1;
                     item.dragStart.x = startPoint().x - offset().x * multiplier + xBonus;
@@ -1428,6 +1431,7 @@ const gameState = (function() {
         let { leftBorder: minX, rightBorder: maxX, topBorder: minY, bottomBorder: maxY} = assets.dimensions;
 
         items.forEach((item) => {
+            if(item.disabled) return; //no need to render
             switch(item.flipMe) {
                 case 1:
                 case 3:
@@ -1446,7 +1450,7 @@ const gameState = (function() {
 
     //'tap' to rotate by 90*, or 0.5*pi-radians
     //NOTE: as rendered from player hand, 3and1 share the other's render
-    function tapItem(items) {
+    function tapItem(items, value) {
         if(!items) return;
         if(!Array.isArray(items)) items = new Array(items);
 
@@ -1457,6 +1461,12 @@ const gameState = (function() {
             if(Object.hasOwn(item, "flipMe")) {
 
                 changes.add(item);
+
+//                TODO - make this work
+                if(value != undefined) {
+                    item.flipMe = value;
+                    return;
+                }
 
                 if(item.flipMe == 0) {
                     item.flipMe = 3;
