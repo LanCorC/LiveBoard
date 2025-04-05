@@ -1141,9 +1141,9 @@ const gameState = (function() {
                 case 'addToDeck': //only focus deck.images[], cards.coord, cards.deck, deck purge
                 case 'takeFromDeck': //cont: disabled, card.index;
                     if(item.isDeck && !item.isHand && item.images.length < 2) {
-                        console.log("uhoh");
-                        console.log(item);
-                        console.log(quickRef[item.id]);
+//                        console.log("uhoh");
+//                        console.log(item);
+//                        console.log(quickRef[item.id]);
                         //Purge
                         //Note: should come accompanied with 'otherCard', and it should have correct .deck = 0
                         let findObj = (entry) => entry == realItem;
