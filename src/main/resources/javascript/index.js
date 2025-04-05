@@ -78,7 +78,10 @@ window.onload = function() {
     let startPoint;
     let dragging = false;
 
+    //purpose: manage 'redraw' loop
+    let redrawing = false;
     const redraw = function() {
+        redrawing = false;
 //        console.log("aw man we drawin'");
         correctTranslation();
         //Clear
@@ -94,7 +97,19 @@ window.onload = function() {
         gameState.drawItems(dragging, contextVis, contextTouch);
     };
 
+    //purpose: trigger redraw once per interval;
+    const redrawFramesPerSecond = 144; //1000ms => 1s; 60/1000ms == 60fps, 1000/60 == interval per frame
+    const redrawInterval = 1000/redrawFramesPerSecond;
+    function pulseRedraw() {
+        if(!redrawing) {
+            redrawing = true;
+            window.setTimeout(redraw, redrawInterval);
+        }
+    }
+
+    //TODO- kinda unused,
     pregameInterface.tools.redraw = redraw;
+    gameState.redraw.triggerRedraw = pulseRedraw; //in use
 
     let inspectImgSize = 1;
     let iISizeMin = 0.2;
@@ -191,6 +206,8 @@ window.onload = function() {
         }
         inspectImage.style.top = `${y}px`;
         inspectImage.style.left = `${x}px`;
+
+        if(!hoverElement) return insertInspectImage();
 
         //Canvas route
         if (document.elementFromPoint(mouse.x, mouse.y) instanceof HTMLCanvasElement) {
@@ -292,8 +309,9 @@ window.onload = function() {
     }
 
     let borderProximity = 0.05; //border lenience, percentage
-    let panRate = 15; //speed
-    let recallTime = 10;
+    const edgePanMultiplier = 1;
+    let panRate = 15 * edgePanMultiplier; //speed
+    let recallTime = 10 * edgePanMultiplier;
     let handleEdgePanlooping = false;
 
     const handleEdgePan = function() {
@@ -347,7 +365,7 @@ window.onload = function() {
         }
 
         //limits draws to if mouse is at the edges;
-        if(changed) redraw();
+        if(changed) pulseRedraw();
 
         //redrawing twice? see: called by handleDrag
         if(dragging || pinBoard){
@@ -398,7 +416,7 @@ window.onload = function() {
 
         //Placed here, as means to determine (see .dragItems()) whether this is the first
         dragging = true;
-        redraw();
+        pulseRedraw();
     }
 
     window.addEventListener("mousemove", function(event) {
@@ -503,7 +521,7 @@ window.onload = function() {
 
             if(!itemFocus.selected && !itemFocus.anchored) {
                 gameState.select(itemFocus, user);
-                redraw();
+                pulseRedraw();
             //else- already claimed by us, de-select
             } else if (itemFocus.selected != user.id) {
                 console.log("Item currently in use");
@@ -590,7 +608,7 @@ window.onload = function() {
         itemFocus = null;
         dragging = false;
         gameState.purgeHoverItem();
-        redraw();
+        pulseRedraw();
     }, false);
 
     //Rotate the board around the mouse, press 'a' or 'd'
@@ -625,7 +643,7 @@ window.onload = function() {
                 gameState.translateDimensions(board.clientWidth, board.clientHeight);
         }
         maxZoomOut = false;
-        redraw();
+        pulseRedraw();
     }
 
     window.addEventListener("keydown", function(event){
@@ -660,7 +678,7 @@ window.onload = function() {
         } else {
             gameState.tapItem(hoverElement);
         }
-        redraw();
+        pulseRedraw();
     }
 
     //TODO- player clarity?
@@ -687,6 +705,7 @@ window.onload = function() {
         console.log(result);
     }
 
+    let testBool = false;
     window.addEventListener("keyup", function(event){
         //TODO - future, if chatbox or input box, send null
         //TODO - future, if CHATBOX instance is TARGET(focus), aka, activeTyping into, skip processing
@@ -717,14 +736,12 @@ window.onload = function() {
                 break;
             //Test code
             case "KeyT":
-                console.log(gameState.items);
-                redraw();
                 break;
             //TODO temp- testing on-demand board refresh 'from JSON'
             case "KeyU":
                 console.log("Here we go...");
                 gameState.rebuildBoard();
-                redraw();
+                pulseRedraw();
                 break;
             //TODO temp- testing purgeSelected, ifItemfocus= user.id, deselect; then itemFocus = null
             //Purpose of testing: in event of 'rejected' request chain (gameActions denied by server)
@@ -933,7 +950,7 @@ window.onload = function() {
         }
         contextVis.translate(-pt.x, -pt.y);
 
-        redraw();
+        pulseRedraw();
     };
 
     const scroll = function(event) {
@@ -957,7 +974,7 @@ window.onload = function() {
         console.log("resized");
         user.position = 0;
         centerBoard();
-        redraw();
+        pulseRedraw();
     }, true);
 
     preventRightClickDefault();
@@ -965,7 +982,7 @@ window.onload = function() {
     //itenFactory testing
 //    main();
     //For some reason, this needs to be called twice in order to properly capture, as far as tested, "mousedown"
-    redraw();
+    pulseRedraw();
 }
 
 //table.src = `https://picsum.photos/50/200`;

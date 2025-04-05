@@ -362,8 +362,6 @@ const gameState = (function() {
                     //Purpose: dragging from Hand or Preview (nonCanvas)
                     fromDeckCards.push(item);
 
-//                    item.flipMe = clientUser.position;
-                    //TODO: make this work
                     tapItem(item, clientUser.position);
 
                     let multiplier = offsetMultipliers[item.type] || 1;
@@ -459,14 +457,16 @@ const gameState = (function() {
             }
         }
 
+        let relevant = new Set();
         dragItem.forEach((item) => {
 //            if(!item.selected) return;
             if(item.selected != clientUser.id) return;
+            relevant.add(item);
             item.coord.x = dx + item.dragStart.x;
             item.coord.y = dy + item.dragStart.y;
         });
 
-        server.pushGameAction("drag", dragItem);
+        server.pushGameAction("drag", new Array(...relevant));
     }
 
     //typeof force "boolean", true->frontImg
@@ -483,10 +483,13 @@ const gameState = (function() {
     function cycleImage(items, modifier) {
         if(!Array.isArray(items)) items = new Array(items);
 
+        let relevant = new Set();
         items.forEach((item) => {
             //TODO - to be made item.cycleImage(mod);
             //default increments +1
             if(!item.id) return;
+
+            relevant.add(item);
 
             if(!modifier) {
                 item.index++;
@@ -517,7 +520,7 @@ const gameState = (function() {
 
         });
 
-        server.pushGameAction("cycleImage", items);
+        server.pushGameAction("cycleImage", new Array(...relevant));
     }
 
     //'selected' for clarity, (game-wide)
@@ -995,7 +998,7 @@ const gameState = (function() {
             return;
         }
 
-        console.log("Updating items..");
+        console.log(`Updating items... ${data.explicit}`);
 
         //Apply timestamps, data.timeStamp
             //cards, decks, playmats, hands,
@@ -1212,6 +1215,8 @@ const gameState = (function() {
                     break;
             }
         });
+
+        redraw.triggerRedraw();
     }
 
     //returns true: method was successful, proceed to purge selected (index.js)
@@ -1336,6 +1341,8 @@ const gameState = (function() {
             deck.ref.update();
         }
 
+        //TODO- keep a "JSON.stringify, JSON.parse" fallback state for 'otherCard'
+        //if parent still pending, add otherCard in fallback state as well
         let relevant = [card, deck];
         if(otherCard) relevant.push(otherCard);
         server.pushGameAction("takeFromDeck", relevant);
@@ -1462,7 +1469,6 @@ const gameState = (function() {
 
                 changes.add(item);
 
-//                TODO - make this work
                 if(value != undefined) {
                     item.flipMe = value;
                     return;
@@ -1537,6 +1543,9 @@ const gameState = (function() {
         return clientUser;
     }
 
+    //purpose: store helper functions, like 'pulseRedraw' of index.js
+    let redraw = { triggerRedraw: function() {}};
+
     return {
         getID,
         idToRGB,
@@ -1567,7 +1576,8 @@ const gameState = (function() {
         anchorItem,
         initializeUser,
         clientUser,
-        frontPage
+        frontPage,
+        redraw
     };
 })();
 
