@@ -18,7 +18,7 @@ const gameState = (function() {
 
 
     //Purpose: faster recall for serverUpdates or rebuilding gameState via server
-    let quickRef = [];
+    let quickRef = {};
 
     let frontPage = null;
 
@@ -1141,11 +1141,14 @@ const gameState = (function() {
                 case 'addToDeck': //only focus deck.images[], cards.coord, cards.deck, deck purge
                 case 'takeFromDeck': //cont: disabled, card.index;
                     if(item.isDeck && !item.isHand && item.images.length < 2) {
+                        console.log("uhoh");
+                        console.log(item);
+                        console.log(quickRef[item.id]);
                         //Purge
                         //Note: should come accompanied with 'otherCard', and it should have correct .deck = 0
                         let findObj = (entry) => entry == realItem;
-                        quickRef.splice(quickRef.findIndex(findObj), 1);
                         items.decks.splice(items.decks.findIndex(findObj), 1);
+                        delete quickRef[item.id];
                         break;
                     }
                     if(!item.isDeck) {
