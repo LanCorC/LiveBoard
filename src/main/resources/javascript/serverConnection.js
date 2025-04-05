@@ -114,11 +114,11 @@ class Server {
 //                        console.log(data.playMats);
 //                        console.log(data.hands);
 
-                        if(data.senderId != this.server.game.clientUser.id) {
-                            console.log("update not from us! WIP");
-                        } else {
-                            console.log("update from us! WIP");
-                        }
+//                        if(data.senderId != this.server.game.clientUser.id) {
+//                            console.log("update not from us! WIP");
+//                        } else {
+//                            console.log("update from us! WIP");
+//                        }
 
                         //TODO still in testing phase
                         this.server.game.updateItems(data);
@@ -219,7 +219,8 @@ class Server {
         //for now, just push
 
         //TODO preview all actions are being read
-//        console.log(stringAction);
+        console.log(stringAction);
+        console.log(items);
 //        console.log(`VIP: ${this.requestFreePass}`);
 
         //items assumed array, make (items.deck)[]

@@ -999,7 +999,7 @@ const gameState = (function() {
             return;
         }
 
-        console.log(`Updating items... ${data.explicit}`);
+//        console.log(`Updating items... ${data.explicit}`);
 
         //Apply timestamps, data.timeStamp
             //cards, decks, playmats, hands,
@@ -1085,8 +1085,8 @@ const gameState = (function() {
                 quickRef[item.id] = item;
             });
 
-            console.log("All missing items inserted:");
-            console.log(Object.values(missingItems));
+//            console.log("All missing items inserted:");
+//            console.log(Object.values(missingItems));
         }
 
         //finally apply changes, rest assured there are no missing objects
@@ -1098,7 +1098,7 @@ const gameState = (function() {
                 //will likely take a different path;
         let skip = false;
         newStateObjects.forEach((item) => {
-            console.log("Attempting changes in itemUpdate...");
+//            console.log("Attempting changes in itemUpdate...");
             if(skip) return;
 
             let realItem = null;
@@ -1134,7 +1134,7 @@ const gameState = (function() {
 
             //TODO note Important: enable !fullChange code when not testing
             if(!fullChange) return;
-            console.log("Continuing with fullChange in itemUpdate...");
+//            console.log("Continuing with fullChange in itemUpdate...");
 
             //how about we refine it per action? what could go wrong?
             switch(data.explicit) {
@@ -1161,6 +1161,9 @@ const gameState = (function() {
                         realItem.disabled = item.disabled;
                         realItem.index = item.index; //in the event of sent/taken from player hand
                     } else {
+                        //mimicing takeFromDeck()
+                        if(!item.browsing) realItem.selected = item.selected; //expect 0
+
                         //is a deck or hand;
                         if(item.images.length == 0) {
                             realItem.images = [];
@@ -1269,9 +1272,9 @@ const gameState = (function() {
 
             if(item.isDeck) {
                 item.images.forEach((card) => donorCards.push(card));
-                relevant.add(item);
                 dissolveDeck(item, true);
-            //checks if item is already in; prevents duplicates
+                relevant.add(item);
+                //checks if item is already in; prevents duplicates
             } else if (!recipient.images.includes(item)){
                 donorCards.push(item);
                 relevant.add(item);
