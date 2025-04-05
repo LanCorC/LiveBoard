@@ -958,6 +958,7 @@ const gameState = (function() {
         //as it returns "Yes", take current itemCount on server, set to clientGamestate itemcount,
         //then process callback function => callback function will send new obj to at the new id;
         //on new nonHand, nonDeck item, if id > itemCount, server.itemCount = id
+        //Early attempt at self correcting itemCount
         itemCount = largestId;
 
         //Recover 'selected' interface state
@@ -1024,11 +1025,13 @@ const gameState = (function() {
             //Find missing items, add, then repair
             let missingItems = {};
             newStateObjects
-                .filter((item) => quickRef[item.id] == undefined || players.get(item.id) == undefined)
-                .forEach((item) => missingItems[item.id] == item);
+                .filter((item) => quickRef[item.id] == undefined && players.get(item.id) == undefined)
+                .forEach((item) => missingItems[item.id] = item);
 
             //if missing item, repair images, repair ref IDs (deck/hand .images) or "card".deck != 0
             Object.values(missingItems).forEach((item) => {
+                //Early attempt to self correct itemCount
+                if(!item.isHand) itemCount = Math.max(itemCount, item.id);
                 //LARGELY COPY PASTED:
                 if(!item.isDeck && typeof item.deck === "number") {
                     //NOTE: arbitrary, large, fit most cases
@@ -1135,7 +1138,7 @@ const gameState = (function() {
 
             //how about we refine it per action? what could go wrong?
             switch(data.explicit) {
-                case 'addToDeck': //only focus deck.images[], cards.coords, cards.deck, deck purge
+                case 'addToDeck': //only focus deck.images[], cards.coord, cards.deck, deck purge
                 case 'takeFromDeck': //cont: disabled, card.index;
                     if(item.isDeck && !item.isHand && item.images.length < 2) {
                         //Purge
@@ -1146,7 +1149,7 @@ const gameState = (function() {
                         break;
                     }
                     if(!item.isDeck) {
-                        realItem.coords = item.coords;
+                        realItem.coord = item.coord;
                         if(typeof item.deck == "number") {
                         //uses arbitrary number, should fit most use cases
                             item.deck = item.deck > 10000 ? players.get(item.deck).hand : quickRef[item.deck];
