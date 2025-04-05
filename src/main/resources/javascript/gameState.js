@@ -1392,11 +1392,12 @@ const gameState = (function() {
             deselectView();
         }
 
-        //TODO- TBD: if, as currently implemented, will prevent me from selecting a deck someone has .selected
-        //null item, not a deck, is the same (deselect, above)
-        if(!deck || current == deck || current == deck.deck || (deck.selected && deck.selected != clientUser.id)){
-            //Note: if not selected, selected == false
-//            console.log("oh man...");
+        if(!deck) return;                   //null item
+        if(!deck.isDeck) deck = deck.deck;  //is a card, retrieve its deck
+
+        //is current OR already in use by someone else
+        if(current == deck || (deck.selected && deck.selected != clientUser.id) ) {
+            //Note: if not selected, selected == 0 == falsy
             return;
         };
 
@@ -1435,6 +1436,7 @@ const gameState = (function() {
     function correctCoords(items, itemFocus) {
 
         //consolidate itemFocus if applicable
+        if(!Array.isArray(items)) items = new Array(items);
         if(itemFocus && !items.includes(itemFocus)) items.push(itemFocus);
 
         let { leftBorder: minX, rightBorder: maxX, topBorder: minY, bottomBorder: maxY} = assets.dimensions;
