@@ -1174,6 +1174,7 @@ const gameState = (function() {
                     //see if 'forward' is expensive, if ==true, add additional 'onetime' forward identifier
                     //like the boolean
                     forward(realItem);
+                    correctCoords(realItem);
                     break;
                 case 'deselect': //only on .selected
                 case 'select': //only on .selected
@@ -1187,7 +1188,7 @@ const gameState = (function() {
                     if(realItem.isDeck) {
                         let originalBrowsing = realItem.browsing;
                         realItem.browsing = item.browsing;
-                        realitem.selected = item.selected;
+                        realItem.selected = item.selected;
 
                         //UI:
                         if(realItem.browsing == clientUser.id) {
@@ -1203,6 +1204,7 @@ const gameState = (function() {
                     break;
                 case 'tapItem': //item.flipMe property
                     realItem.flipMe = item.flipMe;
+                    correctCoords(realItem);
                     break;
                 case 'anchorItem': //item.anchored property
                     realItem.anchored = item.anchored;
