@@ -1366,9 +1366,15 @@ const gameState = (function() {
             let card = deck.images[0];
             setCardDefaults(card);
         }
+
+        //purge: for server/multiplayer deletion filters
+        deck.images = [];
+
+        //remove from references
         items.decks.splice(items.decks.findIndex((entry) => entry == deck), 1);
         quickRef[deck.id] = null; //or undefined
 
+        //update UI if linked
         let view = userInterface.preview.getView();
         if(view && view.id == deck.id) selectView();
     }
