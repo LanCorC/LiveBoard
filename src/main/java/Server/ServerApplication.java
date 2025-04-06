@@ -3,12 +3,23 @@ package Server;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 import org.java_websocket.server.WebSocketServer;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
+import java.nio.file.Paths;
 
 public class ServerApplication extends WebSocketServer {
     public static final int SERVER_PORT = 8080;
@@ -23,9 +34,33 @@ public class ServerApplication extends WebSocketServer {
         super(new InetSocketAddress(SERVER_PORT));
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException, IOException, CertificateException {
         var server = new ServerApplication();
         requestProcessor.setServer(server);
+
+        //COPYPASTED FROM SSLServerExample.java TOOTALLNATE
+        // load up the key store
+        String STORETYPE = "JKS";
+        String KEYSTORE = Paths.get("src", "main", "resources", "keystore.jks")
+                .toString();
+        String STOREPASSWORD = "storepassword";
+        String KEYPASSWORD = "keypassword";
+
+        KeyStore ks = KeyStore.getInstance(STORETYPE);
+        File kf = new File(KEYSTORE);
+        ks.load(new FileInputStream(kf), STOREPASSWORD.toCharArray());
+
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+        kmf.init(ks, KEYPASSWORD.toCharArray());
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+        tmf.init(ks);
+
+        SSLContext sslContext = null;
+        sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+        server.setWebSocketFactory(new DefaultSSLWebSocketServerFactory(sslContext));
+
         server.start();
 
         try {
@@ -33,6 +68,7 @@ public class ServerApplication extends WebSocketServer {
             System.out.printf(
                     "Server Address: %s Server Port: %s%n",
                     ServerApplication.ServerAddress, SERVER_PORT);
+            System.out.println();
         } catch (UnknownHostException e) {
             System.out.println("We could not determine the localHost");
             System.out.println(e.getMessage());

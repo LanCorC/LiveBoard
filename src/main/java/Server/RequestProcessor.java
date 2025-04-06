@@ -179,6 +179,7 @@ public class RequestProcessor {
                 case "ChatUpdate":
                     //simply push to everyone
                     server.broadcast(s);
+                    break;
                 default:
                     System.out.printf("Header '%s' not recognized%n", message.messageHeader);
                     break;

@@ -54,7 +54,7 @@ class Server {
         //`ws://localhost:8080`
 //        console.log(this.game.clientUser.id);
         socket = new WebSocket(
-            `ws://${address}:${port}/user=${localStorage.getItem("id")}`);
+            `wss://${address}:${port}/user=${localStorage.getItem("id")}`);
         this.connection = socket;
         this.chatBox.setServer(this);
 
