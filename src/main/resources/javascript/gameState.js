@@ -197,9 +197,9 @@ const gameState = (function() {
         items.forEach(item => {
             initialState.add(JSON.parse(JSON.stringify(item, server.replacer())));
             //TODO- test to see how objects compare
-            console.log(item);
+//            console.log(item);
 //            console.log(item instanceof HTMLElement);
-            console.log(initialState);
+//            console.log(initialState);
             if(item.deck)
             initialState.add(JSON.parse(JSON.stringify(item.deck, server.replacer())));
         });
@@ -425,8 +425,6 @@ const gameState = (function() {
         if(!Array.isArray(dragItem)) dragItem = new Array(dragItem);
 
         //is often null
-        //TODO - important testing
-        //TODO NOTE: causes lots of lag
 //        console.log(hoverObject);
 
         //onDragStart, each item's relative start point must be recorded
@@ -473,15 +471,8 @@ const gameState = (function() {
     function getImage(item, force) {
         if(!item || (!item.index && item.index != 0)) return;
         if(item.isDeck) {
-            //TODO temp testing code
-            if(!item.images[0]) console.log(item);
-
-            //not temp code
             item = item.images[0];
         }
-
-        //TODO temp testing code
-        if(!item) console.log(item);
 
         return force ? item.images[assets.frontImg] : item.images[item.index];
     }
@@ -1140,10 +1131,6 @@ const gameState = (function() {
 
             //timeStamp
             realItem.timeStamp = data.timeStamp;
-            //temp, testing code:
-            if(data.explicit == "addToDeck") {
-                console.log(item);
-            }
 
             //TODO note Important: enable !fullChange code when not testing
             if(!fullChange) return;
@@ -1164,7 +1151,7 @@ const gameState = (function() {
                         delete quickRef[item.id];
                         break;
                     }
-                    //TODO- investigate how some cards are ending up with '
+
                     if(!item.isDeck) {                                                  //process nonDecks
                         realItem.coord = item.coord;
                         if(typeof item.deck == "number") {
@@ -1286,7 +1273,6 @@ const gameState = (function() {
 
             if(item.isDeck) {
                 item.images.forEach((card) => donorCards.push(card));
-                //TODO testing: attempt to fully include ALL items; cards within decks were forgotten about
                 item.images.forEach((cardInDeck) => relevant.add(cardInDeck));
                 dissolveDeck(item, true);
                 relevant.add(item);
