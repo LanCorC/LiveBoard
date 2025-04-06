@@ -740,7 +740,7 @@ window.onload = function() {
                 }
                 break;
             case "R":
-                let text = roll2d6Text;
+                let text = roll2d6Text();
                 userInterface.userInterface.chatBox.sendChat(text);
                 userInterface.userInterface.chatBox.newEntry(text,undefined,"Game");
                 break;
