@@ -473,8 +473,15 @@ const gameState = (function() {
     function getImage(item, force) {
         if(!item || (!item.index && item.index != 0)) return;
         if(item.isDeck) {
+            //TODO temp testing code
+            if(!item.images[0]) console.log(item);
+
+            //not temp code
             item = item.images[0];
         }
+
+        //TODO temp testing code
+        if(!item) console.log(item);
 
         return force ? item.images[assets.frontImg] : item.images[item.index];
     }
@@ -1081,6 +1088,8 @@ const gameState = (function() {
                     return;
                 }
                 //anything further is a card, deck, or playmat *visual tokens not taken into account yet
+                //TODO add filter: if deck, do not add if empty; TBD: if need to also purge here
+                if(item.isDeck && item.images.length < 2) return;
                 push(item);
                 quickRef[item.id] = item;
             });
@@ -1131,6 +1140,10 @@ const gameState = (function() {
 
             //timeStamp
             realItem.timeStamp = data.timeStamp;
+            //temp, testing code:
+            if(data.explicit == "addToDeck") {
+                console.log(item);
+            }
 
             //TODO note Important: enable !fullChange code when not testing
             if(!fullChange) return;
@@ -1140,7 +1153,7 @@ const gameState = (function() {
             switch(data.explicit) {
                 case 'addToDeck': //only focus deck.images[], cards.coord, cards.deck, deck purge
                 case 'takeFromDeck': //cont: disabled, card.index;
-                    if(item.isDeck && !item.isHand && item.images.length < 2) {
+                    if(item.isDeck && !item.isHand && item.images.length < 2) {         //filter decks to purge
 //                        console.log("uhoh");
 //                        console.log(item);
 //                        console.log(quickRef[item.id]);
@@ -1151,7 +1164,8 @@ const gameState = (function() {
                         delete quickRef[item.id];
                         break;
                     }
-                    if(!item.isDeck) {
+                    //TODO- investigate how some cards are ending up with '
+                    if(!item.isDeck) {                                                  //process nonDecks
                         realItem.coord = item.coord;
                         if(typeof item.deck == "number") {
                         //uses arbitrary number, should fit most use cases
@@ -1160,7 +1174,7 @@ const gameState = (function() {
                         realItem.deck = item.deck;
                         realItem.disabled = item.disabled;
                         realItem.index = item.index; //in the event of sent/taken from player hand
-                    } else {
+                    } else {                                                            //process decks
                         //mimicing takeFromDeck()
                         if(!item.browsing) realItem.selected = item.selected; //expect 0
 
@@ -1272,6 +1286,8 @@ const gameState = (function() {
 
             if(item.isDeck) {
                 item.images.forEach((card) => donorCards.push(card));
+                //TODO testing: attempt to fully include ALL items; cards within decks were forgotten about
+                item.images.forEach((cardInDeck) => relevant.add(cardInDeck));
                 dissolveDeck(item, true);
                 relevant.add(item);
                 //checks if item is already in; prevents duplicates
@@ -1306,6 +1322,7 @@ const gameState = (function() {
             }
         });
 
+        //Inject at specific index (reordering)
         recipient.images.splice(index, 0, ...donorCards)
 
         if(recipient.ref) recipient.ref.update();

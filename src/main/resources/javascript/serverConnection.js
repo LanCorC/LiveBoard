@@ -223,6 +223,11 @@ class Server {
         console.log(items);
 //        console.log(`VIP: ${this.requestFreePass}`);
 
+        if(stringAction == "addToDeck") {
+            console.log("add to deck:");
+            console.log(items);
+        }
+
         //items assumed array, make (items.deck)[]
         if(!Array.isArray(items)) items = new Array(items);
         if(items.length == 0) {
