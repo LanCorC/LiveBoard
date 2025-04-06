@@ -738,7 +738,7 @@ window.onload = function() {
                 let b = Math.ceil(Math.random() * 6);
                 let text = `Rolled [${a}][${b}] for a total of ${a+b}!`;
                 userInterface.userInterface.chatBox.sendChat(text);
-                userInterface.userInterface.chatBox.newEntry(text);
+                userInterface.userInterface.chatBox.newEntry(text,undefined,"Game");
                 break;
             //Test code
             case "T":
