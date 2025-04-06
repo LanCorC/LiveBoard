@@ -270,6 +270,7 @@ class ChatBox {
         const chatInput = document.createElement("input");
         chatInput.classList.add("chatInput");
         chatInput.setAttribute("type", "text"); //TODO- [Enter] trigger or event
+        chatInput.placeholder = "Say hi!";
 
         container.append(chatHistory, chatInput);
 
@@ -306,7 +307,11 @@ class ChatBox {
 
         let name = "You";
         if(sender) {
-            name = sender.name;
+            if(sender.name) {
+                name = sender.name;
+            } else {
+                name = sender; //allow for 'String'
+            }
         }
 
         //TODO- if not focused on chatbox, scrollintoview()
@@ -316,16 +321,26 @@ class ChatBox {
         this.chatHistory.append(entry);
         //if focus, scrollintoview
 
-        if(this.#isFocused) {
+//        if(this.#isFocused) {
             entry.scrollIntoView();
-        }
+//        }
     }
 
     sendChat = function(data) { console.log(`sendChatDefault: ${data}`)};
 
+    //Spaghetti code, enjoy
+    connection = null;
+    replacer = null;
+    JSONreplacer = null;
+    game = null;
+
     //called by server file
     setServer(server) {
         this.#setMethod(server.sendChat);
+        this.connection = server.connection;
+        this.replacer = server.replacer;
+        this.JSONreplacer = server.JSONreplacer;
+        this.game = server.game;
     }
 
     #setMethod(methodSendChat) {
@@ -344,6 +359,10 @@ class ChatBox {
             default:
                 break;
         }
+    }
+
+    focus() {
+        this.chatInput.focus();
     }
 }
 

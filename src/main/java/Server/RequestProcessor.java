@@ -176,6 +176,9 @@ public class RequestProcessor {
                         System.out.println("Error at mapping");
                     }
                     break;
+                case "ChatUpdate":
+                    //simply push to everyone
+                    server.broadcast(s);
                 default:
                     System.out.printf("Header '%s' not recognized%n", message.messageHeader);
                     break;

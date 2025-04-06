@@ -648,17 +648,19 @@ window.onload = function() {
 
     window.addEventListener("keydown", function(event){
         //TODO - future, if chatbox or input box, send null
-        let key = hoverElement instanceof HTMLInputElement ? null : event.code;
+        let key = event.key.toUpperCase();
+        if(document.activeElement instanceof HTMLInputElement) key = null;
+
         switch(key) {
             //TODO: inspect size is not final; to move to buttons
-            case "KeyZ":
+            case "Z":
                 increaseInspectSize();
                 break;
-            case "KeyX":
+            case "X":
                 decreaseInspectSize();
                 break;
-            case "ControlLeft":
-            case "ControlRight":
+            case "CONTROL":
+//            case "CONTROL":
                 strictPanMode = true;
                 break;
             default:
@@ -703,27 +705,27 @@ window.onload = function() {
         //elaboration: players may look at each other's badgeName to see the latest rolled value (2D6 => 2-12)
         let result = Math.ceil(Math.random() * 6) + Math.ceil(Math.random() * 6)
         console.log(result);
+        return result;
     }
 
     let testBool = false;
     window.addEventListener("keyup", function(event){
-        //TODO - future, if chatbox or input box, send null
-        //TODO - future, if CHATBOX instance is TARGET(focus), aka, activeTyping into, skip processing
-        let key = hoverElement instanceof HTMLInputElement ? null : event.code;
+        let key = event.key.toUpperCase();
+        if(document.activeElement instanceof HTMLInputElement && key != "ENTER") key = null;
         switch(key) {
-            case "KeyA":
+            case "A":
                 handleBoardRotate(false);
                 break;
-            case "KeyD":
+            case "D":
                 handleBoardRotate(true);
                 break;
-            case "KeyI":
+            case "I":
                 toggleTooltip();
                 break;
-            case "KeyL":
+            case "L":
                 anchorItem();
                 break;
-            case "KeyP": //toggle: prevent board pan
+            case "P": //toggle: prevent board pan
                 pinBoard = !pinBoard;
                 //This code turns on handleEdgePan loop check always; smooth
                 //TODO future- valid alternate mode; no need to drag-pan. hover-pan+scroll
@@ -731,21 +733,25 @@ window.onload = function() {
                     handleEdgePan();
                 }
                 break;
-            case "KeyR":
-                rollDice();
+            case "R":
+                let a = Math.ceil(Math.random() * 6);
+                let b = Math.ceil(Math.random() * 6);
+                let text = `Rolled [${a}][${b}] for a total of ${a+b}!`;
+                userInterface.userInterface.chatBox.sendChat(text);
+                userInterface.userInterface.chatBox.newEntry(text);
                 break;
             //Test code
-            case "KeyT":
+            case "T":
                 break;
             //TODO temp- testing on-demand board refresh 'from JSON'
-            case "KeyU":
+            case "U":
                 console.log("Here we go...");
                 gameState.rebuildBoard();
                 pulseRedraw();
                 break;
             //TODO temp- testing purgeSelected, ifItemfocus= user.id, deselect; then itemFocus = null
             //Purpose of testing: in event of 'rejected' request chain (gameActions denied by server)
-            case "KeyY":
+            case "Y":
 //                if(itemFocus.selected == user.id) selected.push(itemFocus);
 //                purgeSelected();
 //                itemFocus = null;
@@ -758,11 +764,21 @@ window.onload = function() {
                 if(selected.includes(itemFocus)) selected.splice(selected.indexOf(itemFocus), 1); //insurance
 
                 break;
-            case "ControlLeft":
-            case "ControlRight":
+            case "ENTER":
+                //TODO- focus on textbox
+                let UI = userInterface.userInterface;
+                if(!UI || !UI.chatBox) return;
+                if(document.activeElement == UI.chatBox.chatInput) {
+                    document.activeElement.blur();
+                    return;
+                }
+                UI.chatBox.focus();
+                break;
+            case "CONTROL":
+//            case "CONTROL":
                 strictPanMode = false;
                 break;
-            case "Space":
+            case " ":
                 tapItem();
                 break;
             default:

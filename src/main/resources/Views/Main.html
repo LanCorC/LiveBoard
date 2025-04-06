@@ -172,20 +172,39 @@
         }
 
         .chatContainer {
+            position: absolute;
             height: 25%;
             width: 20%;
             visibility: initial;
+            background-color: rgba(178, 190, 181, 0.5);
+            box-sizing: border-box;
         }
 
         .chatHistory {
             height: 90%;
             width: 100%;
             overflow-y: auto;
+            overflow-wrap: anywhere;
+            border-radius: 20px;
         }
 
         .chatInput {
             height: 10%;
             width: 100%;
+            bottom: 0;
+/*            background-color: transparent;*/
+            background-color: transparent;
+            border-style: solid none none none;
+/*            border-radius: 20px;*/
+        }
+
+        .chatInput:empty {
+/*            text-align: center;*/
+        }
+
+        p { /*<p> tags*/
+            margin-top: 0;
+            margin-bottom: 0;
         }
 
     </style>

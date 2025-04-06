@@ -56,6 +56,7 @@ class Server {
         socket = new WebSocket(
             `ws://${address}:${port}/user=${localStorage.getItem("id")}`);
         this.connection = socket;
+        this.chatBox.setServer(this);
 
         //Note: necessary local variable for 'nested' (see below) methods
         let frontUI = this.frontPage;
@@ -136,6 +137,10 @@ class Server {
 
                         break;
                     case "ChatUpdate":
+//                        console.log("test");
+                        if(data.player && data.player == this.server.game.clientUser.id) {
+                            break; //skip processing: message came from us
+                        }
                         this.server.chatBox.newEntry(data.explicit, data.player, data.timeStamp);
                         break;
                     default:
@@ -350,13 +355,14 @@ class Server {
         this.connection.send(message);
     }
 
-    //TODO-
+    //TODO- client to server
     sendChat(stringData) {
         if(this.connection == undefined || this.connection.readyState != 1) return;
+        console.log("we SO here");
         let message = {};
         message.messageHeader = "ChatUpdate";
         message.explicit = stringData;
-//        message.player = this.game.clientUser;
+        message.player = this.game.clientUser;
         message = JSON.stringify(message, this.replacer());
 
         this.connection.send(message);
