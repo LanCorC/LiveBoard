@@ -29,6 +29,7 @@ class Server {
     frontPage;
     loading;
     game;
+    chatBox;
 
     //boolean- if gameState exists on server
     gameStatus = false;
@@ -120,7 +121,6 @@ class Server {
 //                            console.log("update from us! WIP");
 //                        }
 
-                        //TODO still in testing phase
                         this.server.game.updateItems(data);
                         break;
                     case "NewPlayer":
@@ -134,6 +134,9 @@ class Server {
 
                         this.server.game.addPlayer(data.player);
 
+                        break;
+                    case "ChatUpdate":
+                        this.server.chatBox.newEntry(data.explicit, data.player, data.timeStamp);
                         break;
                     default:
                         console.log(`"${header}" header not defined`);
@@ -154,10 +157,14 @@ class Server {
 
     //purpose: receive relevant UI elements for visual updates
     //TODO TBD: when to connect to our gameState (on loadscreen? on connect (single lobby?)
-    initialize(frontObj, loadObj, gameObj) {
+    initialize(frontObj, loadObj, gameObj, chatBox) { //TODO- add chatObj
         this.frontPage = frontObj;
         this.loading = loadObj;
         this.game = gameState;
+        this.chatBox = chatBox;
+
+        //TODO- implement client-side send to server chat message
+        chatBox.setServer(this);
 
 //        console.log(this.frontPage);
 //        console.log(this.loading);
@@ -338,6 +345,18 @@ class Server {
         if(itemsHands) message.hands = new Array(...itemsHands);
 //        console.log(message.hands);
         if(requestChain) message.itemCount = requestChain;
+        message = JSON.stringify(message, this.replacer());
+
+        this.connection.send(message);
+    }
+
+    //TODO-
+    sendChat(stringData) {
+        if(this.connection == undefined || this.connection.readyState != 1) return;
+        let message = {};
+        message.messageHeader = "ChatUpdate";
+        message.explicit = stringData;
+//        message.player = this.game.clientUser;
         message = JSON.stringify(message, this.replacer());
 
         this.connection.send(message);

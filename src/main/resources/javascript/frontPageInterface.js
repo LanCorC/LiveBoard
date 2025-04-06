@@ -1,6 +1,7 @@
 import server from "./serverConnection.js";
 import gameState from "./gameState.js";
 import { initialize as initializeAssets } from "./assets.js";
+import { createChat } from "./boardInterface.js";
 
 //Purpose: control frontPage controls, 'loading screen', and server status (on/offline)
 
@@ -215,7 +216,7 @@ const loading = (function() {
 //TODO- purpose to make sure all reference are passed; i.e. 'serverConnection.js' receives its c
 function initialize() {
     //connect to server
-    server.initialize(frontPage, loading, gameState);
+    server.initialize(frontPage, loading, gameState, createChat());
 
     //connect to assets, loadscreen
     initializeAssets(frontPage, loading, false, assetCount);

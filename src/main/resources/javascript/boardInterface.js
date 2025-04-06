@@ -255,6 +255,98 @@ class ViewDeck extends PreviewBox {
     }
 }
 
+class ChatBox {
+    constructor() {
+        //create box div, class (css to manipulate which corner/edge of board to populate + player)
+        //create text input, create scrolling input;
+        //[ chatlog       ]
+        //[ chatlog cont  ]
+        //[ chatlog cont  ]
+        //[ Chatinput     ]
+        const container = document.createElement("div");
+        container.classList.add("chatContainer");
+        const chatHistory = document.createElement("div");
+        chatHistory.classList.add("chatHistory");
+        const chatInput = document.createElement("input");
+        chatInput.classList.add("chatInput");
+        chatInput.setAttribute("type", "text"); //TODO- [Enter] trigger or event
+
+        container.append(chatHistory, chatInput);
+
+        this.container = container;
+        this.chatHistory = chatHistory;
+        this.chatInput = chatInput;
+
+        //events
+        this.container.addEventListener("mouseenter", this,{passive: false});
+        this.container.addEventListener("mouseleave", this,{passive: false});
+        chatInput.onchange = (event) => {
+            //TODO- trigger sending results to server;
+
+            //TODO- see if this.sendChat() will update,
+            if(chatInput.value != "") {
+                this.sendChat(chatInput.value);
+                this.newEntry(chatInput.value);
+            }
+            chatInput.value = "";
+        };
+    }
+
+    //TODO: if not focused, auto scroll on new entry
+        //look at a variable onHoverIn onHoverOut
+    //TODO
+        //look at [enter] event in chat input
+
+    //TODO
+    //function that accepts new value (server, or thisClient and appends to history
+    newEntry(text, timeStamp, sender) {
+        //TODO- translate timestamp
+
+        //TODO- append
+
+        let name = "You";
+        if(sender) {
+            name = sender.name;
+        }
+
+        //TODO- if not focused on chatbox, scrollintoview()
+        const entry = document.createElement("p");
+        entry.innerText = `${name}: ${text}`;
+
+        this.chatHistory.append(entry);
+        //if focus, scrollintoview
+
+        if(this.#isFocused) {
+            entry.scrollIntoView();
+        }
+    }
+
+    sendChat = function(data) { console.log(`sendChatDefault: ${data}`)};
+
+    //called by server file
+    setServer(server) {
+        this.#setMethod(server.sendChat);
+    }
+
+    #setMethod(methodSendChat) {
+        this.sendChat = methodSendChat;
+    }
+
+    #isFocused = false;
+    handleEvent(event) {
+        switch(event.type) {
+            case "mouseenter":
+                this.#isFocused = true;
+                break;
+            case "mouseleave":
+                this.#isFocused = false;
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 //object ref to gameState (client-side updates UI)
 //likely
 //TODO: hand stored in user; store previewObj in visuals; buttons in visuals;
@@ -287,6 +379,17 @@ function createTopView() {
     document.body.append(topViewContainer.container);
 
     userInterface.preview = topViewContainer;
+}
+
+//TODO- link to server, diceroll, game, etc
+export function createChat() {
+    const chatBox = new ChatBox();
+
+    document.body.append(chatBox.container);
+
+    userInterface.chatBox = chatBox;
+
+    return chatBox;
 }
 
 //TODO- wip, see comments
