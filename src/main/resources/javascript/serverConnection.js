@@ -139,12 +139,11 @@ class Server {
 
                         break;
                     case "ChatUpdate":
-                        console.log(data);
                         if(data.player && data.player.id == this.server.game.clientUser.id) {
                             break; //skip processing: message came from us
                         }
                         console.log("receiving chat entry..");
-                        this.server.chatBox.newEntry(data.explicit, data.player, data.timeStamp);
+                        this.server.chatBox.newEntry(data.explicit, data.timeStamp, data.player);
                         break;
                     default:
                         console.log(`"${header}" header not defined`);
