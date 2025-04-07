@@ -82,12 +82,12 @@ public class RequestProcessor {
 
                         //Attempt to fix live bug
                         //Sanitise - get rid of null values
-                        ArrayList<Card> cleanCards = new ArrayList<>();
-                        message.cards.stream().filter(Objects::nonNull).forEach(cleanCards::add);
-                        if(cleanCards.size()!=message.cards.size()) System.out.println("Null found and sanitized!");
-                        message.cards = cleanCards;
-
-                        System.out.print("Sanitize done...");
+//                        ArrayList<Card> cleanCards = new ArrayList<>();
+//                        message.cards.stream().filter(Objects::nonNull).forEach(cleanCards::add);
+//                        if(cleanCards.size()!=message.cards.size()) System.out.println("Null found and sanitized!");
+//                        message.cards = cleanCards;
+//
+//                        System.out.print("Sanitize done...");
 
                         //Filter and store old values
                         ArrayList<Card> cards = new ArrayList<Card>();

@@ -628,7 +628,7 @@ window.onload = function() {
         user.position %= 4;
         if(user.position < 0) user.position = 3;
 
-        console.log(user.position);
+//        console.log(user.position);
 
         contextVis.translate(+point.x, +point.y);
         contextVis.rotate(pos ? radians : -radians);
