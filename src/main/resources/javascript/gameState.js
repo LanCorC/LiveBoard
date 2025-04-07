@@ -828,6 +828,17 @@ const gameState = (function() {
             reconstructionItems[key] = [];
             console.log(value);
             value.forEach((item)=>{
+                //temp code for testing- narrowing down on issue of multiplayer bug
+                if(!item) {
+                    console.log(`Failure of item: "${item}" in value ${key}.`);
+                    return;
+                }
+                if(!item.id) {
+                    console.log(`Failure of item.id: "${item.id}" in value ${key}.`);
+                    console.log(item);
+                    return;
+                }
+
                 reconstructionItems[key].push(item);
                 quickRef[item.id] = item;
                 largestId = Math.max(largestId, item.id);

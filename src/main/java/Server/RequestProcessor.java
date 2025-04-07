@@ -62,6 +62,7 @@ public class RequestProcessor {
         try{
             SimpleRequest message = objMapper.readValue(s, SimpleRequest.class);
 //            System.out.printf("New request! %s %s%n", message.explicit, message.timeStamp);
+            System.out.printf("Processing %s...%n", message.messageHeader);
 
             switch (message.messageHeader) {
 
@@ -77,6 +78,7 @@ public class RequestProcessor {
                     //Apply changes
                         //items
                     if(!message.cards.isEmpty()) {
+                        System.out.printf("Processing %s cards...", message.messageHeader);
 
                         //Filter and store old values
                         ArrayList<Card> cards = new ArrayList<Card>();
@@ -98,9 +100,12 @@ public class RequestProcessor {
 //                                .filter(card -> card.id == 0)
 //                                .forEach(card ->
 //                                        System.out.printf("null card found: %s%n", message.explicit));
+                        System.out.printf("Finished %s cards :)%n", message.messageHeader);
                     }
 
                     if(!message.decks.isEmpty()) {
+                        System.out.printf("Processing %s decks...", message.messageHeader);
+
 //                        System.out.println("decks != null");
 
                         //Filter and store old values
@@ -119,9 +124,12 @@ public class RequestProcessor {
                                 .filter((deck) -> deck.images.size() >= 2)
                                 .forEach(gameState.decks::add);
                         message.decks.forEach((deck -> deck.timeStamp = message.timeStamp));
+                        System.out.printf("Finished %s decks :)%n", message.messageHeader);
                     }
 
                     if(!message.playMats.isEmpty()) {
+                        System.out.printf("Processing %s playMats...", message.messageHeader);
+
 //                        System.out.println("playmats != null");
 
                         //Filter and store old values
@@ -137,9 +145,13 @@ public class RequestProcessor {
                         playMats.forEach(gameState.playMats::remove);
                         message.playMats.forEach((playMat -> playMat.timeStamp = message.timeStamp));
                         gameState.playMats.addAll(message.playMats);
+                        System.out.printf("Finished %s playMats :)%n", message.messageHeader);
+
                     }
 
                     if(!message.hands.isEmpty()) {
+                        System.out.printf("Processing %s hands...", message.messageHeader);
+
 //                        System.out.printf("hands != null, %s%n", message.timeStamp);
 
 //                        System.out.println(message.hands.getFirst().id);
@@ -165,6 +177,8 @@ public class RequestProcessor {
 
                         //TODO temporary: also return server's initial copy
 //                        message.hands.add(hands.getFirst());
+                        System.out.printf("Finished %s hands :)%n", message.messageHeader);
+
                     }
 
                         //players(visual token)
