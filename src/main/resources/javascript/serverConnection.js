@@ -142,7 +142,7 @@ class Server {
                         if(data.player && data.player.id == this.server.game.clientUser.id) {
                             break; //skip processing: message came from us
                         }
-                        console.log("receiving chat entry..");
+//                        console.log("receiving chat entry..");
                         this.server.chatBox.newEntry(data.explicit, data.timeStamp, data.player);
                         break;
                     default:
@@ -233,8 +233,8 @@ class Server {
         //for now, just push
 
         //TODO preview all actions are being read
-        console.log(stringAction);
-        console.log(items);
+//        console.log(stringAction);
+//        console.log(items);
 //        console.log(`VIP: ${this.requestFreePass}`);
 
 
@@ -313,11 +313,12 @@ class Server {
         let itemsPlayMats = new Set();
         let itemsHands = new Set();
         items.forEach((item) => {
-//            if(item.type == null) {
-//                console.log(`error found- item is null in action: ${stringAction}`);
-//                console.log(item);
-//                console.log("")
-//            }
+            if(item.type == null) {
+                console.log(`error found- item is null in action: ${stringAction}`);
+                console.log(item);
+                console.log("");
+                return;
+            }
             if(item.type == "playMat" || item.type == "gameMat") {
                 itemsPlayMats.add(item);
                 return;

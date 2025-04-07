@@ -141,6 +141,7 @@ public class ServerApplication extends WebSocketServer {
     public void onError(WebSocket webSocket, Exception e) {
         System.out.printf("onError triggered by %s: %s%n", webSocket, e);
         System.out.println(e.getMessage());
+        requestProcessor.sendError();
     }
 
     @Override

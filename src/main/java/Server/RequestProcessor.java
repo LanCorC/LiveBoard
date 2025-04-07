@@ -62,7 +62,7 @@ public class RequestProcessor {
         try{
             SimpleRequest message = objMapper.readValue(s, SimpleRequest.class);
 //            System.out.printf("New request! %s %s%n", message.explicit, message.timeStamp);
-            System.out.printf("Processing %s...%n", message.messageHeader);
+            System.out.printf("Processing %s %s...%n", message.messageHeader, message.explicit);
 
             switch (message.messageHeader) {
 
@@ -80,6 +80,15 @@ public class RequestProcessor {
                     if(!message.cards.isEmpty()) {
                         System.out.printf("Processing %s cards...", message.messageHeader);
 
+                        //Attempt to fix live bug
+                        //Sanitise - get rid of null values
+                        ArrayList<Card> cleanCards = new ArrayList<>();
+                        message.cards.stream().filter(Objects::nonNull).forEach(cleanCards::add);
+                        if(cleanCards.size()!=message.cards.size()) System.out.println("Null found and sanitized!");
+                        message.cards = cleanCards;
+
+                        System.out.print("Sanitize done...");
+
                         //Filter and store old values
                         ArrayList<Card> cards = new ArrayList<Card>();
                         message.cards.forEach((card) -> {
@@ -88,6 +97,8 @@ public class RequestProcessor {
                                     .filter(serverCopy -> serverCopy.id == (long) card.id)
                                     .forEach(cards::add);
                         });
+
+                        System.out.print("Filter done...");
 
                         //Remove old values, add updated values
                         cards.forEach(gameState.cards::remove);
@@ -238,6 +249,16 @@ public class RequestProcessor {
         //the same / another client. will it break?
 
         sendGameStateStatus();
+    }
+
+    public void sendError() {
+        SimpleRequest sr = new SimpleRequest();
+        sr.setMessageHeader("ChatUpdate").setExplicit("Server error!");
+
+        try {
+            server.broadcast(objMapper.writeValueAsString(sr));
+        } catch(JsonProcessingException e) {
+        }
     }
 
     //TODO- to fill in new 'joiners' of gameState.

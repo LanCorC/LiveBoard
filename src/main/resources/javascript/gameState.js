@@ -1341,7 +1341,7 @@ const gameState = (function() {
 
         //Purpose: server update in anticipation of 'dissolve()'
         let otherCard;
-        if(deck.images.length == 2) {
+        if(!deck.isHand && deck.images.length == 2) {
             //if 'card' is the 0th image, otherCard is [1]th. vice versa
             otherCard = card == deck.images[0] ? deck.images[1] : deck.images[0];
         }
@@ -1352,7 +1352,12 @@ const gameState = (function() {
         if(i == deck.images.length) console.log("takeFromDeck: card was not found in deck!");
 
         //remove sole item
-        deck.images.splice(i, 1);
+        let deleted = deck.images.splice(i, 1)[0];
+        if(deleted == undefined){
+            console.log("IMPORTANT: failure to remove card from deck!");
+            console.log(deck);
+            throw new Error("failure to decouple card from deck's collection!")
+        };
 
         //set 'leavingDeck' defaults
         setCardDefaults(card);
