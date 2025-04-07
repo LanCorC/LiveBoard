@@ -722,6 +722,9 @@ window.onload = function() {
             case "A":
                 handleBoardRotate(false);
                 break;
+            case "B":
+                gameState.logBrokenItems();
+                break;
             case "D":
                 handleBoardRotate(true);
                 break;

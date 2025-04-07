@@ -1584,6 +1584,60 @@ const gameState = (function() {
     //purpose: store helper functions, like 'pulseRedraw' of index.js
     let redraw = { triggerRedraw: function() {}};
 
+    //Purpose: testing; iterate through all gameObjects and print out via hard-coded filters
+    function logBrokenItems() {
+        //TODO
+        //decks, !isHand, with 1 or less cards DONE
+        //cards where !card.deck, but SOME deck.images() contains card aka ghost card copy DONE
+        //cards where (disabled) && !card.deck aka sent to the void
+        //null items DONE
+        //null id
+
+        let allDecks = new Array(...items.decks); //include hands
+        players.values().forEach((player) => allDecks.push(player.hand));
+
+        let deckSizes = []; //decks with weird sizes
+        let ghostCopiesDecks = []; //entries: [deck, card]; !card.deck but deck has this card in its .images[]
+        let decksWithNullEntries = new Set();
+
+        let nullCardCount = 0;
+        let nullDeckCount = 0;
+
+        allDecks.forEach((deck) => {
+            if(!deck) {
+                nullDeckCount++;
+                return;
+            }
+            if(!deck.isHand && deck.images.length <= 1) deckSizes.push(deck);
+            deck.images.forEach((entry) => {
+                if(!entry) {
+                    decksWithNullEntries.add(deck);
+                    return;
+                }
+                if(!entry.deck || entry.deck.id != deck.id) ghostCopiesDecks.push([deck, entry]);
+            });
+        });
+
+        let cookedCards = new Set();
+        items.cards.forEach((card) => {
+            if(!card) {
+                nullCardCount++;
+                return;
+            }
+            if(!card.coord && (!card.disabled || !card.deck)) cookedCards.add(card);
+            if(card.disabled && !card.deck) cookedCards.add(card);
+        });
+
+        console.log("Decks with weird sizes:");
+        console.log(...deckSizes);
+        console.log("Decks/hands holding 'ghost' copies of cards:");
+        console.log(...ghostCopiesDecks);
+        console.log("Decks with null entries:");
+        console.log(...decksWithNullEntries);
+
+        console.log(`We found ${nullDeckCount} 'null' decks, ${nullCardCount} 'null' cards in gameState.`);
+    }
+
     return {
         getID,
         idToRGB,
@@ -1615,7 +1669,8 @@ const gameState = (function() {
         initializeUser,
         clientUser,
         frontPage,
-        redraw
+        redraw,
+        logBrokenItems
     };
 })();
 
