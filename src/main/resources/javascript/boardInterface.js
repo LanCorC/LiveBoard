@@ -282,7 +282,9 @@ class ChatBox {
         this.container.addEventListener("mouseenter", this,{passive: false});
         this.container.addEventListener("mouseleave", this,{passive: false});
         chatInput.onchange = (event) => {
-            //TODO- trigger sending results to server;
+            //TODO- trigger to see if mouseclick OR enter used;
+            //if mouseclick, do not process
+            console.log(event);
 
             //TODO- see if this.sendChat() will update,
             if(chatInput.value != "") {
@@ -321,9 +323,9 @@ class ChatBox {
         this.chatHistory.append(entry);
         //if focus, scrollintoview
 
-//        if(this.#isFocused) {
-            entry.scrollIntoView();
-//        }
+        if(!this.#isFocused || name == "You") {
+            entry.scrollIntoView(false);
+        }
     }
 
     sendChat = function(data) { console.log(`sendChatDefault: ${data}`)};
@@ -361,6 +363,7 @@ class ChatBox {
         }
     }
 
+    //used in hotkey "ENTER" to select, deselect from chat
     focus() {
         this.chatInput.focus();
     }

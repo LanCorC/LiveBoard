@@ -313,10 +313,12 @@ class Server {
         let itemsPlayMats = new Set();
         let itemsHands = new Set();
         items.forEach((item) => {
-            if(item.type == null) {
+            if(!item || !item.type) {
+                //Filter, as well as attempt to find faults in previous command chain
                 console.log(`error found- item is null in action: ${stringAction}`);
+                window.alert(`error found- item is null in action: ${stringAction}`);
                 console.log(item);
-                console.log("");
+                this.chatBox.newEntry(`error found- item is null in action: ${stringAction}`);
                 return;
             }
             if(item.type == "playMat" || item.type == "gameMat") {
