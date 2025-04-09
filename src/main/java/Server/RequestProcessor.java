@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java_websocket.WebSocket;
 
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class RequestProcessor {
     private static RequestProcessor instance = null;
@@ -24,6 +25,8 @@ public class RequestProcessor {
     //Childrequest holding parentRequestID entry? apply + broadcast changes
     //Childrequest holding parentRequestID has no entry? discard request
     private static HashMap<Long, Long> requestTracker = new HashMap<>();
+
+    private static ReentrantLock lock = new ReentrantLock();
 
     //purpose: quick key=id, value=object; does NOT hold players (players Map exists)
     private static HashMap<Long, Object> quickRef = new HashMap<>();
@@ -70,129 +73,17 @@ public class RequestProcessor {
                     gameSetup(conn, message);
 //                    ServerApplication.originalGameState = s;
                     break;
-                //TODO note: for now, allow all updates; push to all clients
                 case "GameUpdate":
                     //Verify (TODO) + track on requestTracker as successful parentRequestID
+                    //If denied, "break;" early, do not broadcast, do not gameUpdate(), send back to OG
+                    //rejectGameUpdate();
 
-
-                    //Apply changes
-                        //items
-                    if(!message.cards.isEmpty()) {
-                        System.out.printf("Processing %s cards...", message.messageHeader);
-
-                        //Attempt to fix live bug
-                        //Sanitise - get rid of null values
-//                        ArrayList<Card> cleanCards = new ArrayList<>();
-//                        message.cards.stream().filter(Objects::nonNull).forEach(cleanCards::add);
-//                        if(cleanCards.size()!=message.cards.size()) System.out.println("Null found and sanitized!");
-//                        message.cards = cleanCards;
-//
-//                        System.out.print("Sanitize done...");
-
-                        //Filter and store old values
-                        ArrayList<Card> cards = new ArrayList<Card>();
-                        message.cards.forEach((card) -> {
-                            quickRef.put((long) card.id, card);
-                            gameState.cards.stream()
-                                    .filter(serverCopy -> serverCopy.id == (long) card.id)
-                                    .forEach(cards::add);
-                        });
-
-                        System.out.print("Filter done...");
-
-                        //Remove old values, add updated values
-                        cards.forEach(gameState.cards::remove);
-                        gameState.cards.addAll(message.cards);
-
-                        message.cards.forEach(card -> card.timeStamp = message.timeStamp);
-
-                        //Test code to log 'bugged' objects
-//                        message.cards.stream()
-//                                .filter(card -> card.id == 0)
-//                                .forEach(card ->
-//                                        System.out.printf("null card found: %s%n", message.explicit));
-                        System.out.printf("Finished %s cards :)%n", message.messageHeader);
+                    lock.lock(); //may have to extend to adding gameState, taking gameState
+                    try {
+                        gameUpdate(conn, message);
+                    } finally {
+                        lock.unlock();
                     }
-
-                    if(!message.decks.isEmpty()) {
-                        System.out.printf("Processing %s decks...", message.messageHeader);
-
-//                        System.out.println("decks != null");
-
-                        //Filter and store old values
-                        ArrayList<Deck> decks = new ArrayList<Deck>();
-                        message.decks.forEach((deck) -> {
-                        quickRef.put((long) deck.id, deck);
-                            gameState.decks.stream()
-                                    .filter(serverCopy -> serverCopy.id == (long) deck.id)
-                                    .forEach(decks::add);
-                        });
-
-                        //Remove old values, add updated values
-                        decks.forEach(gameState.decks::remove);
-
-                        message.decks.stream()
-                                .filter((deck) -> deck.images.size() >= 2)
-                                .forEach(gameState.decks::add);
-                        message.decks.forEach((deck -> deck.timeStamp = message.timeStamp));
-                        System.out.printf("Finished %s decks :)%n", message.messageHeader);
-                    }
-
-                    if(!message.playMats.isEmpty()) {
-                        System.out.printf("Processing %s playMats...", message.messageHeader);
-
-//                        System.out.println("playmats != null");
-
-                        //Filter and store old values
-                        ArrayList<PlayMat> playMats = new ArrayList<PlayMat>();
-                        message.playMats.forEach((playMat) -> {
-                            quickRef.put((long) playMat.id, playMat);
-                            gameState.playMats.stream()
-                                    .filter(serverCopy -> serverCopy.id == (long) playMat.id)
-                                    .forEach(playMats::add);
-                        });
-
-                        //Remove old values, add updated values
-                        playMats.forEach(gameState.playMats::remove);
-                        message.playMats.forEach((playMat -> playMat.timeStamp = message.timeStamp));
-                        gameState.playMats.addAll(message.playMats);
-                        System.out.printf("Finished %s playMats :)%n", message.messageHeader);
-
-                    }
-
-                    if(!message.hands.isEmpty()) {
-                        System.out.printf("Processing %s hands...", message.messageHeader);
-
-//                        System.out.printf("hands != null, %s%n", message.timeStamp);
-
-//                        System.out.println(message.hands.getFirst().id);
-//                        System.out.println(players.keySet());
-
-                        //Filter and store old values
-                        ArrayList<Hand> hands = new ArrayList<Hand>();
-                        message.hands.forEach((hand) -> {
-                            quickRef.put((long) hand.id, hand); //replace old value with new
-                            players.values().stream()
-                                    .filter(user -> user.id == (long) hand.id)
-                                    .forEach(user -> {
-                                        hands.add(user.hand);
-                                        user.hand = hand; //replace old value with new
-                                        user.hand.timeStamp = message.timeStamp;
-                                    });
-                        });
-
-                        //Remove old values, add updated values
-                        //
-//                        hands.forEach(gameState.playMats::remove);
-//                        gameState.playMats.addAll(message.playMats);
-
-                        //TODO temporary: also return server's initial copy
-//                        message.hands.add(hands.getFirst());
-                        System.out.printf("Finished %s hands :)%n", message.messageHeader);
-
-                    }
-
-                        //players(visual token)
 
                     //broadcast to all
                     try {
@@ -249,6 +140,124 @@ public class RequestProcessor {
         //the same / another client. will it break?
 
         sendGameStateStatus();
+    }
+
+    private void gameUpdate(WebSocket conn, SimpleRequest message) {
+        //Apply changes
+        //items
+        if(!message.cards.isEmpty()) {
+            System.out.printf("Processing %s cards...", message.messageHeader);
+
+            //Attempt to fix live bug
+            //Sanitise - get rid of null values
+//                        ArrayList<Card> cleanCards = new ArrayList<>();
+//                        message.cards.stream().filter(Objects::nonNull).forEach(cleanCards::add);
+//                        if(cleanCards.size()!=message.cards.size()) System.out.println("Null found and sanitized!");
+//                        message.cards = cleanCards;
+//
+//                        System.out.print("Sanitize done...");
+
+            //Filter and store old values
+            ArrayList<Card> cards = new ArrayList<Card>();
+            message.cards.forEach((card) -> {
+                quickRef.put((long) card.id, card);
+                gameState.cards.stream()
+                        .filter(serverCopy -> serverCopy.id == (long) card.id)
+                        .forEach(cards::add);
+            });
+
+            System.out.print("Filter done...");
+
+            //Remove old values, add updated values
+            cards.forEach(gameState.cards::remove);
+            gameState.cards.addAll(message.cards);
+
+            message.cards.forEach(card -> card.timeStamp = message.timeStamp);
+
+            //Test code to log 'bugged' objects
+//                        message.cards.stream()
+//                                .filter(card -> card.id == 0)
+//                                .forEach(card ->
+//                                        System.out.printf("null card found: %s%n", message.explicit));
+            System.out.printf("Finished %s cards :)%n", message.messageHeader);
+        }
+
+        if(!message.decks.isEmpty()) {
+            System.out.printf("Processing %s decks...", message.messageHeader);
+
+//                        System.out.println("decks != null");
+
+            //Filter and store old values
+            ArrayList<Deck> decks = new ArrayList<Deck>();
+            message.decks.forEach((deck) -> {
+                quickRef.put((long) deck.id, deck);
+                gameState.decks.stream()
+                        .filter(serverCopy -> serverCopy.id == (long) deck.id)
+                        .forEach(decks::add);
+            });
+
+            //Remove old values, add updated values
+            decks.forEach(gameState.decks::remove);
+
+            message.decks.stream()
+                    .filter((deck) -> deck.images.size() >= 2)
+                    .forEach(gameState.decks::add);
+            message.decks.forEach((deck -> deck.timeStamp = message.timeStamp));
+            System.out.printf("Finished %s decks :)%n", message.messageHeader);
+        }
+
+        if(!message.playMats.isEmpty()) {
+            System.out.printf("Processing %s playMats...", message.messageHeader);
+
+//                        System.out.println("playmats != null");
+
+            //Filter and store old values
+            ArrayList<PlayMat> playMats = new ArrayList<PlayMat>();
+            message.playMats.forEach((playMat) -> {
+                quickRef.put((long) playMat.id, playMat);
+                gameState.playMats.stream()
+                        .filter(serverCopy -> serverCopy.id == (long) playMat.id)
+                        .forEach(playMats::add);
+            });
+
+            //Remove old values, add updated values
+            playMats.forEach(gameState.playMats::remove);
+            message.playMats.forEach((playMat -> playMat.timeStamp = message.timeStamp));
+            gameState.playMats.addAll(message.playMats);
+            System.out.printf("Finished %s playMats :)%n", message.messageHeader);
+
+        }
+
+        if(!message.hands.isEmpty()) {
+            System.out.printf("Processing %s hands...", message.messageHeader);
+
+//                        System.out.printf("hands != null, %s%n", message.timeStamp);
+
+//                        System.out.println(message.hands.getFirst().id);
+//                        System.out.println(players.keySet());
+
+            //Filter and store old values
+            ArrayList<Hand> hands = new ArrayList<Hand>();
+            message.hands.forEach((hand) -> {
+                quickRef.put((long) hand.id, hand); //replace old value with new
+                players.values().stream()
+                        .filter(user -> user.id == (long) hand.id)
+                        .forEach(user -> {
+                            hands.add(user.hand);
+                            user.hand = hand; //replace old value with new
+                            user.hand.timeStamp = message.timeStamp;
+                        });
+            });
+
+            //Remove old values, add updated values
+            //
+//                        hands.forEach(gameState.playMats::remove);
+//                        gameState.playMats.addAll(message.playMats);
+
+            //TODO temporary: also return server's initial copy
+//                        message.hands.add(hands.getFirst());
+            System.out.printf("Finished %s hands :)%n", message.messageHeader);
+        }
     }
 
     public void sendError() {
