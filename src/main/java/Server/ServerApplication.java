@@ -32,11 +32,11 @@ public class ServerApplication extends WebSocketServer {
 
     public ServerApplication() {
         super(new InetSocketAddress(SERVER_PORT));
+        requestProcessor.setServer(this);
     }
 
     public static void main(String[] args) {
         ServerApplication server = new ServerApplication();
-        requestProcessor.setServer(server);
 
         server.start();
 

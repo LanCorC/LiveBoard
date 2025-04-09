@@ -1,10 +1,13 @@
 package Server;
 
+import com.fasterxml.jackson.core.util.ByteArrayBuilder;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.StringTokenizer;
 
@@ -43,9 +46,11 @@ import java.util.StringTokenizer;
 public class WebServerTutorial implements Runnable {
     static final String REGEX_URL_SPLIT = "/";
 
-    static final int PORT = 8080;
+    static final String root = "src/main/resources";
 
-    static final boolean verbose = true;
+    static final int PORT = 8000;
+
+    static final boolean verbose = false;
 
     private final Socket socket;
 
@@ -59,11 +64,8 @@ public class WebServerTutorial implements Runnable {
         //for now, print to console
 
         try {
-            System.out.println("hey!");
             InetAddress ip = InetAddress.getLocalHost();
-            System.out.println(ip.toString());
         } catch(Exception e) {
-
             System.out.println(e.getMessage());
         }
 
@@ -71,8 +73,16 @@ public class WebServerTutorial implements Runnable {
 
         try {
             ServerSocket serverSocket = new ServerSocket(WebServerTutorial.PORT);
-            System.out.println("Server started.\nListening for connections on port : " + PORT + " ...\n");
-//            System.out.println((new File()).getPath());
+            System.out.println("Server started.");
+            System.out.printf("The web server is hosting on: %s:%s%n", InetAddress.getLocalHost().getHostAddress(), WebServerTutorial.PORT);
+            System.out.println("Listening for connections on port: " + PORT + "...\n");
+
+            //Start ServerApplication, store copy ref in order to retrieve HostAddress + Port of ServerApp
+            ServerApplication multiplayerServer = new ServerApplication();
+            multiplayerServer.start();
+            System.out.printf("The multiplayer server is hosting on: %s:%s%n",
+                    InetAddress.getLocalHost().getHostAddress(), ServerApplication.SERVER_PORT);
+
             while (true) {
                 WebServerTutorial server = new WebServerTutorial(serverSocket.accept());
 
@@ -89,6 +99,43 @@ public class WebServerTutorial implements Runnable {
 
     static void sendHtml(PrintWriter headerWriter, BufferedOutputStream contentWriter, int statusCode, String content) throws IOException {
         write(headerWriter, contentWriter, statusCode, "text/html", content.getBytes(StandardCharsets.UTF_8), content.length());
+    }
+
+    static void sendVariable(PrintWriter headerWriter, BufferedOutputStream contentWriter, int statusCode, String contentType, String destination) throws IOException {
+        ByteArrayBuilder data = new ByteArrayBuilder();
+        switch (contentType) {
+            case "image/png":
+            case "image/jpeg":
+                try {
+                    //repair '%20' -> ' '
+                    destination = destination.replaceAll("%20"," ");
+                    FileInputStream in = new FileInputStream(root.concat(destination));
+                    data.write(in.readAllBytes());
+                    in.close();
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+                break;
+            default:
+                try {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(root.concat(destination))));
+                    String str;
+                    while((str = in.readLine()) != null) {
+                        data.write(str.getBytes(StandardCharsets.UTF_8));
+                        data.write("\n".getBytes(StandardCharsets.UTF_8));
+                    }
+                    in.close();
+
+                } catch(Exception e) {
+                    System.out.println(e.getMessage());
+                    System.out.printf("Could not retrieve `%s`%n", destination);
+                }
+                break;
+        }
+
+        byte[] bytes = data.toByteArray();
+
+        write(headerWriter, contentWriter, statusCode, contentType, bytes, bytes.length);
     }
 
     static void write(PrintWriter headerWriter, BufferedOutputStream contentWriter, int statusCode, String contentType, byte[] response, int responseLength) throws IOException {
@@ -119,6 +166,10 @@ public class WebServerTutorial implements Runnable {
             String method = parse.nextToken().toUpperCase();
             String requested = parse.nextToken().toLowerCase();
 
+//            System.out.println(method);
+//            System.out.println(requested);
+
+
             if (!method.equals("GET")) {
                 if (verbose) {
                     System.out.println("501 Not implemented : " + method + " method.");
@@ -126,26 +177,54 @@ public class WebServerTutorial implements Runnable {
 
 //                sendJson(headerWriter, contentWriter, 501, "{\"error\":\"Method not implemented. Please use GET instead\"}");
             } else {
-                String[] urlSplit = requested.split(WebServerTutorial.REGEX_URL_SPLIT);
 
-                String randomString = "test";
-                byte[] response = randomString.getBytes();
-                StringBuilder htmlContentPage = new StringBuilder();
-                try {
-                    BufferedReader in = new BufferedReader(new FileReader("src/main/resources/Views/Main.html"));
-                    String str;
-                    while((str = in.readLine()) != null) {
-                        htmlContentPage.append(str);
+                if(requested.equals("/")){
+                    StringBuilder htmlContentPage = new StringBuilder();
+                    try {
+                        BufferedReader in = new BufferedReader(new FileReader("src/main/resources/Views/Main.html"));
+                        String str;
+                        while((str = in.readLine()) != null) {
+                            htmlContentPage.append(str);
+                        }
+                        in.close();
+                    } catch (IOException e) {
+
+                        System.out.println(e.getMessage());
                     }
-                    in.close();
-                } catch (IOException e) {
 
-                    System.out.printf(e.getMessage());
+                    sendHtml(headerWriter, contentWriter, HttpStatusCode.OK.code, htmlContentPage.toString());
+                    System.out.println("A new connection has received the full web-page.");
+                } else {
+                    String[] urlSplit = requested.split(WebServerTutorial.REGEX_URL_SPLIT);
+//                System.out.println(Arrays.toString(urlSplit));
+                    //Retrieve the extension of a resource request; "abcdefg.ext" => "ext"
+
+                    String fileType = urlSplit[urlSplit.length-1].split("\\.")[1];
+
+                    String contentType = "";
+
+                    //TODO- send method elsewhere for code clarity
+                    switch (fileType) {
+                        case "js":
+                            contentType = "application/javascript";
+                            break;
+                        case "svg":
+                            contentType = "image/svg+xml";
+                            //content-type: "image/svg+xml"
+                            break;
+                        case "jpg":
+                            contentType = "image/jpeg";
+                            //content-type: "image/jpeg"
+                            break;
+                        case "png":
+                            contentType = "image/png";
+                            //content-type: "image/png"
+                        default:
+                            break;
+                    }
+
+                    sendVariable(headerWriter, contentWriter, HttpStatusCode.OK.code, contentType, requested);
                 }
-
-//                String htmlContentPage = "<p>hi</p><p>hello</p>";
-                System.out.println(htmlContentPage.toString());
-                sendHtml(headerWriter, contentWriter, HttpStatusCode.OK.code, htmlContentPage.toString());
             }
         } catch (IOException exception) {
             System.err.println("Server error : " + exception);
