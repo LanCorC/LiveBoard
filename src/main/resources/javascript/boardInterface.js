@@ -281,24 +281,27 @@ class ChatBox {
         //events
         this.container.addEventListener("mouseenter", this,{passive: false});
         this.container.addEventListener("mouseleave", this,{passive: false});
-        chatInput.onchange = (event) => {
-            //TODO- trigger to see if mouseclick OR enter used;
-            //if mouseclick, do not process
-            console.log(event);
-
-            //TODO- see if this.sendChat() will update,
-            if(chatInput.value != "") {
-                this.sendChat(chatInput.value);
-                this.newEntry(chatInput.value);
-            }
-            chatInput.value = "";
-        };
+//        chatInput.onchange = (event) => {
+//            //TODO- trigger to see if mouseclick OR enter used; -- impossible
+//            //if mouseclick, do not process
+//            console.log(event);
+//
+//            //TODO- see if this.sendChat() will update,
+//
+//        };
     }
 
     //TODO: if not focused, auto scroll on new entry
         //look at a variable onHoverIn onHoverOut
     //TODO
         //look at [enter] event in chat input
+    enterTriggerChat() {
+        if(this.chatInput.value != "") {
+            this.sendChat(this.chatInput.value);
+            this.newEntry(this.chatInput.value);
+        }
+        this.chatInput.value = "";
+    }
 
     //TODO
     //function that accepts new value (server, or thisClient and appends to history
@@ -315,6 +318,8 @@ class ChatBox {
                 name = sender; //allow for 'String'
             }
         }
+
+        if(!text) return;
 
         //TODO- if not focused on chatbox, scrollintoview()
         const entry = document.createElement("p");

@@ -776,6 +776,7 @@ window.onload = function() {
                 let UI = userInterface.userInterface;
                 if(!UI || !UI.chatBox) return;
                 if(document.activeElement == UI.chatBox.chatInput) {
+                    UI.chatBox.enterTriggerChat();
                     document.activeElement.blur();
                     return;
                 }

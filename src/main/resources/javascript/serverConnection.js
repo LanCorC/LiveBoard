@@ -241,7 +241,7 @@ class Server {
         //items assumed array, make (items.deck)[]
         if(!Array.isArray(items)) items = new Array(items);
         if(items.length == 0) {
-            console.log("Invalid request- no changes. scrapping.");
+            console.log("Request has no valid changes. Silently logging.");
             return;
         }
 
@@ -363,7 +363,6 @@ class Server {
     //TODO- client to server
     sendChat(stringData) {
         if(this.connection == undefined || this.connection.readyState != 1) return;
-        console.log("we SO here");
         let message = {};
         message.messageHeader = "ChatUpdate";
         message.explicit = stringData;
