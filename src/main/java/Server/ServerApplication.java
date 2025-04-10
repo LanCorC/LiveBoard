@@ -3,23 +3,12 @@ package Server;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 import org.java_websocket.server.WebSocketServer;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.security.*;
-import java.security.cert.CertificateException;
 import java.util.HashMap;
-import java.nio.file.Paths;
 
 public class ServerApplication extends WebSocketServer {
     public static final int SERVER_PORT = 8080;
@@ -33,6 +22,12 @@ public class ServerApplication extends WebSocketServer {
     public ServerApplication() {
         super(new InetSocketAddress(SERVER_PORT));
         requestProcessor.setServer(this);
+        try {
+            ServerApplication.ServerAddress = InetAddress.getLocalHost().getHostAddress();
+        } catch (Exception e) {
+            System.out.println("We could not determine the localHost");
+            System.out.println(e.getMessage());
+        }
     }
 
     public static void main(String[] args) {
@@ -40,16 +35,9 @@ public class ServerApplication extends WebSocketServer {
 
         server.start();
 
-        try {
-            ServerApplication.ServerAddress = InetAddress.getLocalHost().getHostAddress();
-            System.out.printf(
-                    "Server Address: %s Server Port: %s%n",
-                    ServerApplication.ServerAddress, SERVER_PORT);
-            System.out.println();
-        } catch (UnknownHostException e) {
-            System.out.println("We could not determine the localHost");
-            System.out.println(e.getMessage());
-        }
+        System.out.printf(
+                "Server Address: %s Server Port: %s%n", ServerApplication.ServerAddress, SERVER_PORT);
+        System.out.println();
 
     }
 

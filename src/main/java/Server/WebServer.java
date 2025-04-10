@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.StringTokenizer;
 
@@ -43,7 +42,7 @@ import java.util.StringTokenizer;
 //}
 
     //https://github.com/avolgha/how-to-make-a-java-webserver/tree/dev
-public class WebServerTutorial implements Runnable {
+public class WebServer implements Runnable {
     static final String REGEX_URL_SPLIT = "/";
 
     static final String root = "src/main/resources";
@@ -54,7 +53,7 @@ public class WebServerTutorial implements Runnable {
 
     private final Socket socket;
 
-    public WebServerTutorial(Socket socket) {
+    public WebServer(Socket socket) {
         this.socket = socket;
     }
 
@@ -72,9 +71,9 @@ public class WebServerTutorial implements Runnable {
 
 
         try {
-            ServerSocket serverSocket = new ServerSocket(WebServerTutorial.PORT);
+            ServerSocket serverSocket = new ServerSocket(WebServer.PORT);
             System.out.println("Server started.");
-            System.out.printf("The web server is hosting on: %s:%s%n", InetAddress.getLocalHost().getHostAddress(), WebServerTutorial.PORT);
+            System.out.printf("The web server is hosting on: %s:%s%n", InetAddress.getLocalHost().getHostAddress(), WebServer.PORT);
             System.out.println("Listening for connections on port: " + PORT + "...\n");
 
             //Start ServerApplication, store copy ref in order to retrieve HostAddress + Port of ServerApp
@@ -84,7 +83,7 @@ public class WebServerTutorial implements Runnable {
                     InetAddress.getLocalHost().getHostAddress(), ServerApplication.SERVER_PORT);
 
             while (true) {
-                WebServerTutorial server = new WebServerTutorial(serverSocket.accept());
+                WebServer server = new WebServer(serverSocket.accept());
 
                 if (verbose) {
                     System.out.println("Connection opened. (" + new Date() + ")");
@@ -195,7 +194,7 @@ public class WebServerTutorial implements Runnable {
                     sendHtml(headerWriter, contentWriter, HttpStatusCode.OK.code, htmlContentPage.toString());
                     System.out.println("A new connection has received the full web-page.");
                 } else {
-                    String[] urlSplit = requested.split(WebServerTutorial.REGEX_URL_SPLIT);
+                    String[] urlSplit = requested.split(WebServer.REGEX_URL_SPLIT);
 //                System.out.println(Arrays.toString(urlSplit));
                     //Retrieve the extension of a resource request; "abcdefg.ext" => "ext"
 
