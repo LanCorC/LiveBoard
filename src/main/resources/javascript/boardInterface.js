@@ -265,14 +265,17 @@ class ChatBox {
         //[ Chatinput     ]
         const container = document.createElement("div");
         container.classList.add("chatContainer");
+        const chatHistoryContainer = document.createElement("div");
+        chatHistoryContainer.classList.add("chatHistoryContainer");
         const chatHistory = document.createElement("div");
         chatHistory.classList.add("chatHistory");
         const chatInput = document.createElement("input");
         chatInput.classList.add("chatInput");
         chatInput.setAttribute("type", "text"); //TODO- [Enter] trigger or event
-        chatInput.placeholder = "Say hi!";
+        chatInput.placeholder = "[Enter] to chat and send!";
 
-        container.append(chatHistory, chatInput);
+        chatHistoryContainer.append(chatHistory);
+        container.append(chatHistoryContainer, chatInput);
 
         this.container = container;
         this.chatHistory = chatHistory;
