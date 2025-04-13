@@ -1545,6 +1545,8 @@ const gameState = (function() {
             relevant.push(item);
         });
 
+        if(relevant.length == 0) return;
+
         //purge selection (index.js) after
         server.pushGameAction("anchorItem", relevant);
     }

@@ -772,7 +772,6 @@ window.onload = function() {
 
                 break;
             case "ENTER":
-                //TODO- focus on textbox
                 let UI = userInterface.userInterface;
                 if(!UI || !UI.chatBox) return;
                 if(document.activeElement == UI.chatBox.chatInput) {
@@ -804,7 +803,6 @@ window.onload = function() {
         let leftTopPoint = contextVis.transformPoint(0,0);
         let rightBottomPoint = contextVis.transformPoint(board.clientWidth, board.clientHeight);
 
-        //TODO tbd: see if gameState.correctCoords() affected greatly
         switch(user.position) {
             case 1:
                 [topBorder, bottomBorder] = [bottomBorder, topBorder];
