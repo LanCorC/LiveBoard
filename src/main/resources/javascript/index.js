@@ -774,12 +774,7 @@ window.onload = function() {
             case "ENTER":
                 let UI = userInterface.userInterface;
                 if(!UI || !UI.chatBox) return;
-                if(document.activeElement == UI.chatBox.chatInput) {
-                    UI.chatBox.enterTriggerChat();
-                    document.activeElement.blur();
-                    return;
-                }
-                UI.chatBox.focus();
+                UI.chatBox.toggleInputFocus();
                 break;
             case "CONTROL":
 //            case "CONTROL":

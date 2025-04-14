@@ -177,6 +177,8 @@
             visibility: initial;
             background-color: rgba(178, 190, 181, 0.2);
 
+            pointer-events: none;
+
             /* Keeps chat input from bobbing up and down */
             display: flex;
             flex-flow: column;
@@ -204,6 +206,8 @@
             height: 10%;
             width: 100%;
             bottom: 0;
+
+            pointer-events: initial;
 
             background-color: rgba(178, 190, 181, 0.2);
             border-style: solid none none none;
@@ -234,7 +238,7 @@
             <label>Address: </label><input type="text" id="address" disabled>
             <label>Port: </label><input type="text" id="port" disabled>
             <button type="button" id="connectButton" disabled>Manual Connect</button>
-            <p id="connectionStatus" disabled>Please wait while we set up.</p>
+            <p id="connectionStatus">Please wait while we set up.</p>
 
             <!-- serverJoin to change text or availability based on server connection -->
             <button type="button" id="serverJoin" disabled>Start Game</button>

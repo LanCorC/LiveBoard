@@ -271,7 +271,7 @@ class ChatBox {
         chatHistory.classList.add("chatHistory");
         const chatInput = document.createElement("input");
         chatInput.classList.add("chatInput");
-        chatInput.setAttribute("type", "text"); //TODO- [Enter] trigger or event
+        chatInput.setAttribute("type", "text");
         chatInput.placeholder = "[Enter] to chat and send!";
 
         chatHistoryContainer.append(chatHistory);
@@ -292,12 +292,19 @@ class ChatBox {
 //            //TODO- see if this.sendChat() will update,
 //
 //        };
+
+        chatInput.onwheel = function(event) {
+            chatHistoryContainer.scrollTop += event.deltaY;
+        };
+
+        chatInput.addEventListener("focusin", (event) => {
+            container.style.pointerEvents = "initial";
+        });
+        chatInput.addEventListener("focusout", (event) => {
+            container.style.pointerEvents = "none";
+        });
     }
 
-    //TODO: if not focused, auto scroll on new entry
-        //look at a variable onHoverIn onHoverOut
-    //TODO
-        //look at [enter] event in chat input
     enterTriggerChat() {
         if(this.chatInput.value != "") {
             this.sendChat(this.chatInput.value);
@@ -375,12 +382,20 @@ class ChatBox {
     focus() {
         this.chatInput.focus();
     }
+
+    toggleInputFocus() {
+        if(document.activeElement == this.chatInput) {
+            this.enterTriggerChat();
+            document.activeElement.blur();
+            return;
+        }
+        this.focus();
+    }
 }
 
 //object ref to gameState (client-side updates UI)
 //likely
 //TODO: hand stored in user; store previewObj in visuals; buttons in visuals;
-//TODO cont: chatBox in visuals
 export let userInterface = { preview: null };
 
 function createBottomRow(user) {
