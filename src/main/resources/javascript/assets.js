@@ -427,7 +427,6 @@ function preProcessRefCard(card, expansion, prefix) {
 
     card.onerror = () => {
         console.log(`Something went wrong: ${card.magicId} ${expansion}`);
-        console.log(`Something went wrong: ${card.magicId} ${expansion}`);
     }
 
     card.src = `${baseAddress}/Game/${expansion}/${prefix}${padHundred(card.magicId)}.png`;
