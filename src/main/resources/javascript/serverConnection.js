@@ -142,8 +142,22 @@ class Server {
                         if(data.player && data.player.id == this.server.game.clientUser.id) {
                             break; //skip processing: message came from us
                         }
+                        //TODO- differentate between normal chat entry, ping item, ping hand
+
+                        switch(data.subHeader) {
+                            case "ChatUpdate":
+                                this.server.chatBox.newEntry(data.explicit, data.timeStamp, data.player);
+                                break;
+                            case "PingItem":
+                                this.server.chatBox.pingItemToChat(
+                                    this.server.game.findItems(data.cards), data.player.name
+                                );
+                                break;
+                            default:
+                                console.log(`ChatUpdate type "${data.subHeader}" not recognized`);
+                                break;
+                        }
 //                        console.log("receiving chat entry..");
-                        this.server.chatBox.newEntry(data.explicit, data.timeStamp, data.player);
                         break;
                     default:
                         console.log(`"${header}" header not defined`);
@@ -361,12 +375,18 @@ class Server {
     }
 
     //TODO- client to server
-    sendChat(stringData) {
+    //note: "items" is strictly cards- no playmats, decks, tokens
+    sendChat(stringData, stringAction, cards) {
         if(this.connection == undefined || this.connection.readyState != 1) return;
+        if(cards && !Array.isArray(cards)) cards = [cards];
+
+        //TODO- allow for 'PingHand' route for 'SeeHand' gameaction
         let message = {};
         message.messageHeader = "ChatUpdate";
+        message.subHeader = stringAction;
         message.explicit = stringData;
         message.player = this.game.clientUser;
+        if(cards) message.cards = cards;
         message = JSON.stringify(message, this.replacer());
 
         this.connection.send(message);

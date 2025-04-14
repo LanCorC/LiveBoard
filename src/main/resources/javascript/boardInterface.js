@@ -59,7 +59,7 @@ class PreviewBox {
                 this.cardHolder.scrollLeft += event.deltaY;
                 break;
             case "mouseup":
-                if(event.button == 2) {
+                if(event.button == 2 && !event.ctrlKey) {
                     this.minimizeBody();
                 }
                 break;
@@ -284,14 +284,6 @@ class ChatBox {
         //events
         this.container.addEventListener("mouseenter", this,{passive: false});
         this.container.addEventListener("mouseleave", this,{passive: false});
-//        chatInput.onchange = (event) => {
-//            //TODO- trigger to see if mouseclick OR enter used; -- impossible
-//            //if mouseclick, do not process
-//            console.log(event);
-//
-//            //TODO- see if this.sendChat() will update,
-//
-//        };
 
         chatInput.onwheel = function(event) {
             chatHistoryContainer.scrollTop += event.deltaY;
@@ -307,7 +299,7 @@ class ChatBox {
 
     enterTriggerChat() {
         if(this.chatInput.value != "") {
-            this.sendChat(this.chatInput.value);
+            this.sendChat(this.chatInput.value, "ChatUpdate");
             this.newEntry(this.chatInput.value);
         }
         this.chatInput.value = "";
@@ -331,13 +323,16 @@ class ChatBox {
 
         if(!text) return;
 
-        //TODO- if not focused on chatbox, scrollintoview()
-        const entry = document.createElement("p");
-        entry.innerText = `${name}: ${text}`;
-
+        let entry;
+        if(typeof text === "string") {
+            entry = document.createElement("p");
+            entry.innerText = `${name}: ${text}`;
+        } else { //pre-formatted innerHTML
+            entry = text;
+        }
         this.chatHistory.append(entry);
-        //if focus, scrollintoview
 
+        //if focus, scrollintoview
         if(!this.#isFocused || name == "You") {
             entry.scrollIntoView(false);
         }
@@ -390,6 +385,39 @@ class ChatBox {
             return;
         }
         this.focus();
+    }
+
+    //TODO-> "Player shows you their hand: [Card] [Card]..."
+    //TODO- specialize for "You are sharing your hand: [] [] []..." + option for showEveryone? showSomeone? (willingly)
+    pingItemToChat(items, sender) {
+        //send the server the ID
+        if(!items) return;
+        if(!Array.isArray(items)) items = [items];
+
+        const body = document.createElement("p");
+
+        const fromServer = sender;
+        sender = sender ? sender : "You";
+
+        //if single (length==1), keep 0 (falsy)
+        let count = items.length == 1 ? 0 : 1;
+
+        //format obj into text
+        body.append(`${sender} pinged item: `);
+        items.forEach((item) => {
+            let part = document.createElement("b");
+            part.card = item;
+            if(count) {
+                part.innerText = `[Card${count++}]`;
+            } else {
+                part.innerText = "[Card]";
+            }
+            body.append(part);
+        });
+
+        this.newEntry(body, "", sender);
+
+        if(!fromServer) this.sendChat("", "PingItem", items);
     }
 }
 

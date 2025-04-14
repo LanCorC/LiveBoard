@@ -494,7 +494,7 @@ window.onload = function() {
             return;
         }
 
-        if(isPreviewCard) {
+        if(isPreviewCard && hoverElement instanceof HTMLImageElement) {
             itemFocus = hoverElement.card;
         } else if(gameState.hoverIsCanvas() &&
         (itemFocus = gameState.itemFromRGB(contextTouch, mouse)) &&
@@ -591,17 +591,29 @@ window.onload = function() {
 
     //TODO- include interaction of OpponentHand [boardInterface.js is relevant]
         //handles 'previewDivElement' selection, de-selection
-        if(rightClick && gameState.hoverIsCanvas()) {
-            const item = gameState.itemFromRGB(contextTouch, mouse);
+        if(rightClick) {
+            let item = gameState.itemFromRGB(contextTouch, mouse);
 
-            //out of select-> lets us pan, or drag things into deck/opponentHand
-            gameState.selectView(item);
+            //Proceed with canvas related rClicks
+            if(gameState.hoverIsCanvas()) {
 
-            //unique to gameMat, playMat => let item cycle backwards on rClick
-            if(item && Object.hasOwn(item, "anchored")) {
-                gameState.cycleImage(item, -1);
+                //unique to gameMat, playMat => let item cycle backwards on rClick
+                if(item && Object.hasOwn(item, "anchored")) {
+                    gameState.cycleImage(item, -1);
+                }
+
+                //out of select-> lets us pan, or drag things into deck/opponentHand
+                let followupRightClick = false;
+                if(!event.ctrlKey) followupRightClick = gameState.selectView(item);
+                //do not ping if selectView was valid
+                if(!followupRightClick) gameState.pingItemToChat(item);
+            } else {
+                //Prepare for non-canvas related rClicks
+                item = hoverElement;
+
+                //Proceed with non-canvas related rClcks
+                if(event.ctrlKey) gameState.pingItemToChat(item);
             }
-
         };
 
         rightClick = false;
@@ -744,7 +756,7 @@ window.onload = function() {
                 break;
             case "R":
                 let text = roll2d6Text();
-                userInterface.userInterface.chatBox.sendChat(text);
+                userInterface.userInterface.chatBox.sendChat(text,"ChatUpdate");
                 userInterface.userInterface.chatBox.newEntry(text,undefined,"Game");
                 break;
             //Test code

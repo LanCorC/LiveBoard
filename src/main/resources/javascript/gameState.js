@@ -1422,24 +1422,29 @@ const gameState = (function() {
 
         //Validate: purge view if null, invalid type, in-use, or same object
         const current = userInterface.preview.getView();
+
+        //for interaction with "pingItemToChat"
+        let changeMade = false;
+
         if(current) {
             deselectView();
+            changeMade = true;
         }
 
-        if(!deck) return;                   //null item
+        if(!deck) return changeMade;        //null item
         if(!deck.isDeck) deck = deck.deck;  //is a card, retrieve its deck
 
         //is current OR already in use by someone else
         if(current == deck || (deck.selected && deck.selected != clientUser.id) ) {
             //Note: if not selected, selected == 0 == falsy
-            return;
+            return changeMade;
         };
 
         //item is in fact, a CARD representing a deck on HTMLCanvasElement
         if(Object.hasOwn(deck, "deck") && deck.deck.isDeck) {
             deck = deck.deck;
         } else if(!deck.isDeck){
-            return;
+            return changeMade;
         }
 
         deck.browsing = clientUser.id;
@@ -1448,6 +1453,10 @@ const gameState = (function() {
         userInterface.preview.setView(deck);
 
         server.pushGameAction("selectView", deck);
+
+        changeMade = true;
+
+        return changeMade;
     }
 
     function deselectView() {
@@ -1520,7 +1529,7 @@ const gameState = (function() {
             }
         });
 
-        correctCoords(items);
+        correctCoords(new Array(...changes));
 
         server.pushGameAction("tapItem", new Array(...changes));
     }
@@ -1536,7 +1545,7 @@ const gameState = (function() {
 
         items.forEach((item) => {
             //Whitelist: ["Card", "Leader", "Monster"]
-            if(item.isDeck || item.deck || typeWhiteList.includes(item.type)) return;
+            if(!item.id || item.isDeck || item.deck || typeWhiteList.includes(item.type)) return;
             if(item.anchored) {
                 item.anchored = false;
             } else {
@@ -1640,6 +1649,42 @@ const gameState = (function() {
         console.log(`We found ${nullDeckCount} 'null' decks, ${nullCardCount} 'null' cards in gameState.`);
     }
 
+    //purpose: print object to chat
+    //current use: ping single rightclick to chat, then echo to server
+    function pingItemToChat(object) {
+        if(!object) return;
+        if(object instanceof HTMLImageElement && object.card) object = object.card;
+        if(!object.type || !typeWhiteList.includes(object.type)) return;
+
+        //if deck,
+        if(object.isDeck) {
+            //check: images property, top (first entry) is not falsy, is faceup
+            if(!object.browsing && object.images && object.images[0]) {
+                object = object.images[0];
+            } else {
+                return;
+            }
+        }
+
+        //is facedown in Canvas; (if not canvas, is preview or hand. allowed)
+        if(object.index != assets.frontImg && hoverIsCanvas()) {
+            return;
+        }
+
+        userInterface.chatBox.pingItemToChat(object);
+    }
+
+    //purpose: return array if the reference items using quickref
+    //current uses: convert JSON card items from server into real ref for chat
+    function findItems(fakeItems) {
+        let realItems = [];
+        fakeItems.forEach((item)=>{
+            realItems.push(quickRef[item.id]);
+        });
+
+        return realItems;
+    }
+
     return {
         getID,
         idToRGB,
@@ -1672,7 +1717,9 @@ const gameState = (function() {
         clientUser,
         frontPage,
         redraw,
-        logBrokenItems
+        logBrokenItems,
+        pingItemToChat,
+        findItems
     };
 })();
 
