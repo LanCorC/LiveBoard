@@ -88,12 +88,10 @@ const frontPage = (function() {
     });
 
     function revealGame() {
-        frontPage.style.pointerEvents = "none";
-        frontPage.style.opacity = "0";
+        frontPage.style.visibility = "hidden";
     }
     function hideGame() {
-        frontPage.style.pointerEvents = "default";
-        frontPage.style.opacity = "1";
+        frontPage.style.visibility = ""; //initial
     }
 
     serverConnectButton.addEventListener("click",
@@ -175,8 +173,36 @@ const frontPage = (function() {
         }
     }
 
+    //User customization (name, color)
+    const customizeContainer = document.getElementById("playerCustomizeContainer");
+    const userNameInput = document.getElementById("playerName");
+    const userColorInput = document.getElementById("playerColor");
+    const player = gameState.clientUser;
+
+    //initialize default values
+    userNameInput.placeholder = player.name;
+    userColorInput.value = player.color; //#ff0022 hexadec format
+
+    //Details: use a gameState function to manipulate user info;
+    //and in that gameState function, it'll update server for us
+    userNameInput.onchange = function(event) {
+        gameState.changeUserName(userNameInput.value);
+    }
+    userColorInput.onchange = function(event) {
+        gameState.changeUserColor(userColorInput.value);
+    }
+
+    function toggleHomescreen() {
+        //NOTE: toggles homescreen visibility
+//        frontPage.style.visibility ? hideGame() : revealGame();
+
+        //NOTE: only toggles customize container
+        let initial = customizeContainer.style.visibility != "initial";
+        customizeContainer.style.visibility = initial ? "initial" : "hidden";
+    }
+
     return { send, increment, connectionSuccess, connectionFailed, connectionStarted, gameLoadMessage,
-    gameBoardReady};
+    gameBoardReady, toggleHomescreen};
 })();
 
 //purpose: handle all loading page,elements: connection to assets on loadscr
@@ -189,7 +215,6 @@ const loading = (function() {
     const soloButton = document.getElementById("loadSolo");
     //tracking properties (array of updates? e.g. list of assets received)
 
-    //apply properties
 
     //update methods
     function send(message) {
@@ -206,6 +231,7 @@ const loading = (function() {
             message = "Asset loading: Complete!";
             demoButton.removeAttribute("disabled");
             soloButton.removeAttribute("disabled");
+            document.getElementById("ESCAPEtag").style.visibility = "inherit";
         }
         loadingScreen.innerText = message;
     }
@@ -216,7 +242,7 @@ const loading = (function() {
 //TODO- purpose to make sure all reference are passed; i.e. 'serverConnection.js' receives its c
 function initialize() {
     //connect to server
-    server.initialize(frontPage, loading, gameState, createChat());
+    server.initialize(frontPage, loading, gameState, createChat(gameState.clientUser));
 
     //connect to assets, loadscreen
     initializeAssets(frontPage, loading, false, assetCount);

@@ -29,8 +29,8 @@ const gameState = (function() {
     //then transfer cards
     let clientUser = {
         id: "0",
-        color: "white",
-        name: "default"
+        color: "#ffffff", //white
+        name: "Player1"
     };
 
     let itemCount = 0;
@@ -85,6 +85,31 @@ const gameState = (function() {
     function getPlayers() {
         return players;
     }
+
+    //Purpose: strictly for clientUser
+    function changeUserName(stringName) {
+        clientUser.name = stringName;
+        server.clientUpdate("customize");
+    }
+    //Purpose: strictly for clientUser
+    function changeUserColor(hexString) {
+        clientUser.color = hexString;
+        server.clientUpdate("customize");
+
+        redraw.triggerRedraw();
+    }
+    //Purpose: changes regarding OTHER players
+    function updatePlayer(newCopy) {
+        let ourCopy = players.get(newCopy.id);
+        if(!ourCopy) return;
+
+        //Apply
+        ourCopy.name = newCopy.name;
+        ourCopy.color = newCopy.color;
+
+        redraw.triggerRedraw();
+    }
+
 
     //private, internal function
     function findList(item) {
@@ -1577,7 +1602,7 @@ const gameState = (function() {
 //        };
 
         clientUser.id = id;
-        clientUser.color = "white";
+        clientUser.color = "#ffffff"; //white
         clientUser.name = "Player1";
         clientUser.position = 0; //purposes of myHand default, card rotation
 
@@ -1719,7 +1744,10 @@ const gameState = (function() {
         redraw,
         logBrokenItems,
         pingItemToChat,
-        findItems
+        findItems,
+        changeUserName,
+        changeUserColor,
+        updatePlayer
     };
 })();
 

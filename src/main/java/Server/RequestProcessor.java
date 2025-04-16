@@ -96,6 +96,13 @@ public class RequestProcessor {
                     //simply push to everyone
                     server.broadcast(s);
                     break;
+                case "ClientUpdate":
+                    if(updatePlayer(message.player)) {
+                        server.broadcast(s);
+                    };
+
+                    server.broadcast(s);
+                    break;
                 default:
                     System.out.printf("Header '%s' not recognized%n", message.messageHeader);
                     break;
@@ -307,6 +314,20 @@ public class RequestProcessor {
             System.out.println(e.getMessage());
             System.out.println("Could not JSONify new SimpleRequest sending back GameState");
         }
+    }
+
+    //purpose: player changes color, name, etc
+    private boolean updatePlayer(User user) {
+        User serverCopy = players.get(user.id);
+
+        if(serverCopy == null) return false;
+
+        serverCopy.name = user.name;
+        serverCopy.color = user.color;
+
+        //TODO... player coordinates
+
+        return true;
     }
 
     //TODO- send to all, new player; + if client == newplayer, disregard; else apply new player

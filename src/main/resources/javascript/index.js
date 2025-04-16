@@ -660,6 +660,7 @@ window.onload = function() {
 
     window.addEventListener("keydown", function(event){
         //TODO - future, if chatbox or input box, send null
+        if(!event.key) return;
         let key = event.key.toUpperCase();
         if(document.activeElement instanceof HTMLInputElement) key = null;
 
@@ -728,6 +729,7 @@ window.onload = function() {
 
     let testBool = false;
     window.addEventListener("keyup", function(event){
+        if(!event.key) return;
         let key = event.key.toUpperCase();
         if(document.activeElement instanceof HTMLInputElement && key != "ENTER") key = null;
         switch(key) {
@@ -788,6 +790,12 @@ window.onload = function() {
                 if(!UI || !UI.chatBox) return;
                 UI.chatBox.toggleInputFocus();
                 break;
+            //TODO- enable toggle of, at least for now, changeUserColor/changeUserName
+            //Note: ESCAPE breaks game, stops fetch requests (assets loading) stage
+            //Currently, the 'tip' only appears once assets loaded to minimize prevent accidents
+            case "ESCAPE":
+                pregameInterface.frontPage.toggleHomescreen();
+                break;
             case "CONTROL":
 //            case "CONTROL":
                 strictPanMode = false;
@@ -797,7 +805,7 @@ window.onload = function() {
                 break;
             default:
                 //unregistered key, end of processing
-                //                console.log("invalid key");
+                console.log(`invalid key ${key}`);
                 return;
         }
     }, false);

@@ -256,7 +256,7 @@ class ViewDeck extends PreviewBox {
 }
 
 class ChatBox {
-    constructor() {
+    constructor(user) {
         //create box div, class (css to manipulate which corner/edge of board to populate + player)
         //create text input, create scrolling input;
         //[ chatlog       ]
@@ -295,6 +295,8 @@ class ChatBox {
         chatInput.addEventListener("focusout", (event) => {
             container.style.pointerEvents = "none";
         });
+
+        this.user = user;
     }
 
     enterTriggerChat() {
@@ -312,7 +314,7 @@ class ChatBox {
 
         //TODO- append
 
-        let name = "You";
+        let name = `${this.user.name} (You)`;
         if(sender) {
             if(sender.name) {
                 name = sender.name;
@@ -455,8 +457,8 @@ function createTopView() {
 }
 
 //TODO- link to server, diceroll, game, etc
-export function createChat() {
-    const chatBox = new ChatBox();
+export function createChat(user) {
+    const chatBox = new ChatBox(user);
 
     document.body.append(chatBox.container);
 

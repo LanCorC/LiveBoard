@@ -228,6 +228,14 @@
             pointer-events: initial;
         }
 
+        #playerCustomizeContainer {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        #ESCAPEtag {
+            visibility: hidden;
+        }
+
     </style>
     <script type="module" src="../javascript/index.js"></script>
 </head>
@@ -240,15 +248,32 @@
         <div id="frontPage">
             <h1>Virtual Table Top: Here To Slay!</h1>
 
-            <label>Address: </label><input type="text" id="address" disabled>
-            <label>Port: </label><input type="text" id="port" disabled>
+            <label>Address: <input type="text" id="address" disabled></label>
+            <label>Port: <input type="text" id="port" disabled></label>
             <button type="button" id="connectButton" disabled>Manual Connect</button>
             <p id="connectionStatus">Please wait while we set up.</p>
 
+            <!-- player personalization -->
+            <div id="playerCustomizeContainer">
+                <i id="ESCAPEtag">[ESCAPE] to find me later.</i>
+                <div>
+                    <label>Welcome, "<input type="text" id="playerName">."
+                    </label>
+                </div>
+                <div>
+                    <label>You're feeling quite... <input type="color" id="playerColor"> today. Looks good.
+                    </label>
+                </div>
+            </div>
+
+            <br>
+
             <!-- serverJoin to change text or availability based on server connection -->
-            <button type="button" id="serverJoin" disabled>Start Game</button>
-            <button type="button" id="loadDemo" disabled>Load Demo</button>
-            <button type="button" id="loadSolo" disabled>Load Solo</button>
+            <div>
+                <button type="button" id="serverJoin" disabled>Start Game</button>
+                <button type="button" id="loadDemo" disabled>Load Demo</button>
+                <button type="button" id="loadSolo" disabled>Load Solo</button>
+            </div>
 
             <!-- misc assets - card assets - board setup -->
             <p class="textHere" id="miscLoad">
@@ -257,6 +282,7 @@
             </p>
             <p class="textHere" id="gameLoad">
             </p>
+
         </div>
     </body>
 

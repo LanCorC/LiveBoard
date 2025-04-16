@@ -159,6 +159,13 @@ class Server {
                         }
 //                        console.log("receiving chat entry..");
                         break;
+                    case "ClientUpdate":
+                        if(data.player && data.player.id == this.server.game.clientUser.id) {
+                            break; //skip processing: message came from us
+                        }
+
+                        this.server.game.updatePlayer(data.player);
+                        break;
                     default:
                         console.log(`"${header}" header not defined`);
                         console.log(data);
@@ -387,6 +394,21 @@ class Server {
         message.explicit = stringData;
         message.player = this.game.clientUser;
         if(cards) message.cards = cards;
+        message = JSON.stringify(message, this.replacer());
+
+        this.connection.send(message);
+    }
+
+    //purpose: send clientUser updates to server
+    clientUpdate(subHeader) {
+        if(this.connection == undefined || this.connection.readyState != 1) return;
+
+        //TODO- if mousemove, include coords
+
+        let message = {};
+        message.messageHeader = "ClientUpdate";
+        message.subHeader = subHeader;
+        message.player = this.game.clientUser;
         message = JSON.stringify(message, this.replacer());
 
         this.connection.send(message);
