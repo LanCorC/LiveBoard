@@ -724,7 +724,7 @@ window.onload = function() {
     const roll2d6Text = function() {
         let a = Math.ceil(Math.random() * 6);
         let b = Math.ceil(Math.random() * 6);
-        return `Rolled [${a}][${b}] for a total of ${a+b}!`;
+        return ` rolled [${a}][${b}] for a total of ${a+b}!`;
     }
 
     let testBool = false;
@@ -759,7 +759,7 @@ window.onload = function() {
             case "R":
                 let text = roll2d6Text();
                 userInterface.userInterface.chatBox.sendChat(text,"ChatUpdate");
-                userInterface.userInterface.chatBox.newEntry(text,undefined,"Game");
+                userInterface.userInterface.chatBox.newEntry(text,undefined,"You");
                 break;
             //Test code
             case "T":
@@ -792,7 +792,7 @@ window.onload = function() {
                 break;
             //TODO- enable toggle of, at least for now, changeUserColor/changeUserName
             //Note: ESCAPE breaks game, stops fetch requests (assets loading) stage
-            //Currently, the 'tip' only appears once assets loaded to minimize prevent accidents
+            //Currently, the 'tip' only appears once assets loaded to minimize overexcitement accidents
             case "ESCAPE":
                 pregameInterface.frontPage.toggleHomescreen();
                 break;

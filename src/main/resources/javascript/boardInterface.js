@@ -301,8 +301,9 @@ class ChatBox {
 
     enterTriggerChat() {
         if(this.chatInput.value != "") {
-            this.sendChat(this.chatInput.value, "ChatUpdate");
-            this.newEntry(this.chatInput.value);
+            let value = ": ".concat(this.chatInput.value);
+            this.sendChat(value, "ChatUpdate");
+            this.newEntry(value);
         }
         this.chatInput.value = "";
     }
@@ -328,14 +329,14 @@ class ChatBox {
         let entry;
         if(typeof text === "string") {
             entry = document.createElement("p");
-            entry.innerText = `${name}: ${text}`;
+            entry.innerText = `${name}${text}`;
         } else { //pre-formatted innerHTML
             entry = text;
         }
         this.chatHistory.append(entry);
 
         //if focus, scrollintoview
-        if(!this.#isFocused || name == "You") {
+        if(!this.#isFocused || name == this.user.name) {
             entry.scrollIntoView(false);
         }
     }
@@ -405,7 +406,9 @@ class ChatBox {
         let count = items.length == 1 ? 0 : 1;
 
         //format obj into text
-        body.append(`${sender} pinged item: `);
+        body.append(`${sender} pinged item`);
+        count ? body.append(`s `) : body.append(` `);
+
         items.forEach((item) => {
             let part = document.createElement("b");
             part.card = item;
