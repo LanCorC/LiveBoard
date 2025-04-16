@@ -911,6 +911,7 @@ window.onload = function() {
     let scale = 1.1;
 
     const zoom = function(val) {
+        console.log("Start of zoom");
         let factor = Math.pow(scale, val); //example: scale '2' results in => double (pow2) or half (pow-2 = x0.5)
 
         if(maxZoomOut && factor < 1) {
@@ -988,9 +989,11 @@ window.onload = function() {
         contextVis.translate(-pt.x, -pt.y);
 
         pulseRedraw();
+        console.log("End of zoom");
     };
 
     const scroll = function(event) {
+        console.log("Start of scroll");
         //if ctrl is on + scrolling, prevent canvas scroll
         if(strictPanMode) {
             return;
@@ -998,6 +1001,7 @@ window.onload = function() {
             zoom(event.deltaY < 0 ? 1 : -1);
         }
         //Positive deltaY is scrolling down, or 'zooming out', thus smaller scale
+        console.log("End of scroll");
     };
 
     touch.addEventListener("wheel", scroll, {passive: true});
