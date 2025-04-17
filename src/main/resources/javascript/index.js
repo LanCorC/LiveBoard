@@ -43,7 +43,7 @@ window.onload = function() {
     //Establishes uniqueID to storage if not already
     const user = gameState.initializeUser();
     //Connection 'requires' uniqueID to gauge new or old connection
-    server.connect();
+    server.connect("",8080);
 
     //Load all event interactions, draws,
     const contextVis = board.getContext("2d");

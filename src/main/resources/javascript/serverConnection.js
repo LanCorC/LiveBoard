@@ -48,14 +48,18 @@ class Server {
 
     connect(address, port) {
         if(!address) address = "localhost";
-        if(!port) port = "8080";
+//        if(!port) port = "8080";
 
         let socket;
         //`ws://localhost:8080`
 //        console.log(this.game.clientUser.id);
-        socket = new WebSocket(
-//            `wss://${address}:${port}/user=${localStorage.getItem("id")}`);
-            `ws://${address}:${port}/user=${localStorage.getItem("id")}`);
+        if(port) {
+            socket = new WebSocket(
+                `ws://${address}:${port}/user=${localStorage.getItem("id")}`);
+        } else {
+            socket = new WebSocket(
+                `ws://${address}/user=${localStorage.getItem("id")}`);
+        }
 
         this.connection = socket;
         this.chatBox.setServer(this);
