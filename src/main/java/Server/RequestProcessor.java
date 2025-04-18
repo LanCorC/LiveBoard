@@ -16,8 +16,8 @@ public class RequestProcessor {
     private static RequestProcessor instance = null;
     private static ServerApplication server = null;
     private static GameState gameState = null;
-    private static HashMap<Long, User> players = new HashMap<>();
-    private static ObjectMapper objMapper = new ObjectMapper();
+    private static final HashMap<Long, User> players = new HashMap<>();
+    private static final ObjectMapper objMapper = new ObjectMapper();
     private static Integer itemCount = null;
 
     //TODO: key=userID, value: last 'parentRequest' ID;
@@ -26,10 +26,10 @@ public class RequestProcessor {
     //Childrequest holding parentRequestID has no entry? discard request
     private static HashMap<Long, Long> requestTracker = new HashMap<>();
 
-    private static ReentrantLock lock = new ReentrantLock();
+    private static final ReentrantLock lock = new ReentrantLock();
 
     //purpose: quick key=id, value=object; does NOT hold players (players Map exists)
-    private static HashMap<Long, Object> quickRef = new HashMap<>();
+    private static final HashMap<Long, Object> quickRef = new HashMap<>();
 
     private RequestProcessor() {
     }
@@ -65,7 +65,7 @@ public class RequestProcessor {
         try{
             SimpleRequest message = objMapper.readValue(s, SimpleRequest.class);
 //            System.out.printf("New request! %s %s%n", message.explicit, message.timeStamp);
-            System.out.printf("Processing %s %s...%n", message.messageHeader, message.explicit);
+//            System.out.printf("Processing %s %s...%n", message.messageHeader, message.explicit);
 
             switch (message.messageHeader) {
 
@@ -102,6 +102,17 @@ public class RequestProcessor {
                     };
 
                     server.broadcast(s);
+                    break;
+                //else, with 'no'
+                case "PermissionGameAction":
+//                    System.out.println("Permission received!");
+                    lock.lock();
+                    try {
+                        checkPermissionStale(conn, message);
+                    } finally {
+                        lock.unlock();
+                    }
+
                     break;
                 default:
                     System.out.printf("Header '%s' not recognized%n", message.messageHeader);
@@ -153,7 +164,7 @@ public class RequestProcessor {
         //Apply changes
         //items
         if(!message.cards.isEmpty()) {
-            System.out.printf("Processing %s cards...", message.messageHeader);
+//            System.out.printf("Processing %s cards...", message.messageHeader);
 
             //Attempt to fix live bug
             //Sanitise - get rid of null values
@@ -173,31 +184,30 @@ public class RequestProcessor {
                         .forEach(cards::add);
             });
 
-            System.out.print("Filter done...");
+//            System.out.print("Filter done...");
 
             //Remove old values, add updated values
             cards.forEach(gameState.cards::remove);
             gameState.cards.addAll(message.cards);
 
             message.cards.forEach(card -> card.timeStamp = message.timeStamp);
-
             //Test code to log 'bugged' objects
 //                        message.cards.stream()
 //                                .filter(card -> card.id == 0)
 //                                .forEach(card ->
 //                                        System.out.printf("null card found: %s%n", message.explicit));
-            System.out.printf("Finished %s cards :)%n", message.messageHeader);
+//            System.out.printf("Finished %s cards :)%n", message.messageHeader);
         }
 
         if(!message.decks.isEmpty()) {
-            System.out.printf("Processing %s decks...", message.messageHeader);
+//            System.out.printf("Processing %s decks...", message.messageHeader);
 
 //                        System.out.println("decks != null");
 
             //Filter and store old values
             ArrayList<Deck> decks = new ArrayList<Deck>();
             message.decks.forEach((deck) -> {
-                quickRef.put((long) deck.id, deck);
+                quickRef.put((long) deck.id, deck);     //new quickRef
                 gameState.decks.stream()
                         .filter(serverCopy -> serverCopy.id == (long) deck.id)
                         .forEach(decks::add);
@@ -210,11 +220,11 @@ public class RequestProcessor {
                     .filter((deck) -> deck.images.size() >= 2)
                     .forEach(gameState.decks::add);
             message.decks.forEach((deck -> deck.timeStamp = message.timeStamp));
-            System.out.printf("Finished %s decks :)%n", message.messageHeader);
+//            System.out.printf("Finished %s decks :)%n", message.messageHeader);
         }
 
         if(!message.playMats.isEmpty()) {
-            System.out.printf("Processing %s playMats...", message.messageHeader);
+//            System.out.printf("Processing %s playMats...", message.messageHeader);
 
 //                        System.out.println("playmats != null");
 
@@ -231,12 +241,12 @@ public class RequestProcessor {
             playMats.forEach(gameState.playMats::remove);
             message.playMats.forEach((playMat -> playMat.timeStamp = message.timeStamp));
             gameState.playMats.addAll(message.playMats);
-            System.out.printf("Finished %s playMats :)%n", message.messageHeader);
+//            System.out.printf("Finished %s playMats :)%n", message.messageHeader);
 
         }
 
         if(!message.hands.isEmpty()) {
-            System.out.printf("Processing %s hands...", message.messageHeader);
+//            System.out.printf("Processing %s hands...", message.messageHeader);
 
 //                        System.out.printf("hands != null, %s%n", message.timeStamp);
 
@@ -263,7 +273,7 @@ public class RequestProcessor {
 
             //TODO temporary: also return server's initial copy
 //                        message.hands.add(hands.getFirst());
-            System.out.printf("Finished %s hands :)%n", message.messageHeader);
+//            System.out.printf("Finished %s hands :)%n", message.messageHeader);
         }
     }
 
@@ -328,6 +338,76 @@ public class RequestProcessor {
         //TODO... player coordinates
 
         return true;
+    }
+
+    private void checkPermissionStale(WebSocket conn, SimpleRequest message) {
+        message.bool = true; //default, if checks fail
+
+//        System.out.println("Checking permission for " + message.player.name);
+//        System.out.println(message.timeStamp);
+
+        //TODO: implement 'reservation'
+        ArrayList<Card> cards = new ArrayList<>();
+
+        //compare server copies to gameCopies
+        if(message.cards != null) {
+            message.cards.forEach((card) -> {
+                Card serverCopy = (Card) quickRef.get((long) card.id);
+                if(serverCopy == null || serverCopy.timeStamp != card.timeStamp) {
+                    message.bool = false;
+//                    System.out.println("Card timestamp mismatch!");
+//                    System.out.printf("ClntCopy: %s%n", card.timeStamp);
+//                    System.out.printf("SrvrCopy: %s%n", serverCopy.timeStamp);
+                } else {
+//                    System.out.printf("ClntCopy: %s%n", card.timeStamp);
+//                    System.out.printf("SrvrCopy: %s%n", serverCopy.timeStamp);
+                    cards.add(serverCopy);
+                }
+            });
+        }
+
+        ArrayList<Deck> decks = new ArrayList<>();
+
+        if(message.decks != null) {
+            message.decks.forEach((deck) -> {
+                Deck serverCopy = (Deck) quickRef.get((long) deck.id);
+                if(serverCopy == null || serverCopy.timeStamp != deck.timeStamp) {
+                    message.bool = false;
+                    System.out.println("Deck timestamp mismatch!");
+                    System.out.printf("ClntCopy: %s%n", deck.timeStamp);
+                    System.out.printf("SrvrCopy: %s%n", serverCopy.timeStamp);
+                } else {
+                    System.out.printf("Deck: %s%n", deck.timeStamp);
+                    decks.add(serverCopy);
+                }
+            });
+        }
+
+        //apply timestamps to 'reserve'
+        if(message.bool) {
+            Long timeStamp = message.timeStamp;
+            if(!cards.isEmpty()) {
+                cards.forEach((card) -> {
+                    card.timeStamp = timeStamp;
+                });
+            }
+            if(!decks.isEmpty()) {
+                decks.forEach((deck) -> {
+                    deck.timeStamp = timeStamp;
+                });
+            }
+        }
+
+//        System.out.printf("Value: %s %n", message.bool);
+
+        try {
+            String str = objMapper.writeValueAsString(message);
+            conn.send(str);
+
+        } catch(JsonProcessingException e) {
+            System.out.println("Could not JSONify 'checkPermissionStale'.");
+            System.out.println(e.getMessage());
+        }
     }
 
     //TODO- send to all, new player; + if client == newplayer, disregard; else apply new player

@@ -1710,6 +1710,31 @@ const gameState = (function() {
         return realItems;
     }
 
+    //Purpose: handle gameActions that may need 'server permission' to process
+    //detail: special game actions can afford to check in with server before processing, to prevent race condition
+    //Projected use: selectView(),
+    //NOTE: if funcArgs is more than one value, use spread annotation "...funcArgs"
+    function permission(func, ...funcArgs) {
+        let soleItem = funcArgs[0]; //assuming it's a single item for now- temp
+        //unfortunate 'duplicate' validations
+        if(!soleItem || !soleItem.id) return;
+        if(soleItem.deck) soleItem = soleItem.deck;  //is a card, retrieve its deck
+        if(!soleItem.isDeck) return; //for purposes assuming 'selectView(deck)'
+
+        //TODO future- ensure not incorporated with pending unconfirmed server request 'fallbackState'
+        if(soleItem.selected == clientUser.id || soleItem.browsing == clientUser.id) {
+            //Immediately process
+//            console.log("process immediately!! gameState");
+            func(...funcArgs);
+            return;
+        } else if(!soleItem.selected && !soleItem.browsing) {
+            //Send to serverConnection to further process
+            server.permission(func, funcArgs, [soleItem]);
+        } else {
+//            console.log("processing scrapped!");
+        }
+    }
+
     return {
         getID,
         idToRGB,
@@ -1747,7 +1772,8 @@ const gameState = (function() {
         findItems,
         changeUserName,
         changeUserColor,
-        updatePlayer
+        updatePlayer,
+        permission
     };
 })();
 

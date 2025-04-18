@@ -170,6 +170,10 @@ class Server {
 
                         this.server.game.updatePlayer(data.player);
                         break;
+                    case "PermissionGameAction":
+                        console.log(data);
+                        this.server.processPermission(data);
+                        break;
                     default:
                         console.log(`"${header}" header not defined`);
                         console.log(data);
@@ -416,6 +420,62 @@ class Server {
         message = JSON.stringify(message, this.replacer());
 
         this.connection.send(message);
+    }
+
+    #pendingPermissions = {};
+
+    //process outbound permissions
+    //serverCheckItems- the most relevant items that end up manipulated at end of func
+    //e,g, 'selectView' is the item.deck, often triggered on topCard (not deck)
+    permission(func, funcArgs, serverCheckItems) {
+        if(this.connection == undefined || this.connection.readyState != 1) {
+            func(...funcArgs);
+            return;
+        }
+
+        //TODO connection is true, so track;
+        //TODO future- if in fallbackState, do not process yet
+        //if not, send request to server
+
+        //store for tracking
+        let currentId = Date.now();
+        this.#pendingPermissions[currentId] = [func, funcArgs];
+
+        //assuming funcArgs is one item... card/deckm
+
+        let message = {};
+        message.messageHeader = "PermissionGameAction";
+        message.timeStamp = currentId;
+        //Note: weak code, assumes is 'card' or 'deck', and only holds 1 item
+        if(serverCheckItems[0].isDeck) {
+            message.decks = serverCheckItems;
+        } else {
+            message.cards = serverCheckItems;
+        }
+        message.player = this.game.clientUser;
+        message = JSON.stringify(message, this.replacer());
+
+        this.connection.send(message);
+    }
+
+    //process inbound permissions
+    //currently coded only with 'selectView' in mind
+    processPermission(data) {
+        if(!data.player
+        || !data.player.id
+        || data.player.id != this.game.clientUser.id) return; //not ours, ignore
+
+        console.log(`Seen and allowed to process: ${data.bool}`);
+
+        if(this.#pendingPermissions[data.timeStamp] && data.bool) {
+            //exists, not falsy
+            let callBack = this.#pendingPermissions[data.timeStamp];
+
+            //callBack expected to be [func, funcArgsArray]
+            callBack[0](...callBack[1]);
+
+            delete this.#pendingPermissions[data.timeStamp];
+        }
     }
 
     //cleanup function; private? for JSON

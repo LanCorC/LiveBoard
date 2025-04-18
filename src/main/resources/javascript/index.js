@@ -537,11 +537,15 @@ window.onload = function() {
     window.addEventListener("mouseup", function(event) {
         startPoint = null;
 
+        let markForPurge = false;
+
         //TODO - below is 'canvasItem' route; make the other routes (HTMLImageElement)
         //TODO-soon, enabled HTMLImageElement for purposes of deck/hand-preview
         if(!itemFocus || itemFocus instanceof HTMLImageElement) {
         //INVALID - ctrl ? nothing : purge
-            if(!strictPanMode) purgeSelected();
+//            if(!strictPanMode) purgeSelected();
+            if(!strictPanMode) markForPurge = true;
+
         } else if(dragging && strictPanMode) {
 
             if(!selected.includes(itemFocus)) {
@@ -556,10 +560,12 @@ window.onload = function() {
             //deselect if: drag not in selected[] or was dragged into a deck
             if(!selected.includes(itemFocus)) {
                 gameState.addToDeck(itemFocus, hoverElement);
-                purgeSelected();
+//                purgeSelected();
+                markForPurge = true;
                 gameState.deselect(itemFocus);
             } else if(gameState.addToDeck(selected, hoverElement)){
-                purgeSelected();
+//                purgeSelected();
+                markForPurge = true;
             }
             //else, items were all dragged and all else preserved
 
@@ -603,10 +609,12 @@ window.onload = function() {
                 }
 
                 //out of select-> lets us pan, or drag things into deck/opponentHand
-                let followupRightClick = false;
-                if(!event.ctrlKey) followupRightClick = gameState.selectView(item);
+//                let followupRightClick = false;
+//                if(!event.ctrlKey) followupRightClick = gameState.selectView(item);
+                gameState.permission(gameState.selectView, item);
                 //do not ping if selectView was valid
-                if(!followupRightClick) gameState.pingItemToChat(item);
+//                if(!followupRightClick) gameState.pingItemToChat(item);
+                gameState.pingItemToChat(item);
             } else {
                 //Prepare for non-canvas related rClicks
                 item = hoverElement;
@@ -615,6 +623,8 @@ window.onload = function() {
                 if(event.ctrlKey) gameState.pingItemToChat(item);
             }
         };
+
+        if(markForPurge) purgeSelected();
 
         rightClick = false;
         itemFocus = null;
