@@ -1456,7 +1456,7 @@ const gameState = (function() {
             changeMade = true;
         }
 
-        if(!deck) return changeMade;        //null item
+        if(!deck || !deck.deck) return changeMade;        //null item
         if(!deck.isDeck) deck = deck.deck;  //is a card, retrieve its deck
 
         //is current OR already in use by someone else
@@ -1717,9 +1717,9 @@ const gameState = (function() {
     function permission(func, ...funcArgs) {
         let soleItem = funcArgs[0]; //assuming it's a single item for now- temp
         //unfortunate 'duplicate' validations
-        if(!soleItem || !soleItem.id) return;
+        if(!soleItem || !soleItem.id) return func(...funcArgs);
         if(soleItem.deck) soleItem = soleItem.deck;  //is a card, retrieve its deck
-        if(!soleItem.isDeck) return; //for purposes assuming 'selectView(deck)'
+        if(!soleItem.isDeck) return func(...funcArgs); //for purposes assuming 'selectView(deck)'
 
         //TODO future- ensure not incorporated with pending unconfirmed server request 'fallbackState'
         if(soleItem.selected == clientUser.id || soleItem.browsing == clientUser.id) {
