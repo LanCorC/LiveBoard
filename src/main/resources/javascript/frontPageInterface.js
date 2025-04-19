@@ -13,7 +13,10 @@ let tools = {
     },
     enable: function(element) {
         element.removeAttribute("disabled");
-    }
+    },
+    assetReady: false,
+    miscReady: false,
+    readyFunc: function(){} //purpose: initialized in frontPage, on trigger, readies buttons
 }; //store 'outside functions' like context redraw
 
 //purpose: handle all frontPage - connect button, load board, [join lobby?]
@@ -159,6 +162,7 @@ const frontPage = (function() {
 
         if(assetCount.miscCards==assetCount.miscCardsExpected) {
             message = "Misc loading: Complete!";
+            tools.readyFunc("misc");
         }
         miscLoading.innerText = message;
     }
@@ -201,6 +205,26 @@ const frontPage = (function() {
         customizeContainer.style.visibility = initial ? "initial" : "hidden";
     }
 
+    //ensures both misc and assets are ready before enabling 'demo' 'solo'
+    tools.readyFunc = function(key) {
+        if(!key) return;
+        switch(key) {
+            case "misc":
+                tools.miscReady = true;
+                break;
+            case "asset":
+                tools.assetReady = true;
+                break;
+            default:
+                break;
+        }
+        if(tools.assetReady && tools.miscReady) {
+            demoButton.removeAttribute("disabled");
+            soloButton.removeAttribute("disabled");
+            document.getElementById("ESCAPEtag").style.visibility = "inherit";
+        }
+    }
+
     return { send, increment, connectionSuccess, connectionFailed, connectionStarted, gameLoadMessage,
     gameBoardReady, toggleHomescreen};
 })();
@@ -216,6 +240,7 @@ const loading = (function() {
     //tracking properties (array of updates? e.g. list of assets received)
 
 
+
     //update methods
     function send(message) {
         loadingScreen.innerHTML += message;
@@ -229,9 +254,7 @@ const loading = (function() {
 
         if(assetCount.expansionCards==assetCount.expansionCardsExpected) {
             message = "Asset loading: Complete!";
-            demoButton.removeAttribute("disabled");
-            soloButton.removeAttribute("disabled");
-            document.getElementById("ESCAPEtag").style.visibility = "inherit";
+            tools.readyFunc("asset");
         }
         loadingScreen.innerText = message;
     }

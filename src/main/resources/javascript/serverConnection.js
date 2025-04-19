@@ -46,20 +46,23 @@ class Server {
     //STEPS- see if i can do a "mousedown" gauge if item, card, was already selected ("VIP") or not (print all)
     requestFreePass = false;
 
-    connect(address, port) {
+    //Note: all calls default to insecure (ws), then reroute to secure (wss) on failure
+    connect(address, port, useSecure) {
         if(!address) address = "localhost";
-//        if(!port) port = "8080";
 
         let socket;
-        //`ws://localhost:8080`
-//        console.log(this.game.clientUser.id);
+        let root = useSecure ? "ws" : "wss"; //defaults to insecure, notice: onclose() tries secure
         if(port) {
             socket = new WebSocket(
-                `wss://${address}:${port}/user=${localStorage.getItem("id")}`);
+                `${root}://${address}:${port}/user=${localStorage.getItem("id")}`);
         } else {
             socket = new WebSocket(
-                `wss://${address}/user=${localStorage.getItem("id")}`);
+                `${root}://${address}/user=${localStorage.getItem("id")}`);
         }
+
+        socket.useSecure = useSecure;
+        socket.address = address;
+        socket.port = port;
 
         this.connection = socket;
         this.chatBox.setServer(this);
@@ -85,6 +88,7 @@ class Server {
                 //                console.log("Something went wrong!")
                 //                frontPage.send("Server not found, or closed unexpectedly!");
                 frontUI.connectionFailed();
+                if(!socket.useSecure) this.server.connect(socket.address, socket.port, true);
             }
 
             this.server.gameStatus = false;
