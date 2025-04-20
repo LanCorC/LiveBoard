@@ -769,7 +769,7 @@ window.onload = function() {
             case "R":
                 let text = roll2d6Text();
                 userInterface.userInterface.chatBox.sendChat(text,"ChatUpdate");
-                userInterface.userInterface.chatBox.newEntry(text,undefined,"You");
+                userInterface.userInterface.chatBox.newEntry(text,undefined,"");
                 break;
             //Test code
             case "T":

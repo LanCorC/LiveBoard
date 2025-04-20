@@ -52,6 +52,7 @@ class Server {
 
         let socket;
         let root = useSecure ? "ws" : "wss"; //defaults to insecure, notice: onclose() tries secure
+        //temp: ws ws, meant to be ws : wss
         if(port) {
             socket = new WebSocket(
                 `${root}://${address}:${port}/user=${localStorage.getItem("id")}`);
@@ -158,7 +159,7 @@ class Server {
                                 break;
                             case "PingItem":
                                 this.server.chatBox.pingItemToChat(
-                                    this.server.game.findItems(data.cards), data.player.name
+                                    this.server.game.findItems(data.cards), data.player
                                 );
                                 break;
                             default:

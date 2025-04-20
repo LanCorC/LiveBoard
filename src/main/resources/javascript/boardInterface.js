@@ -308,31 +308,40 @@ class ChatBox {
         this.chatInput.value = "";
     }
 
-    //TODO
+    #formatName(sender) {
+        let name = document.createElement("I");
+        let nameInner;
+        if(sender && sender.name) {
+            nameInner = sender.name;
+        } else {
+            nameInner =`${this.user.name} (You)`;
+        }
+        name.innerText = nameInner;
+
+        if(!sender || !sender.color) {
+            name.style.color = this.user.color;
+        } else {
+            name.style.color = sender.color;
+        }
+
+        return name; //italic html element
+    }
+
     //function that accepts new value (server, or thisClient and appends to history
     newEntry(text, timeStamp, sender) {
         //TODO- translate timestamp
 
-        //TODO- append
-
-        let name = `${this.user.name} (You)`;
-        if(sender) {
-            if(sender.name) {
-                name = sender.name;
-            } else {
-                name = sender; //allow for 'String'
-            }
-        }
+        let entry = document.createElement("p");
 
         if(!text) return;
 
-        let entry;
         if(typeof text === "string") {
-            entry = document.createElement("p");
-            entry.innerText = `${name}${text}`;
+            entry.append(this.#formatName(sender));
+            entry.append(`${text}`);
         } else { //pre-formatted innerHTML
             entry = text;
         }
+
         this.chatHistory.append(entry);
 
         //if focus, scrollintoview
@@ -399,14 +408,11 @@ class ChatBox {
 
         const body = document.createElement("p");
 
-        const fromServer = sender;
-        sender = sender ? sender : "You";
-
         //if single (length==1), keep 0 (falsy)
         let count = items.length == 1 ? 0 : 1;
 
-        //format obj into text
-        body.append(`${sender} pinged item`);
+        body.append(this.#formatName(sender));
+        body.append(` pinged item`);
         count ? body.append(`s `) : body.append(` `);
 
         items.forEach((item) => {
@@ -422,7 +428,7 @@ class ChatBox {
 
         this.newEntry(body, "", sender);
 
-        if(!fromServer) this.sendChat("", "PingItem", items);
+        if(!sender) this.sendChat("", "PingItem", items);
     }
 }
 
