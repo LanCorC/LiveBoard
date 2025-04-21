@@ -46,20 +46,18 @@ class Server {
     //STEPS- see if i can do a "mousedown" gauge if item, card, was already selected ("VIP") or not (print all)
     requestFreePass = false;
 
-    //Note: all calls default to insecure (ws), then reroute to secure (wss) on failure
-    connect(address, port, useSecure) {
+    connect(address, port) {
         if(!address) address = "localhost";
 
         let socket;
-        let root = useSecure ? "ws" : "wss"; //defaults to insecure, notice: onclose() tries secure
-        //temp: ws ws, meant to be ws : wss
-        if(port) {
-            socket = new WebSocket(
-                `${root}://${address}:${port}/user=${localStorage.getItem("id")}`);
-        } else {
-            socket = new WebSocket(
-                `${root}://${address}/user=${localStorage.getItem("id")}`);
-        }
+        let addressString;
+        try {
+            addressString = `://${address}${port ? ":"+port : ""}/user=${localStorage.getItem("id")}`;
+            console.log("attempting ws");
+            socket = new WebSocket(`ws${addressString}`);
+        } catch(e) { //Mixed Content found, try secure (for purpose of tunnel proxy)
+            socket = new WebSocket(`wss${addressString}`);
+        };
 
         socket.useSecure = useSecure;
         socket.address = address;
@@ -76,7 +74,6 @@ class Server {
 
         socket.onopen = function(event) {
             console.log("Server connection secured!");
-            //TODO - update frontPage buttons/headers of connection
             frontUI.connectionSuccess();
         }
 
@@ -89,7 +86,6 @@ class Server {
                 //                console.log("Something went wrong!")
                 //                frontPage.send("Server not found, or closed unexpectedly!");
                 frontUI.connectionFailed();
-                if(!socket.useSecure) this.server.connect(socket.address, socket.port, true);
             }
 
             this.server.gameStatus = false;
