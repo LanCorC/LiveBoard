@@ -59,7 +59,6 @@ class Server {
             socket = new WebSocket(`wss${addressString}`);
         };
 
-        socket.useSecure = useSecure;
         socket.address = address;
         socket.port = port;
 
