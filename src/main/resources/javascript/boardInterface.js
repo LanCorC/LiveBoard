@@ -345,9 +345,9 @@ class ChatBox {
         this.chatHistory.append(entry);
 
         //if focus, scrollintoview
-        if(!this.#isFocused || name == this.user.name) {
+//        if(!this.#isFocused || name == this.user.name) {
             entry.scrollIntoView(false);
-        }
+//        }
     }
 
     sendChat = function(data) { console.log(`sendChatDefault: ${data}`)};
