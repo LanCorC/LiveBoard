@@ -32,13 +32,11 @@ let pinBoard = false;
 
 //TODO- frontpage(+loadscreen) connects with serverConnection
 pregameInterface.initialize();
-//TODO- assets connects with frontpage/loadscreen
-//TODO- gameState connects with serverConnection
-const expansionsToLoad = ["Base Deck"];
-loadAssets(expansionsToLoad);
-
 
 window.onload = function() {
+    const expansionsToLoad = ["Base Deck"];
+    loadAssets(expansionsToLoad);
+
     //TODO - check server (if server, add to server, retrieve gameState; else create gameState)
     //Establishes uniqueID to storage if not already
     const user = gameState.initializeUser();
@@ -810,6 +808,11 @@ window.onload = function() {
 //            case "CONTROL":
                 strictPanMode = false;
                 break;
+            //Placeholder destination for this function; = cycles through backgrounds
+            //TODO- move to a menu/UI
+            case "=":
+                cycleBackground();
+                break;
             case " ":
                 tapItem();
                 break;
@@ -819,6 +822,18 @@ window.onload = function() {
                 return;
         }
     }, false);
+
+    const backgroundUrl = [
+        "url(../Images/backgrounds/rainbow-vortex.svg)",
+        "url(../Images/backgrounds/hollowed-boxes.svg)",
+        "url(../Images/backgrounds/colorful-stingrays.svg)",
+        "url(../Images/backgrounds/confetti-doodles.svg)"
+    ];
+    let backgroundIndex = 0;
+    function cycleBackground() {
+        console.log(backgroundIndex % 5);
+        board.style.background = backgroundUrl[++backgroundIndex % backgroundUrl.length];
+    }
 
     //[Usage: inserted inside redraw() codeblock]
     function correctTranslation() {
@@ -1036,8 +1051,8 @@ window.onload = function() {
     pulseRedraw();
 }
 
-//table.src = `https://picsum.photos/50/200`;
-board.style.backgroundImage = "url(../Images/backgrounds/flat-mountains.svg)"; //credits: svgbackgrounds.com
+board.style.backgroundImage = "url(../Images/backgrounds/rainbow-vortex.svg)"; //credits: svgbackgrounds.com
+
 
 function purgeSelected() {
     gameState.deselect(selected);
