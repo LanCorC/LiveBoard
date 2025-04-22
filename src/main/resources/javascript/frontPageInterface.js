@@ -60,8 +60,6 @@ const frontPage = (function() {
 
         revealGame();
 
-        //server.gameStatus
-
         tools.disable(serverJoinButton);
     });
 
@@ -73,7 +71,8 @@ const frontPage = (function() {
         gameLoadMessage("Revealing board!");
         revealGame();
 
-        tools.disable(demoButton);
+//        tools.disable(demoButton);
+//        tools.enable(soloButton);
     });
 
     //Note: not async, never had an issue with redraw() and asset onload mismatch
@@ -87,7 +86,10 @@ const frontPage = (function() {
         revealGame();
 
         //Keep: Important; if you dont click out + !disabled, spacebar retriggers
-        tools.disable(soloButton);
+        //NOTE: frontpage.visibility = hidden; seems to prevent this ancient bug
+//        tools.disable(soloButton);
+//        tools.enable(demoButton);
+//        tools.enable(soloButton);
     });
 
     function revealGame() {
@@ -198,11 +200,11 @@ const frontPage = (function() {
 
     function toggleHomescreen() {
         //NOTE: toggles homescreen visibility
-//        frontPage.style.visibility ? hideGame() : revealGame();
+        frontPage.style.visibility ? hideGame() : revealGame();
 
         //NOTE: only toggles customize container
-        let initial = customizeContainer.style.visibility != "initial";
-        customizeContainer.style.visibility = initial ? "initial" : "hidden";
+//        let initial = customizeContainer.style.visibility != "initial";
+//        customizeContainer.style.visibility = initial ? "initial" : "hidden";
     }
 
     //ensures both misc and assets are ready before enabling 'demo' 'solo'
@@ -271,7 +273,6 @@ function initialize() {
     initializeAssets(frontPage, loading, false, assetCount);
 
     //connect gameState to frontPage
-    //TODO: have gameState push updates, "Fetching gameState..." "Setting up board..."
     gameState.frontPage = {frontPage, loading};
 }
 

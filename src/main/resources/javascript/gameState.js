@@ -763,6 +763,7 @@ const gameState = (function() {
 
     //TODO- only call if server not connected OR server connected + no game existing OR loading solo OR loading demo
     function loadBoard(expansions) {
+        cleanSlate();
         console.log("Loading board...");
         //todo - from objectFactory, in conjunction with assets - hard coded set of objects - mats, dice
 
@@ -815,10 +816,26 @@ const gameState = (function() {
         server.pushGame([items, players, itemCount]);
     }
 
+    //private; coupled with 'rebuildBoard' and 'loadBoard' as means of clean slate
+    function cleanSlate() {
+        //Objects
+        Object.keys(items).forEach((key) => {
+            items[key].length = 0; //empty
+        });
+        itemCount = 0;
+        //Refs
+        selected.length = 0;
+        quickRef = {};
+        players.forEach((value, key, map) => {
+            if(key != clientUser.id) map.delete(key);
+        });
+    }
+
     //if connecting from a game in session OR fetching server's copy of gameState
     //demo-boolean, "true" => load from presets
     //TODO- implement numCount
     function rebuildBoard(gameObjects, playerObjects, numCount, demo) {
+        cleanSlate();
 
         console.log("Rebuilding board..");
 
