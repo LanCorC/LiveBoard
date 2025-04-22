@@ -264,7 +264,7 @@ class ChatBox {
         //[ chatlog cont  ]
         //[ Chatinput     ]
         const container = document.createElement("div");
-        container.classList.add("chatContainer");
+        container.classList.add("chatContainer", "transparentBg");
         const chatHistoryContainer = document.createElement("div");
         chatHistoryContainer.classList.add("chatHistoryContainer");
         const chatHistory = document.createElement("div");
@@ -371,14 +371,29 @@ class ChatBox {
         this.sendChat = methodSendChat;
     }
 
+//    #color = this.container.style.backgroundColor;
+//    #color;
+    //TODO- to transparent
+    transparent() {
+//        this.container.style.backgroundColor = "transparent";
+        this.container.classList.add("transparentBg");
+    }
+    //TODO- to opaque
+    opaque() {
+//        this.container.style.backgroundColor = this.#color;
+        this.container.classList.remove("transparentBg");
+    }
+
     #isFocused = false;
     handleEvent(event) {
         switch(event.type) {
             case "mouseenter":
                 this.#isFocused = true;
+                this.opaque();
                 break;
             case "mouseleave":
                 this.#isFocused = false;
+                this.transparent();
                 break;
             default:
                 break;
@@ -393,9 +408,11 @@ class ChatBox {
     toggleInputFocus() {
         if(document.activeElement == this.chatInput) {
             this.enterTriggerChat();
+            this.transparent();
             document.activeElement.blur();
             return;
         }
+        this.opaque();
         this.focus();
     }
 
