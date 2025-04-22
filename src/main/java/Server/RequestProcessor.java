@@ -70,7 +70,12 @@ public class RequestProcessor {
             switch (message.messageHeader) {
 
                 case "GameSetup":
-                    gameSetup(conn, message);
+                    lock.lock();
+                    try {
+                        gameSetup(conn, message);
+                    } finally {
+                        lock.unlock();
+                    }
 //                    ServerApplication.originalGameState = s;
                     break;
                 case "GameUpdate":
@@ -97,15 +102,18 @@ public class RequestProcessor {
                     server.broadcast(s);
                     break;
                 case "ClientUpdate":
-                    if(updatePlayer(message.player)) {
-                        server.broadcast(s);
-                    };
+                    lock.lock();
+                    try {
+                        if(updatePlayer(message.player)) {
+                            server.broadcast(s);
+                        }
+                    } finally {
+                        lock.unlock();
+                    }
 
-                    server.broadcast(s);
                     break;
                 //else, with 'no'
                 case "PermissionGameAction":
-//                    System.out.println("Permission received!");
                     lock.lock();
                     try {
                         checkPermissionStale(conn, message);
@@ -176,7 +184,7 @@ public class RequestProcessor {
 //                        System.out.print("Sanitize done...");
 
             //Filter and store old values
-            ArrayList<Card> cards = new ArrayList<Card>();
+            ArrayList<Card> cards = new ArrayList<>();
             message.cards.forEach((card) -> {
                 quickRef.put((long) card.id, card);
                 gameState.cards.stream()
@@ -205,7 +213,7 @@ public class RequestProcessor {
 //                        System.out.println("decks != null");
 
             //Filter and store old values
-            ArrayList<Deck> decks = new ArrayList<Deck>();
+            ArrayList<Deck> decks = new ArrayList<>();
             message.decks.forEach((deck) -> {
                 quickRef.put((long) deck.id, deck);     //new quickRef
                 gameState.decks.stream()
@@ -229,7 +237,7 @@ public class RequestProcessor {
 //                        System.out.println("playmats != null");
 
             //Filter and store old values
-            ArrayList<PlayMat> playMats = new ArrayList<PlayMat>();
+            ArrayList<PlayMat> playMats = new ArrayList<>();
             message.playMats.forEach((playMat) -> {
                 quickRef.put((long) playMat.id, playMat);
                 gameState.playMats.stream()
@@ -254,11 +262,11 @@ public class RequestProcessor {
 //                        System.out.println(players.keySet());
 
             //Filter and store old values
-            ArrayList<Hand> hands = new ArrayList<Hand>();
+            ArrayList<Hand> hands = new ArrayList<>();
             message.hands.forEach((hand) -> {
-                quickRef.put((long) hand.id, hand); //replace old value with new
+                quickRef.put(hand.id, hand); //replace old value with new
                 players.values().stream()
-                        .filter(user -> user.id == (long) hand.id)
+                        .filter(user -> user.id == hand.id)
                         .forEach(user -> {
                             hands.add(user.hand);
                             user.hand = hand; //replace old value with new
@@ -373,11 +381,11 @@ public class RequestProcessor {
                 Deck serverCopy = (Deck) quickRef.get((long) deck.id);
                 if(serverCopy == null || serverCopy.timeStamp != deck.timeStamp) {
                     message.bool = false;
-                    System.out.println("Deck timestamp mismatch!");
-                    System.out.printf("ClntCopy: %s%n", deck.timeStamp);
-                    System.out.printf("SrvrCopy: %s%n", serverCopy.timeStamp);
+//                    System.out.println("Deck timestamp mismatch!");
+//                    System.out.printf("ClntCopy: %s%n", deck.timeStamp);
+//                    System.out.printf("SrvrCopy: %s%n", serverCopy.timeStamp);
                 } else {
-                    System.out.printf("Deck: %s%n", deck.timeStamp);
+//                    System.out.printf("Deck: %s%n", deck.timeStamp);
                     decks.add(serverCopy);
                 }
             });
