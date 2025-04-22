@@ -941,6 +941,7 @@ window.onload = function() {
         let factor = Math.pow(scale, val); //example: scale '2' results in => double (pow2) or half (pow-2 = x0.5)
 
         if(maxZoomOut && factor < 1) {
+            console.log("end of zoom- exceeeds maxZoomout");
             return;
         } else {
             maxZoomOut = false;
@@ -969,6 +970,7 @@ window.onload = function() {
         if(factor > 1 && currentMultiplier > 2
         //max - arbitrary, generous allowance
         || factor < 1 && currentMultiplier < 0.05) {
+            console.log("end of zoom- too zoomed in");
             return;
         }
 
@@ -1022,6 +1024,7 @@ window.onload = function() {
         console.log("Start of scroll");
         //if ctrl is on + scrolling, prevent canvas scroll
         if(strictPanMode) {
+            console.log("strictPanMode end");
             return;
         } else {
             zoom(event.deltaY < 0 ? 1 : -1);
