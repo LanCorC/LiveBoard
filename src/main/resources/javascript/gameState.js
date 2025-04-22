@@ -27,10 +27,24 @@ const gameState = (function() {
     //Note re: rebuilding, this contains HAND OBJ with .ref
     //on rebuild, check THIS and players (Map obj) for hand with matching id,
     //then transfer cards
+    let defaultNames = ["Bear","Squirrel","Unicorn","Fox","Cat","Bunny","Wolf","Deer","Dog","Dragon","BigCat"];
+    let defaultColors = [
+        "#eba820", //paladin
+        "#0b4b87", //assassin
+        "#96262c", //fighter
+        "#742f8d", //mage
+        "#1f5d38", //ranger
+        "#c2512e", //bard
+        "#d41b69", //necromancer
+        "#e18333", //berserker
+        "#5d6cb3", //warrior
+        "#14aa90", //druid
+        "#0f1921" //sorcerer
+    ];
     let clientUser = {
         id: "0",
-        color: "#ffffff", //white
-        name: "Player1"
+        color: defaultColors[Math.floor(Math.random() * defaultColors.length)],
+        name: defaultNames[Math.floor(Math.random() * defaultNames.length)]
     };
 
     let itemCount = 0;
@@ -1610,25 +1624,12 @@ const gameState = (function() {
             localStorage.setItem("id", id);
         };
 
-        //create user, then add to player list
-//        const user = {
-//            id: id,
-//            color: "white",
-//            name: "Player1",
-//            position: 0
-//        };
-
         clientUser.id = id;
-        clientUser.color = "#ffffff"; //white
-        clientUser.name = "Player1";
         clientUser.position = 0; //purposes of myHand default, card rotation
 
         addPlayer(clientUser);
 
-        //TODO- see if we can PRESERVE the MyHand object,
         initializeBoardInterface(clientUser);
-
-//        console.log(clientUser);
 
         //return user
         return clientUser;

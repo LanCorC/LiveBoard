@@ -829,7 +829,8 @@ window.onload = function() {
         "url(../Images/backgrounds/colorful-stingrays.svg)",
         "url(../Images/backgrounds/confetti-doodles.svg)"
     ];
-    let backgroundIndex = 0;
+    let backgroundIndex = Math.floor(Math.random() * backgroundUrl.length);
+    board.style.background = backgroundUrl[backgroundIndex];
     function cycleBackground() {
         console.log(backgroundIndex % 5);
         board.style.background = backgroundUrl[++backgroundIndex % backgroundUrl.length];
@@ -1050,9 +1051,6 @@ window.onload = function() {
     //For some reason, this needs to be called twice in order to properly capture, as far as tested, "mousedown"
     pulseRedraw();
 }
-
-board.style.backgroundImage = "url(../Images/backgrounds/rainbow-vortex.svg)"; //credits: svgbackgrounds.com
-
 
 function purgeSelected() {
     gameState.deselect(selected);

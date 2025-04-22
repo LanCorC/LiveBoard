@@ -186,8 +186,12 @@ const frontPage = (function() {
     const player = gameState.clientUser;
 
     //initialize default values
-    userNameInput.placeholder = player.name;
-    userColorInput.value = player.color; //#ff0022 hexadec format
+    function namePlaceholder() {
+        userNameInput.placeholder = player.name;
+        userNameInput.value = player.name;
+        userColorInput.value = player.color; //#ff0022 hexadec format
+    }
+    namePlaceholder();
 
     //Details: use a gameState function to manipulate user info;
     //and in that gameState function, it'll update server for us
@@ -228,7 +232,7 @@ const frontPage = (function() {
     }
 
     return { send, increment, connectionSuccess, connectionFailed, connectionStarted, gameLoadMessage,
-    gameBoardReady, toggleHomescreen};
+    gameBoardReady, toggleHomescreen, namePlaceholder};
 })();
 
 //purpose: handle all loading page,elements: connection to assets on loadscr
