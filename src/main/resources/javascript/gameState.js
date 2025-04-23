@@ -1249,6 +1249,10 @@ const gameState = (function() {
                         realItem.images = newImages;
 
                         //TODO- if own hand, or own view, update
+                        //TODO- to be tested on voluntary 'giveRandom()'- another clientUser sends card to this client
+                        if(item.id == clientUser.id) {
+                            clientUser.hand.ref.update();
+                        }
                     }
                     break;
                 case 'drag': //only focus coord; also forward!
