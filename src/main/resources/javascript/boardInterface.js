@@ -300,10 +300,68 @@ class ChatBox {
     }
 
     enterTriggerChat() {
-        if(this.chatInput.value != "") {
-            let value = ": ".concat(this.chatInput.value);
-            this.sendChat(value, "ChatUpdate");
-            this.newEntry(value);
+        let value = this.chatInput.value;
+        if(!value) return;
+        value = value.trim();
+        let construct = value.split(" ");
+        if(construct[0].at(0) == "/") {
+            this.#processCommand(construct);
+            return;
+        }
+
+        value = ": ".concat(value);
+        this.sendChat(value, "ChatUpdate");
+        this.newEntry(value);
+        this.chatInput.value = "";
+    }
+
+    //TODO- have each case call a method that RETURNS STRING/FORMAT in preparation for entry
+    //example: VIP- giveRandom() -> processes (sends to server...), returns cardObj or 'false',
+    //example cont.d: processCommand prints "Player (You) gave [card] to [player] at random!"
+            //false: "You can't {command}, your hand is empty!"
+    //*recipient: "You received [card] from Player at random!"
+    //*everyone else: "[Sender] gave [Recipient] a card at random!"
+    #processCommand(construct) {
+        let command = construct[0].substring(1);    // "/help" -> "help"
+        let args = construct.splice(1);             //"/msg player1 hi!" -> ["player1", "hi!"]
+        let entry = document.createElement("p");
+        switch(command.toUpperCase()) {
+            case "":
+            case "H":
+            case "HELP":
+                entry.innerText =
+                "Commands: h help, tr takeRandom, gr giveRandom, rh requestHand, sh showHand, c count...";
+                this.newEntry(entry);
+                break;
+            case "TR":          //TODO- permission, asks target player [Accept][Deny]
+            case "TAKERANDOM":
+                entry.innerText = `takeRandom: WIP...`;
+                this.newEntry(entry);
+                break;
+            case "GR":          //TODO- vip, processes immediately
+            case "GIVERANDOM":
+                entry.innerText = `giveRandom: WIP...`;
+                this.newEntry(entry);
+                break;
+            case "RH":          //TODO- permission, asks target player [Accept][Deny]
+            case "REQUESTHAND":
+                entry.innerText = `requestHand: WIP...`;
+                this.newEntry(entry);
+                break;
+            case "SH":          //TODO- vip, processes immediately
+            case "SHOWHAND":
+                entry.innerText = `showHand: WIP...`;
+                this.newEntry(entry);
+                break;
+            case "C":           //TODO placeholder OR in addition to a graphical interface
+            case "COUNT":       //Prints all players' handcount to chat
+                entry.innerText = `showHand: WIP...`;
+                this.newEntry(entry);
+                break;
+            default:
+                entry.innerText = `Command '${command}' not recognized`;
+                this.newEntry(entry);
+                break;
         }
         this.chatInput.value = "";
     }
