@@ -183,6 +183,7 @@ const frontPage = (function() {
     const customizeContainer = document.getElementById("playerCustomizeContainer");
     const userNameInput = document.getElementById("playerName");
     const userColorInput = document.getElementById("playerColor");
+    const randomizer = document.getElementById("randomUser");
     const player = gameState.clientUser;
 
     //initialize default values
@@ -192,6 +193,11 @@ const frontPage = (function() {
         userColorInput.value = player.color; //#ff0022 hexadec format
     }
     namePlaceholder();
+
+    randomizer.addEventListener("click", ()=> {
+        gameState.rerollUser();
+        namePlaceholder(); //tested- triggers onchange and pushes to server
+    });
 
     //Details: use a gameState function to manipulate user info;
     //and in that gameState function, it'll update server for us

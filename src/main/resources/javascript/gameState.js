@@ -27,6 +27,12 @@ const gameState = (function() {
     //Note re: rebuilding, this contains HAND OBJ with .ref
     //on rebuild, check THIS and players (Map obj) for hand with matching id,
     //then transfer cards
+    let clientUser = {
+        id: "0",
+        color: "#FFFFFF",
+        name: "Default"
+    };
+
     let defaultNames = ["Bear","Squirrel","Unicorn","Fox","Cat","Bunny","Wolf","Deer","Dog","Dragon","BigCat"];
     let defaultColors = [
         "#eba820", //paladin
@@ -41,11 +47,11 @@ const gameState = (function() {
         "#14aa90", //druid
         "#0f1921" //sorcerer
     ];
-    let clientUser = {
-        id: "0",
-        color: defaultColors[Math.floor(Math.random() * defaultColors.length)],
-        name: defaultNames[Math.floor(Math.random() * defaultNames.length)]
-    };
+    function rerollUser() {
+        clientUser.name = defaultNames[Math.floor(Math.random() * defaultNames.length)];
+        clientUser.color = defaultColors[Math.floor(Math.random() * defaultColors.length)];
+    }
+    rerollUser();
 
     let itemCount = 0;
 
@@ -1791,7 +1797,8 @@ const gameState = (function() {
         changeUserName,
         changeUserColor,
         updatePlayer,
-        permission
+        permission,
+        rerollUser
     };
 })();
 
