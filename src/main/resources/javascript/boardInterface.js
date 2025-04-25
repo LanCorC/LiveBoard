@@ -1,4 +1,5 @@
 import {Hand} from "./itemClasses.js";
+import gameState from "./gameState.js";
 
 const verbose = false;
 
@@ -340,8 +341,8 @@ class ChatBox {
                 break;
             case "GR":          //TODO- vip, processes immediately
             case "GIVERANDOM":
-                entry.innerText = `giveRandom: WIP...`;
                 this.newEntry(entry);
+                this.#giveRandom(gameState.giveRandom(args[0]));
                 break;
             case "RH":          //TODO- permission, asks target player [Accept][Deny]
             case "REQUESTHAND":
@@ -366,23 +367,71 @@ class ChatBox {
         this.chatInput.value = "";
     }
 
+    #giveRandom(result) {
+        //if string, print to chat (alone)
+        if(typeof result == "string") {
+            this.newEntry(result);
+            return;
+        }
+
+        this.giveRandomToChat("",result[1], result[0]);
+        //then send to server to broadcast
+    }
+
+    //giveRandom to chat - as sender, recipient, 3rd party
+    giveRandomToChat(sender, recipient, item) {
+        if(Array.isArray(item)) {
+            item = item[0];
+        }
+
+        //sender, recipient, item
+        let p = document.createElement("p");
+        p.append(this.#formatName(sender));
+        p.append(` gave `);
+        p.append(this.#formatName(recipient));
+        p.append(" ");
+
+        if(!sender || sender.id == this.user.id || recipient.id == this.user.id) {
+            p.append(this.#formatCard(item));
+        } else {
+            //is neither party, privileged information
+            p.append("a card");
+        }
+
+        p.append(` at random!`);
+        this.newEntry(p);
+
+        if(sender) return; //falsy only when this was own client
+        this.sendChat("", "GiveRandom", item, recipient)
+    }
+
     #formatName(sender) {
         let name = document.createElement("I");
         let nameInner;
-        if(sender && sender.name) {
+        if(sender && sender.name != this.user.name) {
             nameInner = sender.name;
         } else {
+            sender = this.user;
             nameInner =`${this.user.name} (You)`;
         }
         name.innerText = nameInner;
 
-        if(!sender || !sender.color) {
-            name.style.color = this.user.color;
-        } else {
-            name.style.color = sender.color;
-        }
+        name.style.color = sender.color;
 
         return name; //italic html element
+    }
+
+    //use real item, else default "[Card]"
+    #formatCard(card) {
+        let b = document.createElement("b");
+        if(!card) {
+            b.innerText = "[nullCard]";
+            return b;
+        }
+        b.innerText = "[Card]";
+        b.card = card;
+
+        return b;
     }
 
     //function that accepts new value (server, or thisClient and appends to history
@@ -491,14 +540,14 @@ class ChatBox {
         count ? body.append(`s `) : body.append(` `);
 
         items.forEach((item) => {
-            let part = document.createElement("b");
-            part.card = item;
-            if(count) {
-                part.innerText = `[Card${count++}]`;
-            } else {
-                part.innerText = "[Card]";
-            }
-            body.append(part);
+//            let part = document.createElement("b");
+//            part.card = item;
+//            if(count) {
+//                part.innerText = `[Card${count++}]`;
+//            } else {
+//                part.innerText = "[Card]";
+//            }
+            body.append(this.#formatCard(item));
         });
 
         this.newEntry(body, "", sender);

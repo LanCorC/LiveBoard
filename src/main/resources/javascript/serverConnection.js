@@ -93,7 +93,6 @@ class Server {
         //Note: needed to be passed to websocket obj so it can access vars
         socket.server = this;
 
-        //TODO: differentiate between messages: chat, fullGameState refresh, gameUpdate
         socket.onmessage = function(event) {
 
             try {
@@ -143,19 +142,27 @@ class Server {
 
                         break;
                     case "ChatUpdate":
-                        if(data.player && data.player.id == this.server.game.clientUser.id) {
+//                        if(data.player && data.player.id == this.server.game.clientUser.id) {
+//                            break; //skip processing: message came from us
+//                        }
+                        if(data.senderId && data.senderId == this.server.game.clientUser.id) {
                             break; //skip processing: message came from us
                         }
+                        let sender = this.server.game.getPlayer(data.senderId);
                         //TODO- differentate between normal chat entry, ping item, ping hand
 
                         switch(data.subHeader) {
                             case "ChatUpdate":
-                                this.server.chatBox.newEntry(data.explicit, data.timeStamp, data.player);
+                                this.server.chatBox.newEntry(data.explicit, data.timeStamp, sender);
                                 break;
                             case "PingItem":
                                 this.server.chatBox.pingItemToChat(
-                                    this.server.game.findItems(data.cards), data.player
+                                    this.server.game.findItems(data.cards), sender
                                 );
+                                break;
+                            case "GiveRandom":
+                                this.server.chatBox.giveRandomToChat(sender, data.player,
+                                    this.server.game.findItems(data.cards));
                                 break;
                             default:
                                 console.log(`ChatUpdate type "${data.subHeader}" not recognized`);
@@ -389,9 +396,8 @@ class Server {
         this.connection.send(message);
     }
 
-    //TODO- client to server
     //note: "items" is strictly cards- no playmats, decks, tokens
-    sendChat(stringData, stringAction, cards) {
+    sendChat(stringData, stringAction, cards, recipient) {
         if(this.connection == undefined || this.connection.readyState != 1) return;
         if(cards && !Array.isArray(cards)) cards = [cards];
 
@@ -399,8 +405,9 @@ class Server {
         let message = {};
         message.messageHeader = "ChatUpdate";
         message.subHeader = stringAction;
+        message.senderId = this.game.clientUser.id;     //sender
         message.explicit = stringData;
-        message.player = this.game.clientUser;
+        if(recipient) message.player = recipient;          //recipient
         if(cards) message.cards = cards;
         message = JSON.stringify(message, this.replacer());
 

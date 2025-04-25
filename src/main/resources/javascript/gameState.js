@@ -106,6 +106,17 @@ const gameState = (function() {
         return players;
     }
 
+    function getPlayer(id) {
+        let match = null;
+        players.forEach((value, key, map) => {
+            if(value.id == id) {
+                match = value;
+                return;
+            }
+        });
+        return match;
+    }
+
     //Purpose: strictly for clientUser
     function changeUserName(stringName) {
         clientUser.name = stringName;
@@ -1763,6 +1774,51 @@ const gameState = (function() {
         }
     }
 
+    //purpose: return string that confirms state of transfer- invalid, no user found, invalid user,
+    function giveRandom(usernameString) {
+        if(!usernameString) {
+            return "/gr <target-user>";
+        }
+
+        //validate client hand is not empty
+        if(clientUser.hand.images.length == 0) {
+            return `You have no cards to give away!`;
+        }
+
+        //validate user !!assuming only one user matches
+        let user;
+        let selfFound = false;
+        players.forEach((value, key, map) => {
+            if(value.name.toUpperCase() == usernameString.toUpperCase()) {
+                if(value == clientUser) {
+                    selfFound = true;
+                } else {
+                    user = value;
+                }
+            }
+        });
+
+        //If self.name and target.name is the same, prioritizes target.name
+        if(!user) {
+            if(selfFound) return `Target user cannot be yourself.`;
+            return `User "${usernameString}" not found.`;
+        }
+
+        //call function -- assume it always goes through
+        let cards = clientUser.hand.images;
+        let randomCard = cards[Math.floor(Math.random() * cards.length)];
+
+        if(!randomCard) return "randomly chosen card is falsy!";
+
+        takeFromDeck(randomCard);
+        addToDeck(randomCard, user.hand);
+        //return users + card
+        return [randomCard, user]; //"Success" state
+    }
+    //if successful, return card object; else return string
+    //processing will take this response and format appropriately + send to server to ping all relevant
+    //likely return: boolean success, corresponding recipient id, card at random, chat partial string message
+
     return {
         getID,
         idToRGB,
@@ -1802,7 +1858,9 @@ const gameState = (function() {
         changeUserColor,
         updatePlayer,
         permission,
-        rerollUser
+        rerollUser,
+        giveRandom,
+        getPlayer
     };
 })();
 
