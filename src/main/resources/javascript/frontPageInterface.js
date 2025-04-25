@@ -237,6 +237,20 @@ const frontPage = (function() {
         }
     }
 
+    const helpDialog = document.getElementById("instructionsDialog");
+    const openHelp = document.getElementById("openHelp");
+    const closeHelp = document.getElementById("closeHelp");
+
+    openHelp.addEventListener("click", ()=>{
+        helpDialog.showModal();
+    });
+    closeHelp.addEventListener("click", ()=>{
+        helpDialog.close();
+    });
+    helpDialog.addEventListener("click", (event) => {
+        if(event.target == helpDialog) helpDialog.close();
+    });
+
     return { send, increment, connectionSuccess, connectionFailed, connectionStarted, gameLoadMessage,
     gameBoardReady, toggleHomescreen, namePlaceholder};
 })();

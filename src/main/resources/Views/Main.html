@@ -261,6 +261,21 @@
             border: 1px solid #dddddd;
         }
 
+        ::backdrop {
+            background-color: #1F1F1F;
+            opacity: 0.5;
+        }
+
+        dialog:open {
+            background-color: #1F1F1F;
+            color: white;
+            padding: 0;
+            border: 0;
+        }
+
+        #instructions {
+            visibility: collapse;
+        }
     </style>
     <script type="module" src="../javascript/index.js"></script>
 </head>
@@ -393,9 +408,7 @@
                         <td>/sh /showhand &lt;name&gt;</td>
                         <td>W.I.P.</td>
                     </tr>
-
                 </table>
-
             </div>
 
             <!-- misc assets - card assets - board setup -->
@@ -405,8 +418,102 @@
             </p>
             <p class="textHere" id="gameLoad">
             </p>
+            <button id="openHelp">How to Play</button>
+            <dialog id="instructionsDialog">
+                <table>
+                    <tr>
+                        <th colspan="2">Controls: Navigating the table</th>
+                    </tr>
+                    <tr>
+                        <td>LClick</td>
+                        <td>Select, Flip Card, Cycle Image Forward</td>
+                    </tr>
+                    <tr>
+                        <td>LClick + Drag</td>
+                        <td>Move Item, Pan Board</td>
+                    </tr>
+                    <tr>
+                        <td>CTRL (Hold) + LClick</td>
+                        <td>Multiselect, Deselect</td>
+                    </tr>
+                    <tr>
+                        <td>CTRL (Hold) + LClick + Drag</td>
+                        <td>Strict Pan Mode</td>
+                    </tr>
+                    <tr>
+                        <td>RClick</td>
+                        <td>Ping Item, View Deck, Cycle Image Backward</td>
+                    </tr>
+                    <tr>
+                        <td>CTRL (Hold) + RClick</td>
+                        <td>Strict Ping Item</td>
+                    </tr>
+                    <tr>
+                        <td>KeyA / KeyD</td>
+                        <td>Switch Seats</td>
+                    </tr>
+                    <tr>
+                        <td>KeyR</td>
+                        <td>Roll 2D6</td>
+                    </tr>
+                    <tr>
+                        <td>Spacebar</td>
+                        <td>Tap Item</td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">Hotkeys</th>
+                    </tr>
+                    <tr>
+                        <td>ENTER</td>
+                        <td>Enter Chat, Send Chat</td>
+                    </tr>
+                    <tr>
+                        <td>ESCAPE</td>
+                        <td>Toggle Main Menu</td>
+                    </tr>
+                    <tr>
+                        <td>=</td>
+                        <td>Cycle Background</td>
+                    </tr>
+                    <tr>
+                        <td>KeyP</td>
+                        <td>Toggle Board Pan</td>
+                    </tr>
+                    <tr>
+                        <td>KeyI</td>
+                        <td>Toggle Card Tooltip</td>
+                    </tr>
+                    <tr>
+                        <td>KeyZ / KeyX</td>
+                        <td>Adjust Card Tooltip Size</td>
+                    </tr>
+                    <tr>
+                        <td>KeyL</td>
+                        <td>Toggle Pin Playmat</td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">Chat Commands: WIP</th>
+                    </tr>
+                    <tr>
+                        <td>/h /help</td>
+                        <td>Show available commands.</td>
+                    </tr>
+                    <tr>
+                        <td>/gr /giverandom &lt;name&gt;</td>
+                        <td>Give card to targetuser at random</td>
+                    </tr>
+                    <tr>
+                        <td>/sh /showhand &lt;name&gt;</td>
+                        <td>W.I.P.</td>
+                    </tr>
 
+                </table>
+                <button id="closeHelp">Close</button>
+            </dialog>
         </div>
+        <!-- hard-coded: "how to use" + hotkeys -->
+
+
     </body>
 
 </html>

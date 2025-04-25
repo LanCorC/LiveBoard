@@ -33,7 +33,7 @@ const gameState = (function() {
         name: "Default"
     };
 
-    let defaultNames = ["Bear","Squirrel","Unicorn","Fox","Cat","Bunny","Wolf","Deer","Dog","Dragon","BigCat"];
+    let defaultNames = ["Bear","Squirrel","Unicorn","Fox","Cat","Bunny","Wolf","Deer","Dog","Dragon","BigCat","Chicken"];
     let defaultColors = [
         "#eba820", //paladin
         "#0b4b87", //assassin
