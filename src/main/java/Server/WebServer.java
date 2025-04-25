@@ -68,10 +68,7 @@ public class WebServer implements Runnable {
             System.out.println(e.getMessage());
         }
 
-
-
-        try {
-            ServerSocket serverSocket = new ServerSocket(WebServer.PORT);
+        try (ServerSocket serverSocket = new ServerSocket(WebServer.PORT);){
             System.out.println("Server started.");
             System.out.printf("The web server is hosting on: %s:%s%n", InetAddress.getLocalHost().getHostAddress(), WebServer.PORT);
             System.out.println("Listening for connections on port: " + PORT + "...\n");
