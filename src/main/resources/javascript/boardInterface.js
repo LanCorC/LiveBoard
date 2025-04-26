@@ -332,6 +332,8 @@ class ChatBox {
             case "HELP":
                 entry.innerText =
                 "Commands: h help, tr takeRandom, gr giveRandom, rh requestHand, sh showHand, c count...";
+                let target = document.getElementById("instructionsDialog");
+                if(target) target.showModal();
                 this.newEntry(entry);
                 break;
             case "TR":          //TODO- permission, asks target player [Accept][Deny]
