@@ -251,6 +251,27 @@ const frontPage = (function() {
         if(event.target == helpDialog) helpDialog.close();
     });
 
+    const creditsDialog = document.getElementById("creditsDialog");
+    const openCredits = document.getElementById("openCredits");
+    //    const closeHelp = document.getElementById("closeHelp");
+
+    openCredits.addEventListener("click", ()=>{
+        creditsDialog.showModal();
+    });
+    creditsDialog.addEventListener("click", (event) => {
+        if(event.target == creditsDialog) creditsDialog.close();
+    });
+
+    const rulesDialog = document.getElementById("rulesDialog");
+    const openRules = document.getElementById("openRules");
+
+    openRules.addEventListener("click", ()=>{
+        rulesDialog.showModal();
+    });
+    rulesDialog.addEventListener("click", (event) => {
+        if(event.target == rulesDialog) rulesDialog.close();
+    });
+
     return { send, increment, connectionSuccess, connectionFailed, connectionStarted, gameLoadMessage,
     gameBoardReady, toggleHomescreen, namePlaceholder};
 })();

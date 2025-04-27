@@ -276,6 +276,19 @@
         #instructions {
             visibility: collapse;
         }
+
+/*        #credits {*/
+/*            position: absolute;*/
+/*            bottom: 0;*/
+/*            margin-left: auto;*/
+/*            margin-right: auto;*/
+/*            left: 50%;*/
+/*            transform: translateX(-50%);*/
+/*            align-content: center;*/
+/*        }*/
+        a {
+            color: #fff;
+        }
     </style>
     <script type="module" src="../javascript/index.js"></script>
 </head>
@@ -418,7 +431,12 @@
             </p>
             <p class="textHere" id="gameLoad">
             </p>
-            <button id="openHelp">How to Play</button>
+            <div>
+                <button id="openHelp">How to Play</button>
+                <button id="openRules">Rules</button>
+                <button id="openCredits">Credits</button>
+            </div>
+
             <dialog id="instructionsDialog">
                 <h3>Controls: Navigating the table</h3>
                 <table>
@@ -560,8 +578,26 @@
                 </table>
                 <button id="closeHelp">Close</button>
             </dialog>
+
+            <dialog id="rulesDialog">
+                <h3>Rules (external links)</h3>
+                <h4>Base Game</h4>
+                <a href="https://unstablegameswiki.com/images/7/73/Here-to-Slay-Rules.pdf">Here to Slay Rules</a>
+                <h4>With Expansions</h4>
+                <a href="https://unstablegameswiki.com/images/f/fb/Warrior-Druid-Expansion-Rules.pdf">Warrior Druid Expansion Rules</a>
+                <a href="https://unstablegameswiki.com/index.php?title=HtS_Berserkers_%26_Necromancers_Rules">Berserkers Necromancers Rules</a>
+            </dialog>
+
+            <dialog id="creditsDialog">
+                <h3>Special thanks to...</h3>
+                <h4>Card and playmat assets</h4>
+                <p>Ramy Badie/<a href="https://teeturtle.com/">TeeTurtle</a></p>
+                <p>Source: <a href="https://unstablegameswiki.com/index.php?title=Here_To_Slay">UnstableGamesWiki.com</a></p>
+                <h4>Background assets</h4>
+                <p>Matt Visiwig/<a href="https://www.svgbackgrounds.com/">SVGBackgrounds</a></p>
+                <p>Source: <a href="https://www.svgbackgrounds.com/set/free-svg-backgrounds-and-patterns/">Free SVG Backgrounds and Patterns by SVGBackgrounds.com</a></p>
+            </dialog>
         </div>
-        <!-- hard-coded: "how to use" + hotkeys -->
 
 
     </body>
