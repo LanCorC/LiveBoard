@@ -739,7 +739,7 @@ window.onload = function() {
     window.addEventListener("keyup", function(event){
         if(!event.key) return;
         let key = event.key.toUpperCase();
-        if(document.activeElement instanceof HTMLInputElement && key != "ENTER") key = null;
+        if(key != "ESCAPE" && document.activeElement instanceof HTMLInputElement && key != "ENTER") key = null;
         switch(key) {
             case "A":
                 handleBoardRotate(false);
@@ -818,7 +818,7 @@ window.onload = function() {
                 break;
             default:
                 //unregistered key, end of processing
-                console.log(`invalid key ${key}`);
+                console.log(`unregistered ${key} from original input ${event.key}`);
                 return;
         }
     }, false);
