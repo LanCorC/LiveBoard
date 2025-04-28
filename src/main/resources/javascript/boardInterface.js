@@ -358,7 +358,7 @@ class ChatBox {
                 break;
             case "C":           //TODO placeholder OR in addition to a graphical interface
             case "COUNT":       //Prints all players' handcount to chat
-                entry.innerText = `showHand: WIP...`;
+                this.#countHands();
                 this.newEntry(entry);
                 break;
             default:
@@ -387,6 +387,21 @@ class ChatBox {
         }
 
         this.showHandToChat("", result.recipient, result.items);
+    }
+
+    #countHands() {
+        let p = document.createElement("p");
+        p.append("You look over and count everyone's hands: ")
+
+        let players = gameState.getPlayers();
+        players.forEach((player) => {
+            p.append("[");
+            p.append(this.#formatName(player));
+            p.append(`:${player.hand.images.length}`);
+            p.append("]");
+        })
+
+        this.newEntry(p);
     }
 
     //giveRandom to chat - as sender, recipient, 3rd party

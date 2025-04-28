@@ -1888,6 +1888,7 @@ const gameState = (function() {
         rerollUser,
         giveRandom,
         getPlayer,
+        getPlayers,
         showHand
     };
 })();
