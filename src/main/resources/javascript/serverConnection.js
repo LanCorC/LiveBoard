@@ -164,6 +164,10 @@ class Server {
                                 this.server.chatBox.giveRandomToChat(sender, data.player,
                                     this.server.game.findItems(data.cards));
                                 break;
+                            case "ShowHand":
+                                this.server.chatBox.showHandToChat(sender, data.player,
+                                    this.server.game.findItems(data.cards));
+                                break;
                             default:
                                 console.log(`ChatUpdate type "${data.subHeader}" not recognized`);
                                 break;

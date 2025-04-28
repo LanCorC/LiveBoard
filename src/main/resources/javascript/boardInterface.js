@@ -353,7 +353,7 @@ class ChatBox {
                 break;
             case "SH":          //TODO- vip, processes immediately
             case "SHOWHAND":
-                entry.innerText = `showHand: WIP...`;
+                this.#showHand(gameState.showHand(args[0]));
                 this.newEntry(entry);
                 break;
             case "C":           //TODO placeholder OR in addition to a graphical interface
@@ -376,8 +376,17 @@ class ChatBox {
             return;
         }
 
-        this.giveRandomToChat("",result[1], result[0]);
+        this.giveRandomToChat("", result[1], result[0]);
         //then send to server to broadcast
+    }
+
+    #showHand(result) {
+        if(typeof result == "string") {
+            this.newEntry(result);
+            return;
+        }
+
+        this.showHandToChat("", result.recipient, result.items);
     }
 
     //giveRandom to chat - as sender, recipient, 3rd party
@@ -385,6 +394,9 @@ class ChatBox {
         if(Array.isArray(item)) {
             item = item[0];
         }
+
+        //ensure VIP - purpose: only the client modifies own hand, prevent raceCondition
+        if(recipient.id == this.user.id) gameState.addToDeck(item, this.user.hand);
 
         //sender, recipient, item
         let p = document.createElement("p");
@@ -407,10 +419,44 @@ class ChatBox {
         this.sendChat("", "GiveRandom", item, recipient)
     }
 
+    //strictly array items
+    showHandToChat(sender, recipient, items) {
+
+        //sender, recipient, item
+        //X is showing Y their hand
+        let p = document.createElement("p");
+        p.append(this.#formatName(sender));
+        p.append(` is showing `);
+        p.append(this.#formatName(recipient));
+        p.append(" their hand");
+
+        //X is showing Y their hand, but it's empty!
+        if(!items || items.length == 0) {
+            p.append(", but it's empty!");
+        } else {
+            if(!sender || sender.id == this.user.id || recipient.id == this.user.id) {
+                //X is showing Y their hand: [] [] []
+                p.append(": ");
+                items.forEach((item) => {
+                    p.append(this.#formatCard(item));
+                });
+            } else {
+                //is neither party, privileged information
+                //X is showing Y their hand!
+                p.append("!");
+            }
+        }
+
+        this.newEntry(p);
+
+        if(sender) return; //falsy only when this was own client
+        this.sendChat("", "ShowHand", items, recipient)
+    }
+
     #formatName(sender) {
         let name = document.createElement("I");
         let nameInner;
-        if(sender && sender.name != this.user.name) {
+        if(sender && sender.id != this.user.id) {
             nameInner = sender.name;
         } else {
             sender = this.user;

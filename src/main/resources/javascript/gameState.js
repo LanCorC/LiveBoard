@@ -47,11 +47,11 @@ const gameState = (function() {
         "#14aa90", //druid
         "#0f1921" //sorcerer
     ];
-    function rerollUser() {
-        clientUser.name = defaultNames[Math.floor(Math.random() * defaultNames.length)];
-        clientUser.color = defaultColors[Math.floor(Math.random() * defaultColors.length)];
+    function rerollUser(doNotRedraw) {
+        changeUserName(defaultNames[Math.floor(Math.random() * defaultNames.length)], doNotRedraw);
+        changeUserColor(defaultColors[Math.floor(Math.random() * defaultColors.length)], doNotRedraw);
     }
-    rerollUser();
+    rerollUser(true);
 
     let itemCount = 0;
 
@@ -118,16 +118,16 @@ const gameState = (function() {
     }
 
     //Purpose: strictly for clientUser
-    function changeUserName(stringName) {
+    function changeUserName(stringName, noRedraw) {
         clientUser.name = stringName;
         server.clientUpdate("customize");
     }
     //Purpose: strictly for clientUser
-    function changeUserColor(hexString) {
+    function changeUserColor(hexString, noRedraw) {
         clientUser.color = hexString;
         server.clientUpdate("customize");
 
-        redraw.triggerRedraw();
+        if(!noRedraw) redraw.triggerRedraw();
     }
     //Purpose: changes regarding OTHER players
     function updatePlayer(newCopy) {
@@ -1774,17 +1774,9 @@ const gameState = (function() {
         }
     }
 
-    //purpose: return string that confirms state of transfer- invalid, no user found, invalid user,
-    function giveRandom(usernameString) {
-        if(!usernameString) {
-            return "/gr <target-user>";
-        }
-
-        //validate client hand is not empty
-        if(clientUser.hand.images.length == 0) {
-            return `You have no cards to give away!`;
-        }
-
+    //Purpose: takes string username, finds 'one' match from players,
+    //if fail, returns string; if pass, returns object
+    function validateUserString(usernameString) {
         //validate user !!assuming only one user matches
         let user;
         let selfFound = false;
@@ -1804,6 +1796,25 @@ const gameState = (function() {
             return `User "${usernameString}" not found.`;
         }
 
+        return user;
+    }
+
+    //purpose: return string that confirms state of transfer- invalid, no user found, invalid user,
+    function giveRandom(usernameString) {
+        if(!usernameString) {
+            return "/gr <target-user>";
+        }
+
+        //validate client hand is not empty
+        if(clientUser.hand.images.length == 0) {
+            return `You have no cards to give away!`;
+        }
+
+        let user = validateUserString(usernameString);
+        if(typeof user == "string") {
+            return user;
+        }
+
         //call function -- assume it always goes through
         let cards = clientUser.hand.images;
         let randomCard = cards[Math.floor(Math.random() * cards.length)];
@@ -1811,13 +1822,29 @@ const gameState = (function() {
         if(!randomCard) return "randomly chosen card is falsy!";
 
         takeFromDeck(randomCard);
-        addToDeck(randomCard, user.hand);
+        //move to recipient client to process 'addToDeck' to prevent race conditon
+        //sideeffects: card will be found at 0,0 facedown for a split second,
+        //or left there at recipient failure
+//        addToDeck(randomCard, user.hand);
         //return users + card
         return [randomCard, user]; //"Success" state
     }
     //if successful, return card object; else return string
     //processing will take this response and format appropriately + send to server to ping all relevant
     //likely return: boolean success, corresponding recipient id, card at random, chat partial string message
+
+    function showHand(usernameString) {
+        if(!usernameString) {
+            return "/sh <target-user>";
+        }
+
+        let user = validateUserString(usernameString);
+        if(typeof user == "string") {
+            return user; //error message
+        }
+
+        return { items: clientUser.hand.images, recipient: user};
+    }
 
     return {
         getID,
@@ -1860,7 +1887,8 @@ const gameState = (function() {
         permission,
         rerollUser,
         giveRandom,
-        getPlayer
+        getPlayer,
+        showHand
     };
 })();
 
