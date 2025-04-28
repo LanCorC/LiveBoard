@@ -424,6 +424,8 @@ window.onload = function() {
         mouse.x = event.pageX;
         mouse.y = event.pageY;
 
+        gameState.clientMovement(contextVis.transformPoint(mouse.x, mouse.y));
+
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
         gameState.hoverIsCanvas(hoverElement instanceof HTMLCanvasElement);
 //        console.log(itemFocus);

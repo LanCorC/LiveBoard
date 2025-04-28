@@ -7,8 +7,8 @@ import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ServerApplication extends WebSocketServer {
     public static final int SERVER_PORT = 8080;
@@ -86,11 +86,16 @@ public class ServerApplication extends WebSocketServer {
         //Purpose: instead of a 'fresh' connection terminating 'old' (see onOpen)
         //cont.d: this clears leaving clients from server record
         //TODO- rework to list only 'joined' players;
-//        if(clients.containsValue(webSocket)) {
-//            clients.forEach((key, value) -> {
-//                if (value == webSocket) clients.remove(key);
-//            });
-//        }
+        AtomicReference<String> userId = new AtomicReference<>();
+        if(clients.containsValue(webSocket)) {
+            clients.forEach((key, value) -> {
+                if (value == webSocket) {
+                    userId.set(key);
+                }
+            });
+        }
+//        clients.remove(userId.get());
+        requestProcessor.broadcastDisconnection(userId.get());
     }
 
     @Override

@@ -308,6 +308,7 @@ public class RequestProcessor {
         if(players.containsKey(newPlayer.id)) {
             //Already listed; apply new state, keep server copy of hand state
             newPlayer.hand = (Hand) quickRef.get(newPlayer.id);
+            players.get(newPlayer.id).live = true;
         } else {
             quickRef.put(newPlayer.id, newPlayer.hand);
         }
@@ -342,6 +343,7 @@ public class RequestProcessor {
 
         serverCopy.name = user.name;
         serverCopy.color = user.color;
+        serverCopy.coord = user.coord;
 
         //TODO... player coordinates
 
@@ -431,6 +433,25 @@ public class RequestProcessor {
 
         } catch(JsonProcessingException e) {
             System.out.println("Could not JSONify 'broadcastNewPlayer'.");
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void broadcastDisconnection(String userId) {
+        User disconnected = players.get(Long.parseLong(userId));
+        disconnected.live = false;
+
+        SimpleRequest sr = new SimpleRequest();
+        sr.setMessageHeader("ClientUpdate")
+                .setSubHeader("Disconnection")
+                .setSenderId(disconnected.id)
+                .setExplicit("This player's connection has terminated. Please update in other players' clients.");
+
+        try {
+            String message = objMapper.writeValueAsString(sr);
+            server.broadcast(message);
+        } catch(JsonProcessingException e) {
+            System.out.println("Could not JSONify 'broadcastDisconnection'.");
             System.out.println(e.getMessage());
         }
     }

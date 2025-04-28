@@ -30,7 +30,12 @@ const gameState = (function() {
     let clientUser = {
         id: "0",
         color: "#FFFFFF",
-        name: "Default"
+        name: "Default",
+        live: true, //default false; true if coord changes, false again if disconnects;
+        coord: {
+            x: 0,
+            y: 0
+        }
     };
 
     let defaultNames = ["Bear","Squirrel","Unicorn","Fox","Cat","Bunny","Wolf","Deer","Dog","Dragon","BigCat","Chicken"];
@@ -137,6 +142,7 @@ const gameState = (function() {
         //Apply
         ourCopy.name = newCopy.name;
         ourCopy.color = newCopy.color;
+        ourCopy.coord = newCopy.coord;
 
         redraw.triggerRedraw();
     }
@@ -704,6 +710,21 @@ const gameState = (function() {
                 interactive.fill();
                 interactive.fillStyle = "black"; //set to default
             }
+        });
+
+        //TODO- attempt at drawing 'mouse position' of players
+        players.forEach((value, key, map) => {
+            if(!value.live) return; //not live, disconnected, skip
+            visual.save();
+            visual.fillStyle = value.color;
+            visual.beginPath();
+            visual.arc(value.coord.x, value.coord.y, 60, 0, 2 * Math.PI);
+            visual.fill();
+
+            visual.font = "50px Arial";
+            visual.fillStyle = "white";
+            visual.fillText(`${value.name}`,(value.coord.x),(value.coord.y));
+            visual.restore();
         });
 
         //So far: Visual tokens on Cards
@@ -1846,6 +1867,25 @@ const gameState = (function() {
         return { items: clientUser.hand.images, recipient: user};
     }
 
+    function disconnection(id) {
+        if(players.get(id)) {
+            players.get(id).live = false;
+        }
+
+        console.log(`${id} has disconnected!`);
+    }
+
+    function clientMovement(point) {
+        clientUser.coord.x = point.x;
+        clientUser.coord.y = point.y;
+
+        //send server
+        server.clientUpdate("movement");
+
+        //pulse redraw
+        redraw.triggerRedraw();
+    }
+
     return {
         getID,
         idToRGB,
@@ -1889,7 +1929,9 @@ const gameState = (function() {
         giveRandom,
         getPlayer,
         getPlayers,
-        showHand
+        showHand,
+        disconnection,
+        clientMovement
     };
 })();
 

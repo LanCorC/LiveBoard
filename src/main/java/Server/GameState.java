@@ -91,7 +91,9 @@ class User
     public String color;
     public String name;
     public int position;
+    public boolean live;
     public Hand hand;
+    public Coord coord;
 }
 
 public class GameState

@@ -136,6 +136,7 @@ class Server {
                             break;
                         }
 
+                        //TODO- update chat
                         console.log(`New player received! ${data.senderId}`);
 
                         this.server.game.addPlayer(data.player);
@@ -179,7 +180,18 @@ class Server {
                             break; //skip processing: message came from us
                         }
 
-                        this.server.game.updatePlayer(data.player);
+                        switch(data.subHeader) {
+                            case "Disconnection":
+                                //TODO- update chat
+                                this.server.game.disconnection(data.senderId);
+                                break;
+                            case "customize":
+                            case "movement":
+                            default: //name, color, coord aka "customize" and "movement" subheaders
+                                this.server.game.updatePlayer(data.player);
+                                break;
+                        }
+
                         break;
                     case "PermissionGameAction":
                         console.log(data);
