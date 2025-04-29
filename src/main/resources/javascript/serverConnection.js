@@ -108,6 +108,7 @@ class Server {
                         break;
                     case "GameSetup":
                         this.server.game.rebuildBoard(data.gameState, data.players, data.itemCount, false);
+                        this.server.chatBox.joinChat();
                         break;
                     case "ServerAddress":
                         this.server.frontPage.connectionSuccess(data.explicit);
@@ -140,6 +141,7 @@ class Server {
                         console.log(`New player received! ${data.senderId}`);
 
                         this.server.game.addPlayer(data.player);
+                        this.server.chatBox.newPlayer(data.player);
 
                         break;
                     case "ChatUpdate":
@@ -184,6 +186,7 @@ class Server {
                             case "Disconnection":
                                 //TODO- update chat
                                 this.server.game.disconnection(data.senderId);
+                                this.server.chatBox.disconnected(data.senderId);
                                 break;
                             case "customize":
                             case "movement":

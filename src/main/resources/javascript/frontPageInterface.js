@@ -16,7 +16,8 @@ let tools = {
     },
     assetReady: false,
     miscReady: false,
-    readyFunc: function(){} //purpose: initialized in frontPage, on trigger, readies buttons
+    readyFunc: function(){}, //purpose: initialized in frontPage, on trigger, readies buttons
+    chat: undefined
 }; //store 'outside functions' like context redraw
 
 //purpose: handle all frontPage - connect button, load board, [join lobby?]
@@ -51,6 +52,7 @@ const frontPage = (function() {
         //Create game
         if(!server.gameStatus) {
             gameState.loadBoard(); //also pushes to gameState
+            tools.chat.joinChat(true);
         } else { //fetch
             //TODO somehow; reveal only after loaded; maybe connect to after rebuildBoard
             server.fetchGameState();
@@ -311,8 +313,10 @@ const loading = (function() {
 
 //TODO- purpose to make sure all reference are passed; i.e. 'serverConnection.js' receives its c
 function initialize() {
+    tools.chat = createChat(gameState.clientUser);
+
     //connect to server
-    server.initialize(frontPage, loading, gameState, createChat(gameState.clientUser));
+    server.initialize(frontPage, loading, gameState, tools.chat);
 
     //connect to assets, loadscreen
     initializeAssets(frontPage, loading, false, assetCount);

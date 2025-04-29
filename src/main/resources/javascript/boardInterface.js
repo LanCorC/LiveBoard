@@ -617,6 +617,39 @@ class ChatBox {
 
         if(!sender) this.sendChat("", "PingItem", items);
     }
+
+    joinChat(isFirst) {
+        let p = document.createElement("p");
+        if(isFirst) {
+            this.newEntry(" are the first to join the table!");
+            return;
+        }
+
+        //TODO- do not ping if not in game yet
+
+        p.append("Welcome! You are joining ")
+        gameState.getPlayers().forEach((player) => {
+            if(this.user == player) return;
+            p.append("[");
+            p.append(this.#formatName(player));
+            p.append("]");
+        });
+        this.newEntry(p);
+    }
+
+    disconnected(id) {
+        let p = document.createElement("p");
+        p.append(this.#formatName(gameState.getPlayer(id)));
+        p.append(" has disconnected.");
+        this.newEntry(p);
+    }
+
+    newPlayer(player) {
+        let p = document.createElement("p");
+        p.append(this.#formatName(player));
+        p.append(" has joined the table!");
+        this.newEntry(p);
+    }
 }
 
 //object ref to gameState (client-side updates UI)

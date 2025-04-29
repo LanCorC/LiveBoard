@@ -741,7 +741,7 @@ const gameState = (function() {
 
             visual.font = "50px Arial";
             visual.fillStyle = "white";
-            visual.fillText(`${value.name}`,x,y);
+            visual.fillText(`${value.name} (${value.hand.images.length})`,x,y);
 
             visual.rotate((-clientUser.position * -90) * Math.PI / 180);
         });
