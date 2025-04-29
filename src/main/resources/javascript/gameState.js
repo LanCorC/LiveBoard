@@ -716,7 +716,7 @@ const gameState = (function() {
         //Player's mouse positions
         visual.save();
         players.forEach((value, key, map) => {
-            if(!value.live) return; //not live, disconnected, skip
+            if(!value.live || value == clientUser) return; //not live, disconnected, skip
             visual.fillStyle = value.color;
             visual.beginPath();
             visual.arc(value.coord.x, value.coord.y, 60, 0, 2 * Math.PI);
