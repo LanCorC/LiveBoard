@@ -712,21 +712,44 @@ const gameState = (function() {
             }
         });
 
-        //TODO- attempt at drawing 'mouse position' of players
+
+        //Player's mouse positions
+        visual.save();
         players.forEach((value, key, map) => {
             if(!value.live) return; //not live, disconnected, skip
-            visual.save();
             visual.fillStyle = value.color;
             visual.beginPath();
             visual.arc(value.coord.x, value.coord.y, 60, 0, 2 * Math.PI);
             visual.fill();
 
+
+            visual.rotate((clientUser.position * -90) * Math.PI / 180);
+            let {x, y} = value.coord;
+            switch(clientUser.position % 4) {
+                case 1: //90*
+                    [x, y] = [-y, x];
+                    break;
+                case 2: //180*
+                    [x, y] = [-x, -y];
+                    break;
+                case 3: //270*
+                    [x, y] = [y, -x];
+                    break;
+                default:
+                    break;
+            }
+
             visual.font = "50px Arial";
             visual.fillStyle = "white";
-            visual.fillText(`${value.name}`,(value.coord.x),(value.coord.y));
-            visual.restore();
+            visual.fillText(`${value.name}`,x,y);
+
+            visual.rotate((-clientUser.position * -90) * Math.PI / 180);
         });
 
+        visual.restore();
+
+        visual.save();
+        visual.rotate((clientUser.position * -90) * Math.PI / 180);
         //So far: Visual tokens on Cards
         //TODO - in the future, use this to load.. other visual tokens as well?
         for (const [type, list] of Object.entries(items)) {
@@ -754,6 +777,20 @@ const gameState = (function() {
                     img = assets.no;
                 }
 
+                switch(clientUser.position % 4) {
+                    case 1: //90*
+                        [x, y] = [-y - (width/2 + height/2), x - (height/2 - width/2)];
+                        break;
+                    case 2: //180*
+                        [x, y] = [-x - width, -y - height];
+                        break;
+                    case 3: //270*
+                        [x, y] = [y - (width/2 - height/2), -x - (height/2 + width/2)];
+                        break;
+                    default:
+                        break;
+                }
+
                 visual.save();
 
                 visual.filter = "blur(10px)";
@@ -771,10 +808,25 @@ const gameState = (function() {
             });
         }
 
+        //Specific token on hoverItem
         if(hoverCompatible && !hoverItem.selected && !hoverItem.disabled) {
             let img = assets.deckIcon;
             let { x, y } = hoverItem.coord;
             let { height, width } = hoverItem;
+
+            switch(clientUser.position % 4) {
+                case 1: //90*
+                    [x, y] = [-y - (width/2 + height/2), x - (height/2 - width/2)];
+                    break;
+                case 2: //180*
+                    [x, y] = [-x - width, -y - height];
+                    break;
+                case 3: //270*
+                    [x, y] = [y - (width/2 - height/2), -x - (height/2 + width/2)];
+                    break;
+                default:
+                    break;
+            }
 
             visual.save();
 
@@ -790,6 +842,8 @@ const gameState = (function() {
             visual.drawImage(img, x + width/2 - img.width/2,
                 y + height/2 - img.height/2);
         }
+        visual.rotate((-clientUser.position * -90) * Math.PI / 180);
+        visual.restore();
 
         //TODO note: code for testing boundaries (visual) code; not for demo or 'official release'
 //        visual.save();
