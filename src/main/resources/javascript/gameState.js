@@ -739,7 +739,7 @@ const gameState = (function() {
                     break;
             }
 
-            visual.font = "50px Arial";
+            visual.font = "100px Arial";
             visual.fillStyle = "white";
             visual.fillText(`${value.name} (${value.hand.images.length})`,x,y);
 
