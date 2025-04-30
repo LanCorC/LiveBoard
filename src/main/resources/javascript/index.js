@@ -939,11 +939,11 @@ window.onload = function() {
     let scale = 1.1;
 
     const zoom = function(val) {
-        console.log("Start of zoom");
+//        console.log("Start of zoom");
         let factor = Math.pow(scale, val); //example: scale '2' results in => double (pow2) or half (pow-2 = x0.5)
 
         if(maxZoomOut && factor < 1) {
-            console.log("end of zoom- exceeeds maxZoomout");
+//            console.log("end of zoom- exceeeds maxZoomout");
             return;
         } else {
             maxZoomOut = false;
@@ -972,7 +972,7 @@ window.onload = function() {
         if(factor > 1 && currentMultiplier > 2
         //max - arbitrary, generous allowance
         || factor < 1 && currentMultiplier < 0.05) {
-            console.log("end of zoom- too zoomed in");
+//            console.log("end of zoom- too zoomed in");
             return;
         }
 
@@ -1019,20 +1019,20 @@ window.onload = function() {
         contextVis.translate(-pt.x, -pt.y);
 
         pulseRedraw();
-        console.log("End of zoom");
+//        console.log("End of zoom");
     };
 
     const scroll = function(event) {
-        console.log("Start of scroll");
+//        console.log("Start of scroll");
         //if ctrl is on + scrolling, prevent canvas scroll
-        if(strictPanMode) {
-            console.log("strictPanMode end");
-            return;
-        } else {
+//        if(strictPanMode) {
+//            console.log("strictPanMode end");
+//            return;
+//        } else {
             zoom(event.deltaY < 0 ? 1 : -1);
-        }
+//        }
         //Positive deltaY is scrolling down, or 'zooming out', thus smaller scale
-        console.log("End of scroll");
+//        console.log("End of scroll");
     };
 
     touch.addEventListener("wheel", scroll, {passive: true});
