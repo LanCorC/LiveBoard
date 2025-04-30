@@ -46,13 +46,18 @@ class Server {
     //STEPS- see if i can do a "mousedown" gauge if item, card, was already selected ("VIP") or not (print all)
     requestFreePass = false;
 
-    connect(address, port) {
-        if(!address) address = "localhost";
+    connect(address) {
+        if(!address) address = "localhost:8080";
+
+        let regExp = /(?<=:\/\/).*/; //search for after :// as in http:// https://
+        if(address.search(regExp) != -1) {
+            address = address.match(regExp)[0]; //take first match
+        }
 
         let socket;
         let addressString;
         try {
-            addressString = `://${address}${port ? ":"+port : ""}/user=${localStorage.getItem("id")}`;
+            addressString = `://${address}/user=${localStorage.getItem("id")}`;
             console.log("attempting ws");
             socket = new WebSocket(`ws${addressString}`);
         } catch(e) { //Mixed Content found, try secure (for purpose of tunnel proxy)
@@ -60,7 +65,6 @@ class Server {
         };
 
         socket.address = address;
-        socket.port = port;
 
         this.connection = socket;
         this.chatBox.setServer(this);
@@ -69,7 +73,7 @@ class Server {
         let frontUI = this.frontPage;
         let loadingUI = this.loading;
 
-        frontUI.connectionStarted(address, port);
+        frontUI.connectionStarted(address);
 
         socket.onopen = function(event) {
             console.log("Server connection secured!");

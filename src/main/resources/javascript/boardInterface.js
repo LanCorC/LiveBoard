@@ -627,13 +627,26 @@ class ChatBox {
 
         //TODO- do not ping if not in game yet
 
-        p.append("Welcome! You are joining ")
+        //Welcome player (You)! You are joining
+        p.append("Welcome ");
+        p.append(this.#formatName());
+        p.append("! You are joining ");
+
+        //Welcome player (You)! You are joining ...oh, it's just yourself for now.
+        if(gameState.getPlayers().size == 1) {
+            p.append("...oh, it's just yourself for now.");
+            this.newEntry(p);
+            return;
+        }
+
+        //Welcome player (You)! You are joining [PlayerX][PlayerY][PlayerZ].
         gameState.getPlayers().forEach((player) => {
             if(this.user == player) return;
             p.append("[");
             p.append(this.#formatName(player));
             p.append("]");
         });
+        p.append(".");
         this.newEntry(p);
     }
 

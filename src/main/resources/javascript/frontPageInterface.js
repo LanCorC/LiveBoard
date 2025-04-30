@@ -32,7 +32,6 @@ const frontPage = (function() {
 
     const serverConnectButton = document.getElementById("connectButton");
     const addressInput = document.getElementById("address");
-    const portInput = document.getElementById("port");
 
     //TODO- if server.gameState exists, reword to "Join Game"; client loads gameState from server
     //TODO- if not already, reword to "Start Game"; this client creates then passes to server
@@ -102,7 +101,7 @@ const frontPage = (function() {
     }
 
     serverConnectButton.addEventListener("click",
-        () => server.connect(addressInput.value, portInput.value));
+        () => server.connect(addressInput.value));
 
     function gameLoadMessage(message) {
         gameLoading.innerHTML = message;
@@ -115,7 +114,7 @@ const frontPage = (function() {
 
     function connectionFailed(message) {
         if(!message) message =
-        `Connection to ${addressInput.value}:${portInput.value} failed!`;
+        `Connection to ${addressInput.value} failed!`;
         connectionStatus.innerHTML = message;
 
         tools.disable(serverJoinButton);
@@ -133,25 +132,26 @@ const frontPage = (function() {
         innerHtml = "Connected successfully! Hosting at: " + hostAddress;
 
         connectionStatus.innerHTML = innerHtml;
-        tools.enable(serverJoinButton);
+        if(tools.assetReady && tools.miscReady) {
+            tools.enable(serverJoinButton);
+        }
 
-        disableManualsConnects();
+//        disableManualsConnects();
     }
-    function connectionStarted(address, port) {
-        connectionStatus.innerHTML = `Establishing connection... ${address}:${port}`;
+    function connectionStarted(address) {
+        connectionStatus.innerHTML = `Establishing connection... ${address}`;
         addressInput.value = address;
-        portInput.value = port;
 
-        disableManualsConnects();
+//        disableManualsConnects();
     }
 
     function disableManualsConnects() {
-        let arr = [serverConnectButton, addressInput, portInput];
+        let arr = [serverConnectButton, addressInput];
         arr.forEach((ele) => tools.disable(ele));
 
     }
     function enableManualsConnects() {
-        let arr = [serverConnectButton, addressInput, portInput];
+        let arr = [serverConnectButton, addressInput];
         arr.forEach((ele) => tools.enable(ele));
     }
 
@@ -236,6 +236,10 @@ const frontPage = (function() {
             demoButton.removeAttribute("disabled");
             soloButton.removeAttribute("disabled");
             document.getElementById("ESCAPEtag").style.visibility = "inherit";
+            //if server ready, enable
+            if(server.connection.readyState == 1) {
+                serverJoinButton.removeAttribute("disabled");
+            }
         }
     }
 
