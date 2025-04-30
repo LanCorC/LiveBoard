@@ -932,9 +932,14 @@ const gameState = (function() {
         //Refs
         selected.length = 0;
         quickRef = {};
+
         players.forEach((value, key, map) => {
             if(key != clientUser.id) map.delete(key);
         });
+
+        //own player's hand
+        clientUser.hand.images = [];
+        clientUser.hand.ref.update();
     }
 
     //if connecting from a game in session OR fetching server's copy of gameState
