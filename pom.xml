@@ -4,9 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
+    <groupId>Server</groupId>
     <artifactId>LiveBoard</artifactId>
     <version>1.0-SNAPSHOT</version>
+
+    <packaging>war</packaging>
 
     <dependencies>
         <!-- Websocket for multiplayer -->
@@ -36,24 +38,77 @@
 <!--        <maven.compiler.testRelease>${maven.compiler.testTarget}</maven.compiler.testRelease>-->
 <!--        <mainClass>Server.ServerApplication.main</mainClass>-->
     </properties>
+
+    <!-- jar, CLI: could not find or load main class Server.ServerApplication -->
+    <!-- IMPORTANT: caused by NoClassDefFoundError: org/java_websocket/server/WebSocketServer -->
+    <!-- Notice: maven-jar-plugin -->
 <!--    <build>-->
 <!--        <plugins>-->
 <!--            <plugin>-->
-<!--                <artifactId>maven-assembly-plugin</artifactId>-->
+<!--                &lt;!&ndash; Build an executable JAR &ndash;&gt;-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-jar-plugin</artifactId>-->
+<!--                <version>3.4.2</version>-->
 <!--                <configuration>-->
 <!--                    <archive>-->
 <!--                        <manifest>-->
-<!--                            <mainClass>Server.ServerApplication.main</mainClass>-->
+<!--                            <addClasspath>true</addClasspath>-->
+<!--&lt;!&ndash;                            <classpathPrefix>lib/</classpathPrefix>&ndash;&gt;-->
+<!--                            <mainClass>Server.ServerApplication</mainClass>-->
 <!--                        </manifest>-->
 <!--                    </archive>-->
-<!--                    <descriptorRefs>-->
-<!--                        <descriptorRef>jar-with-dependencies</descriptorRef>-->
-<!--                    </descriptorRefs>-->
 <!--                </configuration>-->
 <!--            </plugin>-->
 <!--        </plugins>-->
 <!--    </build>-->
 
+
+    <!-- jar, CLI: no main manifest attribute, in ...target\LiveBoard-1.0-SNAPSHOT.jar -->
+    <!-- Notice: maven-assembly-plugin -->
+<!--    <build>-->
+<!--        <plugins>-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-assembly-plugin</artifactId>-->
+<!--                <version>3.4.2</version>-->
+<!--                <configuration>-->
+<!--                    <archive>-->
+<!--                        <manifest>-->
+<!--                            <addClasspath>true</addClasspath>-->
+<!--                            <mainClass>Server.ServerApplication</mainClass>-->
+<!--                        </manifest>-->
+<!--                    </archive>-->
+<!--&lt;!&ndash;                    <descriptorRefs>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <descriptorRef>jar-with-dependencies</descriptorRef>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </descriptorRefs>&ndash;&gt;-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+<!--        </plugins>-->
+<!--    </build>-->
+
+    <!-- WAR - CLI: java -jar target/LiveBoard-1.0-SNAPSHOT.war CANNOT FIND MAIN CLASS -->
+    <!-- IMPORTANT: enable <packaging>war</packaging> in <project/>-->
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>Server.ServerApplication</mainClass>
+                        </manifest>
+                    </archive>
+
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- Works with "mvn clean compile assembly:single" -->
 <!--    <build>-->
 <!--        <plugins>-->
 <!--            <plugin>-->
@@ -61,7 +116,7 @@
 <!--                <configuration>-->
 <!--                    <archive>-->
 <!--                        <manifest>-->
-<!--                            <mainClass>Server.ServerApplication.main</mainClass>-->
+<!--                            <mainClass>Server.ServerApplication</mainClass>-->
 <!--                        </manifest>-->
 <!--                    </archive>-->
 <!--                    <descriptorRefs>-->
@@ -80,31 +135,5 @@
 <!--            </plugin>-->
 <!--        </plugins>-->
 <!--    </build>-->
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>Server.ServerApplication.main</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-my-jar-with-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+
 </project>
