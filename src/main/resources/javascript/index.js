@@ -16,7 +16,7 @@ let itemFocus; //current item of "mousedown"; added to 'selected' if mouseUp suc
 let inspectMode = true; //toggle for InspectMode
 let inspectImage = document.getElementById("inspectImage");
 let rightClick = false;
-let strictPanMode = false; //hold-CTRL: strict pan mode
+//let strictPanMode = false; //hold-CTRL: strict pan mode
 let pinBoard = false;
 
 //TODO- to move to an appropriate file/module + incorporate into user interface, e.g. select desired expansions...
@@ -386,7 +386,7 @@ window.onload = function() {
         let dx = point.x - startPoint.x;
         let dy = point.y - startPoint.y;
         //TODO - send .anchored check to gameState
-        if(itemFocus && !itemFocus.anchored && !strictPanMode) {
+        if(itemFocus && !itemFocus.anchored && !event.ctrlKey) {
             if(itemFocus instanceof HTMLImageElement) {
                 dragElement(event, itemFocus);
             } else
@@ -544,16 +544,16 @@ window.onload = function() {
         if(!itemFocus || itemFocus instanceof HTMLImageElement) {
         //INVALID - ctrl ? nothing : purge
 //            if(!strictPanMode) purgeSelected();
-            if(!strictPanMode) markForPurge = true;
+            if(!event.ctrlKey) markForPurge = true;
 
-        } else if(dragging && strictPanMode) {
+        } else if(dragging && event.ctrlKey) {
 
             if(!selected.includes(itemFocus)) {
                 gameState.deselect(itemFocus);
             }
             //else, user only panned across board. all else preserved
 
-        } else if(dragging && !strictPanMode) {
+        } else if(dragging && !event.ctrlKey) {
 
             gameState.correctCoords(selected, itemFocus);
 
@@ -569,7 +569,7 @@ window.onload = function() {
             }
             //else, items were all dragged and all else preserved
 
-        } else if (strictPanMode) {
+        } else if (event.ctrlKey) {
         //NODRAG
 
             if(selected.includes(itemFocus)) {
@@ -682,10 +682,10 @@ window.onload = function() {
             case "X":
                 decreaseInspectSize();
                 break;
-            case "CONTROL":
 //            case "CONTROL":
-                strictPanMode = true;
-                break;
+////            case "CONTROL":
+//                strictPanMode = true;
+//                break;
             default:
                 //unregistered key, end of processing
 //                console.log("invalid key");
@@ -806,10 +806,10 @@ window.onload = function() {
             case "ESCAPE":
                 pregameInterface.frontPage.toggleHomescreen();
                 break;
-            case "CONTROL":
 //            case "CONTROL":
-                strictPanMode = false;
-                break;
+////            case "CONTROL":
+//                strictPanMode = false;
+//                break;
             //Placeholder destination for this function; = cycles through backgrounds
             //TODO- move to a menu/UI
             case "=":

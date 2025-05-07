@@ -6,9 +6,9 @@
 
     <groupId>Server</groupId>
     <artifactId>LiveBoard</artifactId>
+    <packaging>war</packaging>
     <version>1.0-SNAPSHOT</version>
 
-    <packaging>war</packaging>
 
     <dependencies>
         <!-- Websocket for multiplayer -->
@@ -40,7 +40,7 @@
     </properties>
 
     <!-- jar, CLI: could not find or load main class Server.ServerApplication -->
-    <!-- IMPORTANT: caused by NoClassDefFoundError: org/java_websocket/server/WebSocketServer -->
+    <!-- IMPORTANT: caused by NoClassDefFoundError: org/java_websocket/Server/WebSocketServer -->
     <!-- Notice: maven-jar-plugin -->
 <!--    <build>-->
 <!--        <plugins>-->
@@ -107,6 +107,18 @@
             </plugin>
         </plugins>
     </build>
+
+<!--    <build>-->
+<!--        <plugins>-->
+<!--            <plugin>-->
+<!--                <artifactId>maven-war-plugin</artifactId>-->
+<!--                <version>3.4.0</version>-->
+<!--                <configuration>-->
+<!--                    <failOnMissingWebXml>false</failOnMissingWebXml>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+<!--        </plugins>-->
+<!--    </build>-->
 
     <!-- Works with "mvn clean compile assembly:single" -->
 <!--    <build>-->
