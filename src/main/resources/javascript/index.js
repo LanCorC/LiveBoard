@@ -537,15 +537,18 @@ window.onload = function() {
 
             gameState.correctCoords(selected, itemFocus);
 
+            //Boolean switch: end of drag, always deselect all
+            let alwaysDeselect = true;
+            if(alwaysDeselect) markForPurge = true;
+
             //deselect if: drag not in selected[] or was dragged into a deck
             if(!selected.includes(itemFocus)) {
                 gameState.addToDeck(itemFocus, hoverElement);
-                markForPurge = true;
                 gameState.deselect(itemFocus);
-            } else if(gameState.addToDeck(selected, hoverElement)){
-                markForPurge = true;
+                if(!alwaysDeselect) markForPurge = true;
+            } else if (gameState.addToDeck(selected, hoverElement)) {
+                if(!alwaysDeselect) markForPurge = true;
             }
-            //else, items were all dragged and all else preserved
 
         } else if (event.ctrlKey) {
         //NODRAG
