@@ -16,15 +16,9 @@ let itemFocus; //current item of "mousedown"; added to 'selected' if mouseUp suc
 let inspectMode = true; //toggle for InspectMode
 let inspectImage = document.getElementById("inspectImage");
 let rightClick = false;
-//let strictPanMode = false; //hold-CTRL: strict pan mode
 let pinBoard = false;
 
-//TODO- to move to an appropriate file/module + incorporate into user interface, e.g. select desired expansions...
 
-
-//server.connect();
-
-//TODO- ordering initialization
 //First; frontpage loads, then connects to Server immediately for a connection;
     //ALL WHILST also connects to assets loading misc/ loading page for expansions
 //lastly, gameState <-> server = fetch player info, gameState.items from server copy
@@ -146,7 +140,6 @@ window.onload = function() {
         handleImageTooltip();
     }
 
-    //TODO- try make inspect work on a deck
     //isPreview - boolean, to say: viewing from HTMLImageElement deck/hand preview
     const insertInspectImage = function(item, isPreview) {
         //if this is 'back' image, do not display
@@ -375,8 +368,6 @@ window.onload = function() {
     }
 
     const handleDrag = function(event) {
-        //TODO: will be adapted to read currentElement, for hand<->canvas transitions
-        //TODO: as well as dragToDeck visual queues
         if(!startPoint) {
             return;
         }
@@ -391,8 +382,6 @@ window.onload = function() {
                 dragElement(event, itemFocus);
             } else
             //in group, move all items
-                    //TODO - include hoverElement in gameState.dragItems() as reference whether to trigger 'deck'
-                    //Keep it simple for now, then see how it feels - only put the special symbol on the 'recipient'
             if(selected.includes(itemFocus)) {
                 //move all items
                 gameState.dragItems(dx, dy, selected, dragging, hoverElement, itemFocus);
@@ -437,12 +426,6 @@ window.onload = function() {
         //handle tooltip hover- if canvas, finds object
         handleImageTooltip();
 
-        //TODO-test for using nonCanvas element ref to 'hand/deck' preview
-//        if(hoverElement && Object.hasOwn(hoverElement, "deck")) {
-//            hoverElement = hoverElement.deck;
-//        }
-//
-//        console.log(hoverElement);
 
         //check for click-hold-drag
         handleDrag(event);
@@ -539,11 +522,8 @@ window.onload = function() {
 
         let markForPurge = false;
 
-        //TODO - below is 'canvasItem' route; make the other routes (HTMLImageElement)
-        //TODO-soon, enabled HTMLImageElement for purposes of deck/hand-preview
         if(!itemFocus || itemFocus instanceof HTMLImageElement) {
         //INVALID - ctrl ? nothing : purge
-//            if(!strictPanMode) purgeSelected();
             if(!event.ctrlKey) markForPurge = true;
 
         } else if(dragging && event.ctrlKey) {
@@ -560,11 +540,9 @@ window.onload = function() {
             //deselect if: drag not in selected[] or was dragged into a deck
             if(!selected.includes(itemFocus)) {
                 gameState.addToDeck(itemFocus, hoverElement);
-//                purgeSelected();
                 markForPurge = true;
                 gameState.deselect(itemFocus);
             } else if(gameState.addToDeck(selected, hoverElement)){
-//                purgeSelected();
                 markForPurge = true;
             }
             //else, items were all dragged and all else preserved
@@ -669,7 +647,6 @@ window.onload = function() {
     }
 
     window.addEventListener("keydown", function(event){
-        //TODO - future, if chatbox or input box, send null
         if(!event.key) return;
         let key = event.key.toUpperCase();
         if(document.activeElement instanceof HTMLInputElement) key = null;
@@ -682,10 +659,6 @@ window.onload = function() {
             case "X":
                 decreaseInspectSize();
                 break;
-//            case "CONTROL":
-////            case "CONTROL":
-//                strictPanMode = true;
-//                break;
             default:
                 //unregistered key, end of processing
 //                console.log("invalid key");
@@ -694,7 +667,6 @@ window.onload = function() {
         return;
     }, false);
 
-    //TODO- see how this feels only one item (hoverElement) for feel
     const tapItem = function() {
         if(selected.length != 0) {
             gameState.tapItem(selected);
@@ -806,10 +778,6 @@ window.onload = function() {
             case "ESCAPE":
                 pregameInterface.frontPage.toggleHomescreen();
                 break;
-//            case "CONTROL":
-////            case "CONTROL":
-//                strictPanMode = false;
-//                break;
             //Placeholder destination for this function; = cycles through backgrounds
             //TODO- move to a menu/UI
             case "=":
@@ -1025,12 +993,8 @@ window.onload = function() {
     const scroll = function(event) {
 //        console.log("Start of scroll");
         //if ctrl is on + scrolling, prevent canvas scroll
-//        if(strictPanMode) {
-//            console.log("strictPanMode end");
-//            return;
-//        } else {
-            zoom(event.deltaY < 0 ? 1 : -1);
-//        }
+        zoom(event.deltaY < 0 ? 1 : -1);
+
         //Positive deltaY is scrolling down, or 'zooming out', thus smaller scale
 //        console.log("End of scroll");
     };
@@ -1051,8 +1015,6 @@ window.onload = function() {
 
     preventRightClickDefault();
 
-    //itenFactory testing
-//    main();
     //For some reason, this needs to be called twice in order to properly capture, as far as tested, "mousedown"
     pulseRedraw();
 }
