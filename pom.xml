@@ -4,13 +4,34 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.5</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
     <groupId>Server</groupId>
     <artifactId>LiveBoard</artifactId>
-    <packaging>war</packaging>
     <version>1.0-SNAPSHOT</version>
 
-
     <dependencies>
+        <!-- SpringBoot -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Websocket for multiplayer -->
         <dependency>
             <groupId>org.java-websocket</groupId>
@@ -30,83 +51,38 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-<!--        <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>-->
-<!--        <maven.compiler.release>${maven.compiler.target}</maven.compiler.release>-->
-<!--        <maven.compiler.testSource>${maven.compiler.source}</maven.compiler.testSource>-->
-<!--        <maven.compiler.testTarget>${maven.compiler.testSource}</maven.compiler.testTarget>-->
-<!--        <maven.compiler.testRelease>${maven.compiler.testTarget}</maven.compiler.testRelease>-->
-<!--        <mainClass>Server.ServerApplication.main</mainClass>-->
     </properties>
 
-    <!-- jar, CLI: could not find or load main class Server.ServerApplication -->
-    <!-- IMPORTANT: caused by NoClassDefFoundError: org/java_websocket/Server/WebSocketServer -->
-    <!-- Notice: maven-jar-plugin -->
-<!--    <build>-->
-<!--        <plugins>-->
-<!--            <plugin>-->
-<!--                &lt;!&ndash; Build an executable JAR &ndash;&gt;-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-jar-plugin</artifactId>-->
-<!--                <version>3.4.2</version>-->
-<!--                <configuration>-->
-<!--                    <archive>-->
-<!--                        <manifest>-->
-<!--                            <addClasspath>true</addClasspath>-->
-<!--&lt;!&ndash;                            <classpathPrefix>lib/</classpathPrefix>&ndash;&gt;-->
-<!--                            <mainClass>Server.ServerApplication</mainClass>-->
-<!--                        </manifest>-->
-<!--                    </archive>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--        </plugins>-->
-<!--    </build>-->
-
-
-    <!-- jar, CLI: no main manifest attribute, in ...target\LiveBoard-1.0-SNAPSHOT.jar -->
-    <!-- Notice: maven-assembly-plugin -->
-<!--    <build>-->
-<!--        <plugins>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-assembly-plugin</artifactId>-->
-<!--                <version>3.4.2</version>-->
-<!--                <configuration>-->
-<!--                    <archive>-->
-<!--                        <manifest>-->
-<!--                            <addClasspath>true</addClasspath>-->
-<!--                            <mainClass>Server.ServerApplication</mainClass>-->
-<!--                        </manifest>-->
-<!--                    </archive>-->
-<!--&lt;!&ndash;                    <descriptorRefs>&ndash;&gt;-->
-<!--&lt;!&ndash;                        <descriptorRef>jar-with-dependencies</descriptorRef>&ndash;&gt;-->
-<!--&lt;!&ndash;                    </descriptorRefs>&ndash;&gt;-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--        </plugins>-->
-<!--    </build>-->
-
-    <!-- WAR - CLI: java -jar target/LiveBoard-1.0-SNAPSHOT.war CANNOT FIND MAIN CLASS -->
-    <!-- IMPORTANT: enable <packaging>war</packaging> in <project/>-->
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.4.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>Server.ServerApplication</mainClass>
-                        </manifest>
-                    </archive>
-
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-
-                </configuration>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
+
+    <!-- WAR - CLI: java -jar target/LiveBoard-1.0-SNAPSHOT.war CANNOT FIND MAIN CLASS -->
+    <!-- IMPORTANT: enable <packaging>war</packaging> in <project/>-->
+<!--    <build>-->
+<!--        <plugins>-->
+<!--            <plugin>-->
+<!--                <artifactId>maven-war-plugin</artifactId>-->
+<!--                <version>3.4.0</version>-->
+<!--                <configuration>-->
+<!--                    <archive>-->
+<!--                        <manifest>-->
+<!--                            <addClasspath>true</addClasspath>-->
+<!--                            <mainClass>Server.ServerApplication</mainClass>-->
+<!--                        </manifest>-->
+<!--                    </archive>-->
+
+<!--                    <failOnMissingWebXml>false</failOnMissingWebXml>-->
+
+<!--                </configuration>-->
+<!--            </plugin>-->
+<!--        </plugins>-->
+<!--    </build>-->
 
 <!--    <build>-->
 <!--        <plugins>-->
