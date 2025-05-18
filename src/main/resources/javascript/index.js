@@ -797,10 +797,10 @@ window.onload = function() {
     }, false);
 
     const backgroundUrl = [
-        "url(../Images/backgrounds/rainbow-vortex.svg)",
-        "url(../Images/backgrounds/hollowed-boxes.svg)",
-        "url(../Images/backgrounds/colorful-stingrays.svg)",
-        "url(../Images/backgrounds/confetti-doodles.svg)"
+        "url(../static/images/backgrounds/rainbow-vortex.svg)",
+        "url(../static/images/backgrounds/hollowed-boxes.svg)",
+        "url(../static/images/backgrounds/colorful-stingrays.svg)",
+        "url(../static/images/backgrounds/confetti-doodles.svg)"
     ];
     let backgroundIndex = Math.floor(Math.random() * backgroundUrl.length);
     board.style.background = backgroundUrl[backgroundIndex];

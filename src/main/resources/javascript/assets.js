@@ -25,15 +25,15 @@ const sizes = {
 
 const assets = (function() {
     const tapIcon = new Image();
-    tapIcon.src = `../Images/Tokens/hand-tap-svgrepo-com.svg`;
+    tapIcon.src = `../static/images/Tokens/hand-tap-svgrepo-com.svg`;
     const deckIcon = new Image();
-    deckIcon.src = `../Images/Tokens/stack-push-svgrepo-com.svg`;
+    deckIcon.src = `../static/images/Tokens/stack-push-svgrepo-com.svg`;
     const moveTo = new Image();
-    moveTo.src = `../Images/Tokens/send-svgrepo-com.svg`;
+    moveTo.src = `../static/images/Tokens/send-svgrepo-com.svg`;
     const no = new Image();
-    no.src = `../Images/Tokens/no-svgrepo-com.svg`;
+    no.src = `../static/images/Tokens/no-svgrepo-com.svg`;
     const view = new Image();
-    view.src = `../Images/Tokens/magnifier-glass-svgrepo-com.svg`;
+    view.src = `../static/images/Tokens/magnifier-glass-svgrepo-com.svg`;
     const backImg = 0;
     const frontImg = 1;
 
@@ -243,7 +243,7 @@ let padHundred = function(number) {
     return result + number.toString();
 }
 
-let baseAddress = "../Images";
+let baseAddress = "../static/images";
 const loadAll = true; //testing variable: if true, loads all expansions
 
 //TODO- expansionCardsExpected, tested for ALL and ONE(base) line up along
