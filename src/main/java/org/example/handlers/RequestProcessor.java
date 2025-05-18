@@ -442,6 +442,8 @@ public class RequestProcessor {
 
     public void broadcastDisconnection(String userId) {
         User disconnected = players.get(Long.parseLong(userId));
+        if(disconnected == null) return; //in case where connection has not joined game yet
+
         disconnected.live = false;
 
         SimpleRequest sr = new SimpleRequest();
@@ -479,7 +481,7 @@ class SimpleRequest {
     GameState gameState;          //Connecting to server
     Integer itemCount;          //Connecting to server
     User player;                  //Player joining the game
-   ArrayList<User> players;       //Connecting to server
+    ArrayList<User> players;       //Connecting to server
     Boolean bool;                 //messageHeader dependent
     Long senderId;              //track message sender
     Long timeStamp;             //kept as 'long' type for simplicity

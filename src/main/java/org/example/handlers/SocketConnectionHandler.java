@@ -66,10 +66,11 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         requestProcessor.sendGameStateStatus(session);
 
         System.out.println(clients);
-        System.out.println(getConnections().size() + " players connected.");
 
         // Adding the session into the list
         webSocketSessions.add(session);
+
+        System.out.println(getConnections().size() + " players connected.");
     }
 
     // When client disconnect from WebSocket then this
