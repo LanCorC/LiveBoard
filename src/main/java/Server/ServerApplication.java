@@ -14,7 +14,7 @@ public class ServerApplication extends WebSocketServer {
     public static final int SERVER_PORT = 8080;
     private static HashMap<String, WebSocket> clients = new HashMap<>();
     public static int CLIENT_COUNT = 0;
-    private static ObjectMapper objMapper = new ObjectMapper();
+//    private static ObjectMapper objMapper = new ObjectMapper();
     public static RequestProcessor requestProcessor = RequestProcessor.RequestProcessor();
 
     public static String ServerAddress = null;

@@ -1,24 +1,29 @@
 package org.example.handlers;
 
 import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 // Socket-Connection Configuration class
 public class SocketConnectionHandler extends TextWebSocketHandler {
 
-    // In this list all the connections will be stored
-    // Then it will be used to broadcast the message
-    List<WebSocketSession> webSocketSessions
-            = Collections.synchronizedList(new ArrayList<>());
+    List<WebSocketSession> webSocketSessions = Collections.synchronizedList(new ArrayList<>());
+    //For tracking new and returning players
+    private static Map<String, WebSocketSession> clients = Collections.synchronizedMap(new HashMap<String, WebSocketSession>());
+    public static RequestProcessor requestProcessor = RequestProcessor.RequestProcessor();
 
     // This method is executed when client tries to connect
     // to the sockets
+    public SocketConnectionHandler() {
+        requestProcessor.setServer(this);
+    }
+
     @Override
     public void
     afterConnectionEstablished(WebSocketSession session)
@@ -26,16 +31,42 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
     {
 
         super.afterConnectionEstablished(session);
+
+        //Bandaid - arbitrary value that is large enough to pass the massive initial string gamestate
+        session.setTextMessageSizeLimit(160_000);
+
         // Logging the connection ID with Connected Message
         System.out.println(session.getId() + " Connected");
-        System.out.println(session.getAcceptedProtocol());
 
         //Pull user value
         String[] stringArr = session.getUri().toString().split("/");
 
         //Validate connection based on user value
-        String userId = stringArr[stringArr.length-1].split("=")[1];
-        System.out.println(stringArr[1]);
+        String name = stringArr[stringArr.length-1].split("=")[1];
+        System.out.println(name);
+
+        //If reconnecting, replace and purge 'older' connection
+        if(clients.containsKey(name)) {
+            WebSocketSession oldConnection = clients.put(name, session); //replaces old websocket
+//            if(oldConnection != null) oldConnection.close(1001,
+//                    "Reconnection successful in a new instance. Terminating this connection.");
+            session.sendMessage(new TextMessage("Reconnection successful. Terminating older instance."));
+            if(oldConnection != null) oldConnection.close(CloseStatus.SERVICE_RESTARTED);
+            System.out.printf("Please welcome a returning player: %s!%n", name);
+        } else {
+            clients.put(name, session);
+            System.out.printf("Let's welcome the newcomer, %s!%n", name);
+        }
+
+        session.sendMessage(new TextMessage("We are hosting at: %s".formatted("WIP")));
+        requestProcessor.sendHostAddress(session);
+        broadcast("new connection: %s".formatted(name));
+
+        //Inform new client regarding gameState
+        requestProcessor.sendGameStateStatus(session);
+
+        System.out.println(clients);
+        System.out.println(getConnections().size() + " players connected.");
 
         // Adding the session into the list
         webSocketSessions.add(session);
@@ -49,10 +80,21 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
     {
         super.afterConnectionClosed(session, status);
         System.out.println(session.getId()
-                + " DisConnected");
+                + " Disconnected");
+        System.out.println(status.getReason());
+
+        AtomicReference<String> userId = new AtomicReference<>();
+        if(clients.containsValue(session)) {
+            clients.forEach((key, value) -> {
+                if (value == session) {
+                    userId.set(key);
+                }
+            });
+        }
 
         // Removing the connection info from the list
         webSocketSessions.remove(session);
+        requestProcessor.broadcastDisconnection(userId.get());
     }
 
     // It will handle exchanging of message in the network
@@ -69,14 +111,26 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         // Iterate through the list and pass the message to
         // all the sessions Ignore the session in the list
         // which wants to send the message.
-        for (WebSocketSession webSocketSession :
-                webSocketSessions) {
-            if (session == webSocketSession)
-                continue;
 
-            // sendMessage is used to send the message to
-            // the session
-            webSocketSession.sendMessage(message);
+        requestProcessor.handleMessage(session, (String) message.getPayload());
+    }
+
+    public void broadcast(String message) {
+        TextMessage payload = new TextMessage(message);
+        for(WebSocketSession session : webSocketSessions) {
+            synchronized (session) {
+
+                try {
+                    session.sendMessage(payload);
+                } catch (IOException e) {
+                    System.out.println("Error trying to send message to client! " + session.getId());
+                }
+
+            }
         }
+    }
+
+    public List<WebSocketSession> getConnections() {
+        return webSocketSessions;
     }
 }
