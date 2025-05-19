@@ -763,11 +763,15 @@ window.onload = function() {
 //                itemFocus = null;
 
                 //Iteration2: clear itemFocus + dragging=false, as opposed to wiping selected[]
-                if(itemFocus.selected == user.id) itemFocus.selected = 0; //simulating this is taken by someone else in a gameupdate
-                itemFocus = null;
-                startPoint = null; //make dragging invalid - works good
+//                if(itemFocus.selected == user.id) itemFocus.selected = 0; //simulating this is taken by someone else in a gameupdate
+//                itemFocus = null;
+//                startPoint = null; //make dragging invalid - works good
+//
+//                if(selected.includes(itemFocus)) selected.splice(selected.indexOf(itemFocus), 1); //insurance
 
-                if(selected.includes(itemFocus)) selected.splice(selected.indexOf(itemFocus), 1); //insurance
+                //Testing a server state reset, where players gameState is purged suddenly, including their hand
+                gameState.cleanSlate();
+                console.log("clean!");
 
                 break;
             case "ENTER":

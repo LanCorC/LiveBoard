@@ -1990,7 +1990,8 @@ const gameState = (function() {
         getPlayers,
         showHand,
         disconnection,
-        clientMovement
+        clientMovement,
+        cleanSlate //for testing - remove once finished testing
     };
 })();
 
