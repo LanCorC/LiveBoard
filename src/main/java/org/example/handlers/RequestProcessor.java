@@ -88,6 +88,11 @@ public class RequestProcessor {
                     //If denied, "break;" early, do not broadcast, do not gameUpdate(), send back to OG
                     //rejectGameUpdate();
 
+                    if(gameState == null) {
+                        System.out.println(message.messageHeader + " rejected: GameState == null");
+                        return;
+                    }
+
                     lock.lock(); //may have to extend to adding gameState, taking gameState
                     try {
                         gameUpdate(conn, message);
@@ -120,6 +125,11 @@ public class RequestProcessor {
                 //else, with 'no'
                 case "PermissionGameAction":
                     lock.lock();
+                    if(gameState == null) {
+                        System.out.println(message.messageHeader + " rejected: GameState == null");
+                        return;
+                    }
+
                     try {
                         checkPermissionStale(conn, message);
                     } finally {
@@ -441,6 +451,7 @@ public class RequestProcessor {
     }
 
     public void broadcastDisconnection(String userId) {
+        if(userId == null) return;
         User disconnected = players.get(Long.parseLong(userId));
         if(disconnected == null) return; //in case where connection has not joined game yet
 

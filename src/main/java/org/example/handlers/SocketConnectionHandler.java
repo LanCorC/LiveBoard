@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 // Socket-Connection Configuration class
 public class SocketConnectionHandler extends TextWebSocketHandler {
 
-    List<WebSocketSession> webSocketSessions = Collections.synchronizedList(new ArrayList<>());
+    final List<WebSocketSession> webSocketSessions = Collections.synchronizedList(new ArrayList<>());
     //For tracking new and returning players
     private static Map<String, WebSocketSession> clients = Collections.synchronizedMap(new HashMap<String, WebSocketSession>());
     public static RequestProcessor requestProcessor = RequestProcessor.RequestProcessor();
@@ -118,15 +118,13 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
 
     public void broadcast(String message) {
         TextMessage payload = new TextMessage(message);
-        for(WebSocketSession session : webSocketSessions) {
-            synchronized (session) {
-
+        synchronized (webSocketSessions) {
+            for(WebSocketSession session : webSocketSessions) {
                 try {
                     session.sendMessage(payload);
                 } catch (IOException e) {
                     System.out.println("Error trying to send message to client! " + session.getId());
                 }
-
             }
         }
     }

@@ -937,6 +937,10 @@ const gameState = (function() {
             if(key != clientUser.id) map.delete(key);
         });
 
+        //deck preview
+        userInterface.preview.cardModel = null;
+        userInterface.preview.update();
+
         //own player's hand
         clientUser.hand.images = [];
         clientUser.hand.ref.update();
