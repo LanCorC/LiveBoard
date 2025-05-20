@@ -920,6 +920,7 @@ const gameState = (function() {
         //TODO- push to server; -- likely do processing at server
         //TODO- likely keep all non-server module interactions abstracted
         server.pushGame([items, players, itemCount]);
+        redraw.triggerRedraw();
     }
 
     //private; coupled with 'rebuildBoard' and 'loadBoard' as means of clean slate
@@ -944,6 +945,8 @@ const gameState = (function() {
         //own player's hand
         clientUser.hand.images = [];
         clientUser.hand.ref.update();
+
+        redraw.triggerRedraw();
     }
 
     //if connecting from a game in session OR fetching server's copy of gameState
@@ -1156,6 +1159,8 @@ const gameState = (function() {
 
         console.log("Players, supposedly:");
         console.log(players);
+
+        redraw.triggerRedraw();
     }
 
     //Purpose: take updates from server and apply to gameState, then ensure redraw()

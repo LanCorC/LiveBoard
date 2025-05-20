@@ -16,10 +16,9 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
 
     final List<WebSocketSession> webSocketSessions = Collections.synchronizedList(new ArrayList<>());
     //For tracking new and returning players
-    private static Map<String, WebSocketSession> clients = Collections.synchronizedMap(new HashMap<String, WebSocketSession>());
+    public static Map<String, WebSocketSession> clients = Collections.synchronizedMap(new HashMap<String, WebSocketSession>());
     public static RequestProcessor requestProcessor = RequestProcessor.RequestProcessor();
     public SocketConnectionHandler() {
-        System.out.println(supportsPartialMessages());
         requestProcessor.setServer(this);
     }
 

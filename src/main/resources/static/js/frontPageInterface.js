@@ -68,7 +68,7 @@ const frontPage = (function() {
         server.disconnect(1000, "Client is loading: DEMO");
         gameLoadMessage("Setting up board...");
         await gameState.rebuildBoard("","","",true);
-        tools.redraw();
+//        tools.redraw();
         gameLoadMessage("Revealing board!");
         revealGame();
 
@@ -82,7 +82,7 @@ const frontPage = (function() {
 
         gameLoadMessage("Setting up board...");
         gameState.loadBoard();
-        tools.redraw();
+//        tools.redraw();
         gameLoadMessage("Revealing board!");
         revealGame();
 

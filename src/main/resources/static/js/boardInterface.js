@@ -341,7 +341,7 @@ class ChatBox {
                 entry.innerText = `takeRandom: WIP...`;
                 this.newEntry(entry);
                 break;
-            case "GR":          //TODO- vip, processes immediately
+            case "GR":
             case "GIVERANDOM":
                 this.newEntry(entry);
                 this.#giveRandom(gameState.giveRandom(args[0]));
@@ -351,7 +351,7 @@ class ChatBox {
                 entry.innerText = `requestHand: WIP...`;
                 this.newEntry(entry);
                 break;
-            case "SH":          //TODO- vip, processes immediately
+            case "SH":
             case "SHOWHAND":
                 this.#showHand(gameState.showHand(args[0]));
                 this.newEntry(entry);
@@ -361,12 +361,25 @@ class ChatBox {
                 this.#countHands();
                 this.newEntry(entry);
                 break;
+            case "RG":
+            case "RESETGAME":
+                //TODO- alert, yes / no, confirmation
+                this.#resetGame();
+                this.newEntry(entry);
+                this.server.resetGame();
+                break;
             default:
                 entry.innerText = `Command '${command}' not recognized`;
                 this.newEntry(entry);
                 break;
         }
         this.chatInput.value = "";
+    }
+
+    #resetGame() {
+        let text = ` is about to reset the board!`;
+        this.sendChat(text,"ChatUpdate");
+        this.newEntry(text,undefined,"");
     }
 
     #giveRandom(result) {
@@ -530,6 +543,7 @@ class ChatBox {
 
     //called by server file
     setServer(server) {
+        this.server = server;
         this.#setMethod(server.sendChat);
         this.connection = server.connection;
         this.replacer = server.replacer;

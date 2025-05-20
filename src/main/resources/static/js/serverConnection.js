@@ -205,6 +205,15 @@ class Server {
                         console.log(data);
                         this.server.processPermission(data);
                         break;
+                    case "ResetGame":
+                        if(data.senderId == this.server.game.clientUser.id) {
+                            //initiate new board
+                            this.server.game.loadBoard();
+                        } else {
+                            //we are the other player -
+                            //simply wait for new gameState to arrive
+                        }
+                        break;
                     default:
                         console.log(`"${header}" header not defined`);
                         console.log(data);
@@ -277,6 +286,25 @@ class Server {
         message.bool = true;
         message.player = this.game.clientUser;
         message.explicit = "This is a request to be sent back the gameState";
+
+        message = JSON.stringify(message, this.replacer());
+
+        this.connection.send(message);
+    }
+
+    resetGame() {
+        if(this.connection == undefined || this.connection.readyState != 1
+        || !this.gameStatus) {
+            this.game.loadBoard();
+            return;
+        }
+
+        let message = {};
+        message.messageHeader = "ResetGame";
+        message.senderId = this.game.clientUser.id;
+        message.bool = true;
+        message.player = this.game.clientUser;
+        message.explicit = "This is a request to be initiate reset of gameState";
 
         message = JSON.stringify(message, this.replacer());
 
@@ -476,6 +504,7 @@ class Server {
 
         let message = {};
         message.messageHeader = "PermissionGameAction";
+        message.senderId = this.game.clientUser.id;     //sender
         message.timeStamp = currentId;
         //Note: weak code, assumes is 'card' or 'deck', and only holds 1 item
         if(serverCheckItems[0].isDeck) {

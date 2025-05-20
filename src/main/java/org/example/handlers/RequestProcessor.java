@@ -34,6 +34,9 @@ public class RequestProcessor {
     //purpose: quick key=id, value=object; does NOT hold players (players Map exists)
     private static final HashMap<Long, Object> quickRef = new HashMap<>();
 
+    //purpose: store players live at board reset, for re-broadcasting
+    private static final HashMap<WebSocketSession, User> oldSessions = new HashMap<>();
+
     private RequestProcessor() {
     }
 
@@ -71,7 +74,6 @@ public class RequestProcessor {
             SimpleRequest message = objMapper.readValue(s, SimpleRequest.class);
 //            System.out.printf("New request! %s %s%n", message.explicit, message.timeStamp);
 //            System.out.printf("Processing %s %s...%n", message.messageHeader, message.explicit);
-
             switch (message.messageHeader) {
 
                 case "GameSetup":
@@ -88,8 +90,9 @@ public class RequestProcessor {
                     //If denied, "break;" early, do not broadcast, do not gameUpdate(), send back to OG
                     //rejectGameUpdate();
 
-                    if(gameState == null) {
-                        System.out.println(message.messageHeader + " rejected: GameState == null");
+                    if(quickRef.getOrDefault(message.senderId, null) == null) {
+                        System.out.println(message.messageHeader +
+                                " rejected: player \"GameUpdate\", id not found in existing gameState instance");
                         return;
                     }
 
@@ -112,6 +115,12 @@ public class RequestProcessor {
                     server.broadcast(s);
                     break;
                 case "ClientUpdate":
+                    if(!players.containsKey(message.player.id)) {
+//                        System.out.println(message.messageHeader +
+//                                " rejected: player \"ClientUpdate\", id not found in existing gameState instance");
+                        return;
+                    }
+
                     lock.lock();
                     try {
                         if(updatePlayer(message.player)) {
@@ -124,18 +133,33 @@ public class RequestProcessor {
                     break;
                 //else, with 'no'
                 case "PermissionGameAction":
-                    lock.lock();
-                    if(gameState == null) {
-                        System.out.println(message.messageHeader + " rejected: GameState == null");
+                    if(quickRef.getOrDefault(message.senderId, null) == null) {
+                        System.out.println(message.messageHeader +
+                                " rejected: player \"Permission\", id not found in existing gameState instance");
                         return;
                     }
 
+                    lock.lock();
                     try {
                         checkPermissionStale(conn, message);
                     } finally {
                         lock.unlock();
                     }
 
+                    break;
+                case "ResetGame":
+                    if(quickRef.getOrDefault(message.senderId, null) == null) {
+                        System.out.println(message.messageHeader +
+                                " rejected: player \"ResetGame\", id not found in existing gameState instance");
+                        return;
+                    }
+
+                    lock.lock();
+                    try {
+                        resetGame(s);
+                    } finally {
+                        lock.unlock();
+                    }
                     break;
                 default:
                     System.out.printf("Header '%s' not recognized%n", message.messageHeader);
@@ -146,6 +170,37 @@ public class RequestProcessor {
             System.out.printf("Message could not be mapped to SimpleRequest: %s%n", s);
         }
 
+    }
+
+    private void resetGame(String message) {
+        if(gameState == null) return; //already in progress OR no point
+        //clear gameState, clear quickref, -- at this moment, keep players in case of rebroadcasting force-join
+        gameState = null;
+        quickRef.clear();
+        oldSessions.clear();
+
+        //store reference of players "LIVE = true" at time of initiation
+        players.entrySet()
+                .stream()
+                .filter((entry) -> entry.getValue().live)
+                .forEach(entry -> {
+                    User user = entry.getValue();
+                    user.hand.images.clear();
+                    user.hand.selected = 0;
+                    user.hand.browsing = 0;
+
+                    WebSocketSession key = SocketConnectionHandler.clients.get(entry.getKey().toString());
+                    oldSessions.put(key, user);
+                        }
+                );
+
+        players.clear();
+
+        //broadcast all to wipe gameState, clients to wipe, but for initiator to proceed step2
+        server.broadcast(message);
+
+        //Clientside - only the initiator actions this request, pushing new gameState
+        //gameSetup, if '!oldSessions.empty()', will broadcast OTHER players force-join to new board state
     }
 
     private void gameSetup(WebSocketSession conn, SimpleRequest message) {
@@ -180,7 +235,21 @@ public class RequestProcessor {
         //TODO for testing (outside this codeblock)- now send this BACK to
         //the same / another client. will it break?
 
-        sendAllGameStateStatus();
+        //if game previously did not exist, 'oldSession' marker
+        if(oldSessions.isEmpty()) {
+            sendAllGameStateStatus();
+        } else {
+            oldSessions.entrySet().stream().forEach(entry -> {
+                if(conn == entry.getKey()) return;
+
+                //Other players are forced-joined to new board state
+                SimpleRequest sr = new SimpleRequest();
+                sr.setPlayer(entry.getValue());
+
+                returnGameState(entry.getKey(), sr);
+            });
+        }
+
     }
 
     private void gameUpdate(WebSocketSession conn, SimpleRequest message) {
