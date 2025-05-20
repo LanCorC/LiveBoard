@@ -278,6 +278,16 @@ const frontPage = (function() {
         if(event.target == rulesDialog) rulesDialog.close();
     });
 
+    const aboutDialog = document.getElementById("aboutDialog");
+    const openAbout = document.getElementById("openAbout");
+
+    openAbout.addEventListener("click", ()=>{
+        aboutDialog.showModal();
+    });
+    aboutDialog.addEventListener("click", (event) => {
+        if(event.target == aboutDialog) aboutDialog.close();
+    });
+
     return { send, increment, connectionSuccess, connectionFailed, connectionStarted, gameLoadMessage,
     gameBoardReady, toggleHomescreen, namePlaceholder};
 })();
