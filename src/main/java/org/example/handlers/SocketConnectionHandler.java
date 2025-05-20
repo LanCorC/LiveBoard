@@ -103,6 +103,8 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         // Removing the connection info from the list
         webSocketSessions.remove(session);
         requestProcessor.broadcastDisconnection(userId.get());
+
+        System.out.println("Connections remaining: " + webSocketSessions.size());
     }
 
     // It will handle exchanging of message in the network
@@ -135,13 +137,11 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
 
     public void broadcast(String message) {
         TextMessage payload = new TextMessage(message);
-        synchronized (webSocketSessions) {
-            for(WebSocketSession session : webSocketSessions) {
-                try {
-                    session.sendMessage(payload);
-                } catch (IOException e) {
-                    System.out.println("Error trying to send message to client! " + session.getId());
-                }
+        for(WebSocketSession session : webSocketSessions) {
+            try {
+                session.sendMessage(payload);
+            } catch (IOException e) {
+                System.out.println("Error trying to send message to client! " + session.getId());
             }
         }
     }
