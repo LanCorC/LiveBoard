@@ -769,10 +769,6 @@ window.onload = function() {
 //
 //                if(selected.includes(itemFocus)) selected.splice(selected.indexOf(itemFocus), 1); //insurance
 
-                //Testing a server state reset, where players gameState is purged suddenly, including their hand
-                gameState.cleanSlate();
-                console.log("clean!");
-
                 break;
             case "ENTER":
                 let UI = userInterface.userInterface;
