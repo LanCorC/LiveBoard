@@ -1,5 +1,6 @@
 package org.example.handlers;
 
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
@@ -17,13 +18,19 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
     //For tracking new and returning players
     private static Map<String, WebSocketSession> clients = Collections.synchronizedMap(new HashMap<String, WebSocketSession>());
     public static RequestProcessor requestProcessor = RequestProcessor.RequestProcessor();
-
-    // This method is executed when client tries to connect
-    // to the sockets
     public SocketConnectionHandler() {
+        System.out.println(supportsPartialMessages());
         requestProcessor.setServer(this);
     }
 
+    //overrides default 'false' to enable partial messages
+    @Override
+    public boolean supportsPartialMessages() {
+        return true;
+    }
+
+    // This method is executed when client tries to connect
+    // to the sockets
     @Override
     public void
     afterConnectionEstablished(WebSocketSession session)
@@ -32,8 +39,8 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
 
         super.afterConnectionEstablished(session);
 
-        //Bandaid - arbitrary value that is large enough to pass the massive initial string gamestate
-        session.setTextMessageSizeLimit(160_000);
+        //enables place to store partial messages
+        session.getAttributes().put("messageRoom", new StringBuilder(session.getTextMessageSizeLimit()));
 
         // Logging the connection ID with Connected Message
         System.out.println(session.getId() + " Connected");
@@ -106,14 +113,24 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
                               WebSocketMessage<?> message)
             throws Exception
     {
-
         super.handleMessage(session, message);
 
-        // Iterate through the list and pass the message to
-        // all the sessions Ignore the session in the list
-        // which wants to send the message.
+        StringBuilder sbTemp = (StringBuilder) session.getAttributes().get("messageRoom");
+        if(!message.isLast()) {
+            sbTemp.append(message.getPayload());
+        } else {
+            if(!sbTemp.isEmpty()) { //not empty
+                sbTemp.append(message.getPayload());
 
-        requestProcessor.handleMessage(session, (String) message.getPayload());
+                requestProcessor.handleMessage(session, sbTemp.toString());
+
+                //clear StringBuilder
+                sbTemp.setLength(0);
+                sbTemp.trimToSize();
+            } else {
+                requestProcessor.handleMessage(session, (String) message.getPayload());
+            }
+        }
     }
 
     public void broadcast(String message) {
