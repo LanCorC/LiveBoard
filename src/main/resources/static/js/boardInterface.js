@@ -504,7 +504,7 @@ class ChatBox {
             b.innerText = "[nullCard]";
             return b;
         }
-        b.innerText = "[Card]";
+        b.innerText = `[${card.type || "Card"}]`;
         b.card = card;
 
         return b;
