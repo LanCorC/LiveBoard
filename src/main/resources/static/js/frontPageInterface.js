@@ -112,6 +112,9 @@ const frontPage = (function() {
         serverConnectButton.onclick = serverConnectButtonConnect;
         serverConnectButton.innerHTML = `Connect`;
     }
+    document.getElementById("defaultConnectButton").onclick = () => {
+        server.connect();
+    }
     serverConnectButton.onclick = serverConnectButtonEdit;
 
     function gameLoadMessage(message) {
