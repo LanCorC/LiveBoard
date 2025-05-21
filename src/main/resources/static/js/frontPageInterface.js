@@ -100,8 +100,19 @@ const frontPage = (function() {
         frontPage.style.visibility = ""; //initial
     }
 
-    serverConnectButton.addEventListener("click",
-        () => server.connect(addressInput.value));
+    //serverConnectButton toggles between 'edit addressInput' and 'Connect'
+    let serverConnectButtonConnect = function() {
+        tools.disable(addressInput);
+        server.connect(addressInput.value);
+        serverConnectButton.onclick = serverConnectButtonEdit;
+        serverConnectButton.innerHTML = `&#9997;`;
+    }
+    let serverConnectButtonEdit = function() {
+        tools.enable(addressInput);
+        serverConnectButton.onclick = serverConnectButtonConnect;
+        serverConnectButton.innerHTML = `Connect`;
+    }
+    serverConnectButton.onclick = serverConnectButtonEdit;
 
     function gameLoadMessage(message) {
         gameLoading.innerHTML = message;
