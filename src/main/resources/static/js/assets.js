@@ -218,7 +218,7 @@ function populateProperties() {
 
     //names:
     let names = new Map();
-    names.put("HtS-PnP-Base-", new Array(       //Base Game
+    names.set("HtS-PnP-Base-", [       //Base Game
         "Sealing Key",                          //001
         "Curse of the Snake's Eyes",
         "Suspiciously Shiny Coin",
@@ -314,7 +314,7 @@ function populateProperties() {
         "Abyss Queen 8+",
         "Malamammoth 8+",
         "Rex Major 8+"
-    ));
+    ]);
 //    expansionProperties.get("Base Deck").names
 //            .set("001");
 //    ;
