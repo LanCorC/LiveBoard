@@ -24,7 +24,22 @@ let pinBoard = false;
 //lastly, gameState <-> server = fetch player info, gameState.items from server copy
     //gameState loads as empty players, fetches server playerList (if any), then adds self
 
-//TODO- frontpage(+loadscreen) connects with serverConnection
+//Prioritize visuals
+const backgroundUrl = [
+    "url(images/backgrounds/rainbow-vortex.svg)",
+    "url(images/backgrounds/hollowed-boxes.svg)",
+    "url(images/backgrounds/colorful-stingrays.svg)",
+    "url(images/backgrounds/confetti-doodles.svg)"
+];
+let backgroundIndex = Math.floor(Math.random() * backgroundUrl.length);
+board.style.background = backgroundUrl[backgroundIndex];
+function cycleBackground() {
+    console.log(backgroundIndex % 5);
+    board.style.background = backgroundUrl[++backgroundIndex % backgroundUrl.length];
+}
+board.height = window.innerHeight;
+board.width = window.innerWidth;
+
 pregameInterface.initialize();
 
 window.onload = function() {
@@ -795,19 +810,6 @@ window.onload = function() {
                 return;
         }
     }, false);
-
-    const backgroundUrl = [
-        "url(images/backgrounds/rainbow-vortex.svg)",
-        "url(images/backgrounds/hollowed-boxes.svg)",
-        "url(images/backgrounds/colorful-stingrays.svg)",
-        "url(images/backgrounds/confetti-doodles.svg)"
-    ];
-    let backgroundIndex = Math.floor(Math.random() * backgroundUrl.length);
-    board.style.background = backgroundUrl[backgroundIndex];
-    function cycleBackground() {
-        console.log(backgroundIndex % 5);
-        board.style.background = backgroundUrl[++backgroundIndex % backgroundUrl.length];
-    }
 
     //[Usage: inserted inside redraw() codeblock]
     function correctTranslation() {
