@@ -661,6 +661,9 @@ const gameState = (function() {
                     interactive.restore();
                 }
 
+                //revert shadow to default
+                visual.shadowColor = "rgb(0 0 0 / 0%)";
+
                 //Make rounded
                 visual.save();
 
@@ -712,6 +715,8 @@ const gameState = (function() {
             }
         });
 
+        //revert shadow to default
+        visual.shadowColor = "rgb(0 0 0 / 0%)";
 
         //Player's mouse positions
         visual.save();
