@@ -139,49 +139,57 @@ function populateProperties() {
         { prefix: "HtS-PnP-Base-",
             duplicates: new Map(),
             uniqueCount: 95,
-            perType: [[1, 74], [101, 106], [201,215]]
+            perType: [[1, 74], [101, 106], [201,215]],
+            names: new Map()
         });
     expansionProperties.set("Warrior and Druid Expansion",
         { prefix: "HtS-WarDruid-",
             duplicates: new Map(),
             uniqueCount: 35,
-            perType: [[1, 31], [101, 102], [201,202]]
+            perType: [[1, 31], [101, 102], [201,202]],
+            names: new Map()
         });
     expansionProperties.set("Monster Expansion",
         { prefix: "HtS-PnP-Mon-",
             duplicates: new Map(),
             uniqueCount: 13,
-            perType: [[201,213]]
+            perType: [[201,213]],
+            names: new Map()
         });
     expansionProperties.set("Berserkers and Necromancers Expansion",
         { prefix: "HtS-BersNecr-",
             duplicates: new Map(),
             uniqueCount: 33,
-            perType: [[1, 29], [101, 102], [201,202]]
+            perType: [[1, 29], [101, 102], [201,202]],
+            names: new Map()
         });
     expansionProperties.set("Dragon Sorcerer Expansion",
         { prefix: "HtS-PnP-Drag-",
             duplicates: new Map(),
             uniqueCount: 16,
-            perType: [[1, 14], [101, 101], [201,201]]
+            perType: [[1, 14], [101, 101], [201,201]],
+            names: new Map()
         });
     expansionProperties.set("Exclusive",
         { prefix: "HtS-ConCard-",
             duplicates: new Map(),
             uniqueCount: 3,
-            perType: [[101, 103]]
+            perType: [[101, 103]],
+            names: new Map()
         });
     expansionProperties.set("Blind Box Exclusive",
         { prefix: "HtS-NecBers-",
             duplicates: new Map(),
             uniqueCount: 2,
-            perType: [[1, 2]]
+            perType: [[1, 2]],
+            names: new Map()
         });
     expansionProperties.set("KickStarter Exclusive",
         { prefix: "HtS-PnP-KSE-",
             duplicates: new Map(),
             uniqueCount: 25,
-            perType: [[1, 21], [101, 104]]
+            perType: [[1, 21], [101, 104]],
+            names: new Map()
         });
 
     //Expansions without duplicates: WarDruids, Monsters, Exclusive, Dragon
@@ -207,6 +215,109 @@ function populateProperties() {
         .set("021", 2) //Lightning Labrys (magic)
         .set("022", 2) //Mass Sacrifice (magic)
     ;
+
+    //names:
+    let names = new Map();
+    names.put("HtS-PnP-Base-", new Array(       //Base Game
+        "Sealing Key",                          //001
+        "Curse of the Snake's Eyes",
+        "Suspiciously Shiny Coin",
+        "Bard Mask",
+        "Ranger Mask",
+        "Wizard Mask",
+        "Fighter Mask",
+        "Guardian Mask",
+        "Thief Mask",
+        "Really Big Ring",                      //010
+        "Particularly Rusty Coin",
+        "Decoy Doll",
+        "Enchanted Spell",
+        "Forceful Winds",
+        "Entangling Trap",
+        "Winds of Change",
+        "Critical Boost",
+        "Destructive Spell",
+        "Call to the Fallen",
+        "Forced Exchange",                      //020
+        "MODIFIER +2/-2",
+        "MODIFIER -4",
+        "MODIFIER +4",
+        "MODIFIER +1/-3",
+        "MODIFIER +3/-1",
+        "CHALLENGE",
+        "Pan Chucks 8+",
+        "Heavy Bear 5+",
+        "Qi Bear 10+",
+        "Beary Wise 7+",                           //030
+        "Tough Teddy 4+",
+        "Fury Knuckle 5+",
+        "Bear Claw 7+",
+        "Bad Axe 8+",
+        "Peanut 7+",
+        "Napping Nibbles, Devourer of Worlds 2+",
+        "Mellow Dee 7+",
+        "Greedy Cheeks 8+",
+        "Fuzzy Cheeks 8+",
+        "Tipsy Tootie 6+",                      //040
+        "Dodgy Dealer 9+",
+        "Lucky Bucky 7+",
+        "Calming Voice 9+",
+        "Wise Shield 6+",
+        "Mighty Blade 8+",
+        "Radiant Horn 6+",
+        "Iron Resolve 8+",
+        "Holy Curselifter 5+",
+        "Vibrant Glow 9+",
+        "Guiding Light 7+",                     //050
+        "Sharp Fox 5+",
+        "Wildshot 8+",
+        "Wily Red 10+",
+        "Lookie Rookie 5+",
+        "Bullseye 7+",
+        "Quick Draw 8+",
+        "Hook 6+",
+        "Serious Grey 9+",
+        "Smooth Mimimeow 7+",
+        "Plundering Puma 6+",                   //060
+        "Shuriktty 9+",
+        "Meowzio 10+",
+        "Slippery Paws 6+",
+        "Sly Pickings 6+",
+        "Kit Napper 9+",
+        "Silent Shadow 8+",
+        "Snowball 6+",
+        "Bun Bun 5+",
+        "Wiggles 10+",
+        "Spooky 10+",                           //070
+        "Fluffy 10+",
+        "Buttons 6+",
+        "Whiskers 11+",
+        "Hopper 7+",
+        "The Protecting Horn",
+        "The Shadow Claw",
+        "The Fist of Reason",
+        "The Cloaked Sage",
+        "The Divine Arrow",
+        "The Charismatic Song",
+        "Dracos 5-",
+        "Orthus 8+",
+        "Dark Dragon King 8+",
+        "Terratuga 11+",
+        "Crowned Serpent 10+",
+        "Titan Wyvern 8+",
+        "Corrupted Sabretooth 9+",
+        "Mega Slime 8+",
+        "Warworn Owlbear 8+",
+        "Arctic Aries 10+",
+        "Anuran Cauldron 7+",
+        "Bloodwing 9+",
+        "Abyss Queen 8+",
+        "Malamammoth 8+",
+        "Rex Major 8+"
+    ));
+//    expansionProperties.get("Base Deck").names
+//            .set("001");
+//    ;
 }
 populateProperties();
 //console.log(expansionProperties);
@@ -431,8 +542,6 @@ function preProcessRefCard(card, expansion, prefix) {
 
     card.src = `${baseAddress}/Game/${expansion}/${prefix}${padHundred(card.magicId)}.png`;
     card.source = `${baseAddress}/Game/${expansion}/${prefix}${padHundred(card.magicId)}.png`;
-
-
 }
 
 //Note: assumes there can only be x01 -> x99 of a type
