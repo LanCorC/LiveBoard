@@ -218,7 +218,7 @@ function populateProperties() {
 
     //names:
     let names = new Map();
-    names.set("HtS-PnP-Base-", [       //Base Game
+    names.set("Base Deck", [       //Base Game
         "Sealing Key",                          //001
         "Curse of the Snake's Eyes",
         "Suspiciously Shiny Coin",
