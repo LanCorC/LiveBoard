@@ -41,8 +41,11 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         //enables place to store partial messages
         session.getAttributes().put("messageRoom", new StringBuilder(session.getTextMessageSizeLimit()));
 
+        System.out.println("Session remoteAdd: " + session.getRemoteAddress());
+        System.out.println("Session ID: " + session.getId());
+
         // Logging the connection ID with Connected Message
-        System.out.println(session.getId() + " Connected");
+        System.out.println("ID: " + session.getId() + " Connected");
 
         //Pull user value
         String[] stringArr = session.getUri().toString().split("/");
@@ -57,7 +60,11 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
 //            if(oldConnection != null) oldConnection.close(1001,
 //                    "Reconnection successful in a new instance. Terminating this connection.");
             session.sendMessage(new TextMessage("Reconnection successful. Terminating older instance."));
-            if(oldConnection != null && oldConnection != session) oldConnection.close(CloseStatus.SERVICE_RESTARTED);
+            if(oldConnection != null && oldConnection != session) {
+                oldConnection.sendMessage(new TextMessage("Yer Old"));
+                oldConnection.close(CloseStatus.SERVICE_RESTARTED);
+                System.out.println("Terminated older connection: " + session.getId());
+            }
             System.out.printf("Please welcome a returning player: %s!%n", name);
         } else {
             clients.put(name, session);
@@ -89,6 +96,7 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         System.out.println(session.getId()
                 + " Disconnected");
         System.out.println(status.getReason());
+        System.out.println(status.getCode());
 
         AtomicReference<String> userId = new AtomicReference<>();
         if(clients.containsValue(session)) {

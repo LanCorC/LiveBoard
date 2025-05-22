@@ -89,7 +89,7 @@ class Server {
                 //also triggers if connection attempt fails (server offline)
                 //                console.log("Something went wrong!")
                 //                frontPage.send("Server not found, or closed unexpectedly!");
-                frontUI.connectionFailed();
+                frontUI.connectionFailed(event.code + " " + event.reason);
             }
 
             this.server.gameStatus = false;
