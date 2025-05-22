@@ -57,7 +57,7 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
 //            if(oldConnection != null) oldConnection.close(1001,
 //                    "Reconnection successful in a new instance. Terminating this connection.");
             session.sendMessage(new TextMessage("Reconnection successful. Terminating older instance."));
-            if(oldConnection != null) oldConnection.close(CloseStatus.SERVICE_RESTARTED);
+            if(oldConnection != null && oldConnection != session) oldConnection.close(CloseStatus.SERVICE_RESTARTED);
             System.out.printf("Please welcome a returning player: %s!%n", name);
         } else {
             clients.put(name, session);
