@@ -66,32 +66,38 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
             if(oldConnection == null) {
                 System.out.println("NOTE: SESSION ALREADY PURGED BEFORE WE GOT HERE!");
             } else {
-                System.out.println("Old session found, proceeding");
-                oldConnection.sendMessage(new TextMessage("hi old!"));
+                if(oldConnection.isOpen()) {
+                    System.out.println("Old session found OPEN, proceeding");
 
-                System.out.println("Boolean, oldConnection == newConnection: " + oldConnection.equals(session));
+                    oldConnection.sendMessage(new TextMessage("hi old!"));
+
+                    System.out.println("Boolean, oldConnection == newConnection: " + oldConnection.equals(session));
 //                System.out.printf("Please welcome a returning player: %s!%n", name);
 
-                if(oldConnection.getRemoteAddress().toString().equals(session.getRemoteAddress().toString())) {
-                    System.out.println("remoteAddress.toString identical");
-                    session.sendMessage(new TextMessage("remoteAddress.toString identical"));
+                    if(oldConnection.getRemoteAddress().toString().equals(session.getRemoteAddress().toString())) {
+                        System.out.println("remoteAddress.toString identical");
+                        session.sendMessage(new TextMessage("remoteAddress.toString identical"));
+                    } else {
+                        System.out.println("remoteAddress.toString NOT identical");
+                        session.sendMessage(new TextMessage("remoteAddress.toString NOT identical"));
+                    }
+                    if(oldConnection.getId().equals(session.getId())) {
+                        System.out.println("getId() identical");
+                        session.sendMessage(new TextMessage("getId() identical"));
+                    } else {
+                        System.out.println("getId() NOT identical");
+                        session.sendMessage(new TextMessage("getId() NOT identical"));
+                    }
+
+                    if(oldConnection != null && !oldConnection.getId().equals(session.getId())) {
+                        oldConnection.sendMessage(new TextMessage("Yer Old"));
+                        oldConnection.close(CloseStatus.SERVICE_RESTARTED);
+                        System.out.println("Terminated older connection: " + session.getId());
+                    }
                 } else {
-                    System.out.println("remoteAddress.toString NOT identical");
-                    session.sendMessage(new TextMessage("remoteAddress.toString NOT identical"));
-                }
-                if(oldConnection.getId().equals(session.getId())) {
-                    System.out.println("getId() identical");
-                    session.sendMessage(new TextMessage("getId() identical"));
-                } else {
-                    System.out.println("getId() NOT identical");
-                    session.sendMessage(new TextMessage("getId() NOT identical"));
+                    System.out.println("Old session found CLOSED via WebSocketSession.isOpen()");
                 }
 
-                if(oldConnection != null && !oldConnection.getId().equals(session.getId())) {
-                    oldConnection.sendMessage(new TextMessage("Yer Old"));
-                    oldConnection.close(CloseStatus.SERVICE_RESTARTED);
-                    System.out.println("Terminated older connection: " + session.getId());
-                }
             }
 
 
