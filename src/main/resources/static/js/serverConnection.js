@@ -92,7 +92,8 @@ class Server {
                 frontUI.connectionFailed("Messy shutdown: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
             }
 
-            if(this.connection == undefined || this.connection.readyState != 1) {
+            //TODO- cleanup. prevent frontUI failure call if 'not true'
+            if(socket == undefined || socket.readyState != 1) {
                 alert("no hope - the client socket has deemed itself closed, despite devtool still says its open - sending mousemovements");
             } else {
                 frontUI.connectionSuccess();
