@@ -60,7 +60,7 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
 //            if(oldConnection != null) oldConnection.close(1001,
 //                    "Reconnection successful in a new instance. Terminating this connection.");
             session.sendMessage(new TextMessage("Reconnection successful. Terminating older instance."));
-            if(oldConnection != null && oldConnection != session) {
+            if(oldConnection != null && !oldConnection.getId().equals(session.getId())) {
                 oldConnection.sendMessage(new TextMessage("Yer Old"));
                 oldConnection.close(CloseStatus.SERVICE_RESTARTED);
                 System.out.println("Terminated older connection: " + session.getId());
@@ -83,6 +83,8 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         // Adding the session into the list
         webSocketSessions.add(session);
 
+        System.out.println("~~~");
+        System.out.println("Current is still open:" + session.isOpen());
         System.out.println(getConnections().size() + " players connected.");
     }
 
