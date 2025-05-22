@@ -83,16 +83,24 @@ class Server {
 
         socket.onclose = function(event) {
             if(event.wasClean) {
-                console.log(`Disconnected successfully: ${event.reason}`);
-                frontUI.connectionFailed(event.reason);
+                console.log("Clean shutdown: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
+                frontUI.connectionFailed("Clean shutdown: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
             } else {
                 //also triggers if connection attempt fails (server offline)
                 //                console.log("Something went wrong!")
                 //                frontPage.send("Server not found, or closed unexpectedly!");
-                frontUI.connectionFailed(event.code + " " + event.reason);
+                frontUI.connectionFailed("Messy shutdown: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
+            }
+
+            if(this.connection == undefined || this.connection.readyState != 1) {
+                alert("no hope - the client socket has deemed itself closed, despite devtool still says its open - sending mousemovements");
+            } else {
+                frontUI.connectionSuccess();
             }
 
             this.server.gameStatus = false;
+
+
         }
 
         //Note: needed to be passed to websocket obj so it can access vars

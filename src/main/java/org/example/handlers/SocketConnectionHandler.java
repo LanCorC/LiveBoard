@@ -74,6 +74,13 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
                     System.out.println("Boolean, oldConnection == newConnection: " + oldConnection.equals(session));
 //                System.out.printf("Please welcome a returning player: %s!%n", name);
 
+                    System.out.println("Old:");
+                    System.out.println(oldConnection.getRemoteAddress().toString());
+                    System.out.println(oldConnection.getId());
+                    System.out.println("New:");
+                    System.out.println(session.getRemoteAddress().toString());
+                    System.out.println(session.getId());
+
                     if(oldConnection.getRemoteAddress().toString().equals(session.getRemoteAddress().toString())) {
                         System.out.println("remoteAddress.toString identical");
                         session.sendMessage(new TextMessage("remoteAddress.toString identical"));
@@ -91,8 +98,10 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
 
                     if(oldConnection != null && !oldConnection.getId().equals(session.getId())) {
                         oldConnection.sendMessage(new TextMessage("Yer Old"));
-                        oldConnection.close(CloseStatus.SERVICE_RESTARTED);
-                        System.out.println("Terminated older connection: " + session.getId());
+                        session.sendMessage(new TextMessage("If you dont survive after we close the ol bugger, yer weird. NOW!"));
+                        oldConnection.close();
+                        session.sendMessage(new TextMessage("you survived .close()? man."));
+                        System.out.println("Terminated older connection: " + oldConnection.getId());
                     }
                 } else {
                     System.out.println("Old session found CLOSED via WebSocketSession.isOpen()");
@@ -128,7 +137,7 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
     // method is called
     @Override
     public void afterConnectionClosed(WebSocketSession session,
-                                      CloseStatus status)throws Exception
+                                      CloseStatus status) throws Exception
     {
         super.afterConnectionClosed(session, status);
         System.out.println(session.getId()
