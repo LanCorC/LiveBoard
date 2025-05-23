@@ -18,6 +18,7 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
     //For tracking new and returning players
     public static Map<String, WebSocketSession> clients = Collections.synchronizedMap(new HashMap<String, WebSocketSession>());
     public static RequestProcessor requestProcessor = RequestProcessor.RequestProcessor();
+    public static boolean VERBOSE = false;
     public SocketConnectionHandler() {
         requestProcessor.setServer(this);
     }
@@ -41,13 +42,11 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         //enables place to store partial messages
         session.getAttributes().put("messageRoom", new StringBuilder(session.getTextMessageSizeLimit()));
 
-        System.out.println("~~Start of Connection~~");
-        System.out.println("Connection established : ");
-        System.out.println("Session remoteAdd: " + session.getRemoteAddress());
-        System.out.println("Session ID: " + session.getId());
-
-        // Logging the connection ID with Connected Message
-        System.out.println("ID: " + session.getId() + " Connected");
+        if(VERBOSE) {
+            System.out.println("~~Start of Connection~~");
+            System.out.println("Session remoteAdd: " + session.getRemoteAddress());
+            System.out.println("Session ID: " + session.getId());
+        }
 
         //Pull user value
         String[] stringArr = session.getUri().toString().split("/");
@@ -58,57 +57,22 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         //If reconnecting, replace and purge 'older' connection
         if(clients.containsKey(name)) {
             WebSocketSession oldConnection = clients.put(name, session); //replaces old websocket
-//            if(oldConnection != null) oldConnection.close(1001,
-//                    "Reconnection successful in a new instance. Terminating this connection.");
             session.sendMessage(new TextMessage("Reconnection successful. Terminating older instance."));
-            session.sendMessage(new TextMessage("hi new!"));
 
-            if(oldConnection == null) {
-                System.out.println("NOTE: SESSION ALREADY PURGED BEFORE WE GOT HERE!");
-            } else {
+            System.out.println("Returning player! : " + name);
+            if(oldConnection != null) {
                 if(oldConnection.isOpen()) {
-                    System.out.println("Old session found OPEN, proceeding");
+                    System.out.println("Old session found still OPEN, proceeding");
 
-                    oldConnection.sendMessage(new TextMessage("hi old!"));
-
-                    System.out.println("Boolean, oldConnection == newConnection: " + oldConnection.equals(session));
-//                System.out.printf("Please welcome a returning player: %s!%n", name);
-
-                    System.out.println("Old:");
-                    System.out.println(oldConnection.getRemoteAddress().toString());
-                    System.out.println(oldConnection.getId());
-                    System.out.println("New:");
-                    System.out.println(session.getRemoteAddress().toString());
-                    System.out.println(session.getId());
-
-                    if(oldConnection.getRemoteAddress().toString().equals(session.getRemoteAddress().toString())) {
-                        System.out.println("remoteAddress.toString identical");
-                        session.sendMessage(new TextMessage("remoteAddress.toString identical"));
-                    } else {
-                        System.out.println("remoteAddress.toString NOT identical");
-                        session.sendMessage(new TextMessage("remoteAddress.toString NOT identical"));
-                    }
-                    if(oldConnection.getId().equals(session.getId())) {
-                        System.out.println("getId() identical");
-                        session.sendMessage(new TextMessage("getId() identical"));
-                    } else {
-                        System.out.println("getId() NOT identical");
-                        session.sendMessage(new TextMessage("getId() NOT identical"));
-                    }
-
-                    if(oldConnection != null && !oldConnection.getId().equals(session.getId())) {
+                    if(!oldConnection.getId().equals(session.getId())) {
                         oldConnection.sendMessage(new TextMessage("Yer Old"));
-                        session.sendMessage(new TextMessage("If you dont survive after we close the ol bugger, yer weird. NOW!"));
                         oldConnection.close();
-                        session.sendMessage(new TextMessage("you survived .close()? man."));
                         System.out.println("Terminated older connection: " + oldConnection.getId());
                     }
                 } else {
-                    System.out.println("Old session found CLOSED via WebSocketSession.isOpen()");
+                    System.out.println("Old session found already CLOSED via WebSocketSession.isOpen()");
                 }
-
             }
-
 
         } else {
             clients.put(name, session);
@@ -122,15 +86,14 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         //Inform new client regarding gameState
         requestProcessor.sendGameStateStatus(session);
 
-        System.out.println(clients);
-
         // Adding the session into the list
         webSocketSessions.add(session);
 
-        System.out.println("~~~");
-        System.out.println("Current is still open:" + session.isOpen());
-        System.out.println(getConnections().size() + " players connected.");
-        System.out.println("~EndOf\"startConnection\"~");
+        System.out.println("Connections remaining: " + getConnections().size());
+        if(VERBOSE) {
+            System.out.println("Current is still open:" + session.isOpen());
+            System.out.println("~~~EndOf\"startConnection\"~~~");
+        }
     }
 
     // When client disconnect from WebSocket then this
@@ -170,9 +133,6 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
             throws Exception
     {
         super.handleMessage(session, message);
-
-        //TEMPORARY TODO - for seeing if it echoes a 'closed' socket
-        session.sendMessage(message);
 
         StringBuilder sbTemp = (StringBuilder) session.getAttributes().get("messageRoom");
         if(!message.isLast()) {

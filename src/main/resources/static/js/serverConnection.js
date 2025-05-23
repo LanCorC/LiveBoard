@@ -46,10 +46,11 @@ class Server {
     //STEPS- see if i can do a "mousedown" gauge if item, card, was already selected ("VIP") or not (print all)
     requestFreePass = false;
 
+    //Function: if connection already exists, terminates; then after some time, connects
+    //Solves issue with 'live website' where 'websocket' with no delay terminates BOTH old and new connection
     preconnect(address) {
         if(this.connection && this.connection.readyState == 1) {
             this.connection.close(1000, "Client is RECONNECTING from same tab");
-//            alert("CLOSED existing connection, replacing soon...");
         }
         setTimeout(() => {
             this.connect(address);
@@ -57,13 +58,16 @@ class Server {
     }
 
     connect(address) {
-//        alert("CONNECTING...");
         if(!address) address = window.location.host;
         const endpoint = "/multiplay";
 
         let regExp = /(?<=:\/\/).*/; //search for after :// as in http:// https://
         if(address.search(regExp) != -1) {
             address = address.match(regExp)[0]; //take first match
+        }
+        regExp = /^.*?(?=\/)/;  //search anything before `/`, exclusive (site.com/query => site.com)
+        if(address.search(regExp) != -1) {
+            address = address.match(regExp)[0];
         }
 
         let socket;
@@ -73,13 +77,14 @@ class Server {
             console.log("attempting ws");
             socket = new WebSocket(`ws${addressString}`);
         } catch(e) { //Mixed Content found, try secure (for purpose of tunnel proxy)
+            console.log("attempting wss");
             socket = new WebSocket(`wss${addressString}`);
         };
 
         socket.address = address;
 
         this.connection = socket;
-        //Redundant? see initialize()
+        //TODO Redundant? see initialize()
         this.chatBox.setServer(this);
 
         //Note: necessary local variable for 'nested' (see below) methods
@@ -91,7 +96,6 @@ class Server {
         socket.onopen = function(event) {
             console.log("Server connection secured!");
             frontUI.connectionSuccess();
-//            alert("we've opened!");
         }
 
         socket.onclose = function(event) {
@@ -105,16 +109,6 @@ class Server {
                 frontUI.connectionFailed("Messy shutdown: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
             }
 
-            //TODO- cleanup. prevent frontUI failure call if 'not true'
-            if(socket == undefined || socket.readyState != 1) {
-//                alert("no hope - the client socket has deemed itself closed, despite devtool still says its open - sending mousemovements");
-                console.log("no hope - the client socket has deemed itself closed, despite devtool still says its open - sending mousemovements");
-            } else {
-                frontUI.connectionSuccess();
-                return;
-            }
-
-            //TODO - will cause bug like this
             this.server.gameStatus = false;
         }
 

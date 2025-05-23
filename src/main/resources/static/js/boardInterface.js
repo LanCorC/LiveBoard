@@ -533,6 +533,7 @@ class ChatBox {
 //        }
     }
 
+    //TODO - fix; do not use spaghetti code
     sendChat = function(data) { console.log(`sendChatDefault: ${data}`)};
 
     //Spaghetti code, enjoy
