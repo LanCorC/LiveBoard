@@ -533,39 +533,22 @@ class ChatBox {
 //        }
     }
 
-    //TODO - fix; do not use spaghetti code
     sendChat = function(data) { console.log(`sendChatDefault: ${data}`)};
-
-    //Spaghetti code, enjoy
-    connection = null;
-    replacer = null;
-    JSONreplacer = null;
-    game = null;
 
     //called by server file
     setServer(server) {
-        this.server = server;
+        this.server = server; //used in 'resetGame'
         this.#setMethod(server.sendChat);
-        this.connection = server.connection;
-        this.replacer = server.replacer;
-        this.JSONreplacer = server.JSONreplacer;
-        this.game = server.game;
     }
 
     #setMethod(methodSendChat) {
         this.sendChat = methodSendChat;
     }
 
-//    #color = this.container.style.backgroundColor;
-//    #color;
-    //TODO- to transparent
     transparent() {
-//        this.container.style.backgroundColor = "transparent";
         this.container.classList.add("transparentBg");
     }
-    //TODO- to opaque
     opaque() {
-//        this.container.style.backgroundColor = this.#color;
         this.container.classList.remove("transparentBg");
     }
 

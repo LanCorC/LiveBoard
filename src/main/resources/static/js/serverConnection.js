@@ -84,8 +84,6 @@ class Server {
         socket.address = address;
 
         this.connection = socket;
-        //TODO Redundant? see initialize()
-        this.chatBox.setServer(this);
 
         //Note: necessary local variable for 'nested' (see below) methods
         let frontUI = this.frontPage;
@@ -100,13 +98,13 @@ class Server {
 
         socket.onclose = function(event) {
             if(event.wasClean) {
-                console.log("Clean shutdown: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
-                frontUI.connectionFailed("Clean shutdown: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
+                console.log("Clean disconnect: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
+                frontUI.connectionFailed("Clean disconnect: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
             } else {
                 //also triggers if connection attempt fails (server offline)
                 //                console.log("Something went wrong!")
                 //                frontPage.send("Server not found, or closed unexpectedly!");
-                frontUI.connectionFailed("Messy shutdown: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
+                frontUI.connectionFailed("Dirty disconnect: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
             }
 
             this.server.gameStatus = false;
@@ -466,7 +464,7 @@ class Server {
     }
 
     //note: "items" is strictly cards- no playmats, decks, tokens
-    sendChat(stringData, stringAction, cards, recipient) {
+    sendChat = function(stringData, stringAction, cards, recipient) {
         if(this.connection == undefined || this.connection.readyState != 1) return;
         if(cards && !Array.isArray(cards)) cards = [cards];
 
@@ -481,7 +479,7 @@ class Server {
         message = JSON.stringify(message, this.replacer());
 
         this.connection.send(message);
-    }
+    }.bind(this);
 
     //purpose: send clientUser updates to server
     clientUpdate(subHeader) {
