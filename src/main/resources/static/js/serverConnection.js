@@ -47,14 +47,14 @@ class Server {
     requestFreePass = false;
 
     preconnect(address) {
-        setTimeout(connect, 500, address);
-    }
-
-    connect(address) {
         if(this.connection && this.connection.readyState == 1) {
             this.connection.close(1000, "Client is RECONNECTING from same tab");
             alert("CLOSED existing connection, replacing soon...");
         }
+        setTimeout(connect, 500, address);
+    }
+
+    connect(address) {
         if(!address) address = window.location.host;
         const endpoint = "/multiplay";
 
