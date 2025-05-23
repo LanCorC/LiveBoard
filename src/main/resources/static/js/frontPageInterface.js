@@ -103,7 +103,8 @@ const frontPage = (function() {
     //serverConnectButton toggles between 'edit addressInput' and 'Connect'
     let serverConnectButtonConnect = function() {
         tools.disable(addressInput);
-        server.connect(addressInput.value);
+//        server.connect(addressInput.value);
+        server.preconnect(addressInput.value);
         serverConnectButton.onclick = serverConnectButtonEdit;
         serverConnectButton.innerHTML = `&#9997;`;
     }
@@ -113,7 +114,8 @@ const frontPage = (function() {
         serverConnectButton.innerHTML = `Connect`;
     }
     document.getElementById("defaultConnectButton").onclick = () => {
-        server.connect();
+//        server.connect();
+        server.preconnect();
     }
     serverConnectButton.onclick = serverConnectButtonEdit;
 

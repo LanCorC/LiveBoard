@@ -46,7 +46,15 @@ class Server {
     //STEPS- see if i can do a "mousedown" gauge if item, card, was already selected ("VIP") or not (print all)
     requestFreePass = false;
 
+    preconnect(address) {
+        setTimeout(connect, 500, address);
+    }
+
     connect(address) {
+        if(this.connection && this.connection.readyState == 1) {
+            this.connection.close(1000, "Client is RECONNECTING from same tab");
+            alert("CLOSED existing connection, replacing soon...");
+        }
         if(!address) address = window.location.host;
         const endpoint = "/multiplay";
 
@@ -79,6 +87,7 @@ class Server {
         socket.onopen = function(event) {
             console.log("Server connection secured!");
             frontUI.connectionSuccess();
+            alert("hey!");
         }
 
         socket.onclose = function(event) {
@@ -97,11 +106,11 @@ class Server {
                 alert("no hope - the client socket has deemed itself closed, despite devtool still says its open - sending mousemovements");
             } else {
                 frontUI.connectionSuccess();
+                return;
             }
 
+            //TODO - will cause bug like this
             this.server.gameStatus = false;
-
-
         }
 
         //Note: needed to be passed to websocket obj so it can access vars

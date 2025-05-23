@@ -171,6 +171,9 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
     {
         super.handleMessage(session, message);
 
+        //TEMPORARY TODO - for seeing if it echoes a 'closed' socket
+        session.sendMessage(message);
+
         StringBuilder sbTemp = (StringBuilder) session.getAttributes().get("messageRoom");
         if(!message.isLast()) {
             sbTemp.append(message.getPayload());
