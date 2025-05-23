@@ -49,12 +49,15 @@ class Server {
     preconnect(address) {
         if(this.connection && this.connection.readyState == 1) {
             this.connection.close(1000, "Client is RECONNECTING from same tab");
-            alert("CLOSED existing connection, replacing soon...");
+//            alert("CLOSED existing connection, replacing soon...");
         }
-        setTimeout(connect, 500, address);
+        setTimeout(() => {
+            this.connect(address);
+        }, 500);
     }
 
     connect(address) {
+//        alert("CONNECTING...");
         if(!address) address = window.location.host;
         const endpoint = "/multiplay";
 
@@ -76,6 +79,7 @@ class Server {
         socket.address = address;
 
         this.connection = socket;
+        //Redundant? see initialize()
         this.chatBox.setServer(this);
 
         //Note: necessary local variable for 'nested' (see below) methods
@@ -87,7 +91,7 @@ class Server {
         socket.onopen = function(event) {
             console.log("Server connection secured!");
             frontUI.connectionSuccess();
-            alert("hey!");
+//            alert("we've opened!");
         }
 
         socket.onclose = function(event) {
@@ -103,7 +107,8 @@ class Server {
 
             //TODO- cleanup. prevent frontUI failure call if 'not true'
             if(socket == undefined || socket.readyState != 1) {
-                alert("no hope - the client socket has deemed itself closed, despite devtool still says its open - sending mousemovements");
+//                alert("no hope - the client socket has deemed itself closed, despite devtool still says its open - sending mousemovements");
+                console.log("no hope - the client socket has deemed itself closed, despite devtool still says its open - sending mousemovements");
             } else {
                 frontUI.connectionSuccess();
                 return;
