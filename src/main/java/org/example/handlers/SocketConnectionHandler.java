@@ -126,7 +126,7 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         }
 
         // Removing the connection info from the list
-        webSocketSessions.remove(session);
+        webSocketSessions.removeIf(item -> item.getId().equals(session.getId()));
         requestProcessor.broadcastDisconnection(userId.get());
 
         System.out.println("Connections remaining: " + webSocketSessions.size());
