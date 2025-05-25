@@ -5,10 +5,12 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 // Socket-Connection Configuration class
@@ -16,7 +18,7 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
 
     final List<WebSocketSession> webSocketSessions = Collections.synchronizedList(new ArrayList<>());
     //For tracking new and returning players
-    public static Map<String, WebSocketSession> clients = Collections.synchronizedMap(new HashMap<String, WebSocketSession>());
+    public static Map<String, WebSocketSession> clients = new ConcurrentHashMap<>();
     public static RequestProcessor requestProcessor = RequestProcessor.RequestProcessor();
     public static boolean VERBOSE = false;
     public SocketConnectionHandler() {
@@ -54,9 +56,15 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         //Validate connection based on user value
         String name = stringArr[stringArr.length-1].split("=")[1];
 
+        WebSocketSession wrappedSession =
+                new ConcurrentWebSocketSessionDecorator(session, 2000, session.getTextMessageSizeLimit());
+
         //If reconnecting, replace and purge 'older' connection
         if(clients.containsKey(name)) {
-            WebSocketSession oldConnection = clients.put(name, session); //replaces old websocket
+//            WebSocketSession oldConnection = clients.put(name, session); //replaces old websocket
+            WebSocketSession oldConnection =
+                    clients.put(name, wrappedSession); //replaces old websocket
+
             session.sendMessage(new TextMessage("Reconnection successful. Terminating older instance."));
 
             System.out.println("Returning player! : " + name);
@@ -75,7 +83,7 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
             }
 
         } else {
-            clients.put(name, session);
+            clients.put(name, wrappedSession);
             System.out.printf("Let's welcome the newcomer, %s!%n", name);
         }
 
@@ -87,7 +95,7 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         requestProcessor.sendGameStateStatus(session);
 
         // Adding the session into the list
-        webSocketSessions.add(session);
+        webSocketSessions.add(wrappedSession);
 
         System.out.println("Connections remaining: " + getConnections().size());
         if(VERBOSE) {
@@ -156,7 +164,7 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         TextMessage payload = new TextMessage(message);
         for(WebSocketSession session : webSocketSessions) {
             try {
-                session.sendMessage(payload);
+                if(session.isOpen()) session.sendMessage(payload);
             } catch (IOException e) {
                 System.out.println("Error trying to send message to client! " + session.getId());
             }
