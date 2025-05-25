@@ -48,16 +48,19 @@ class Server {
 
     //Function: if connection already exists, terminates; then after some time, connects
     //Solves issue with 'live website' where 'websocket' with no delay terminates BOTH old and new connection
+//    preconnect(...args) {
     preconnect(address) {
         if(this.connection && this.connection.readyState == 1) {
             this.connection.close(1000, "Client is RECONNECTING from same tab");
         }
         setTimeout(() => {
+//            this.connect(...args);
             this.connect(address);
         }, 500);
     }
 
     connect(address) {
+//        connect(address, reconnectCount, immediatelyJoin) {
         if(!address) address = window.location.host;
         const endpoint = "/multiplay";
 
@@ -91,9 +94,20 @@ class Server {
 
         frontUI.connectionStarted(address);
 
+        //Note: needed to be passed to websocket obj so it can access vars
+        socket.server = this;
+
+//        socket.reconnectCount = reconnectCount;
+//        socket.immediatelyJoin = immediatelyJoin;
         socket.onopen = function(event) {
             console.log("Server connection secured!");
+//            this.reconnectCount = 0;
             frontUI.connectionSuccess();
+
+//            if(this.immediatelyJoin) {
+//                this.server.fetchGameState();
+//                //TODO FIX: reconnects, gameactions, but 'mouse' visuals broken
+//            }
         }
 
         socket.onclose = function(event) {
@@ -107,11 +121,28 @@ class Server {
                 frontUI.connectionFailed("Dirty disconnect: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
             }
 
+            //todo if server error, 1011, retry connection immediately
+//            if(event.code == 1011) { //Internal Error
+//                let maxAttempt = 5;
+//                if(!this.reconnectCount) {
+//                    this.reconnectCount = 1;
+//                }
+//                if(this.reconnectCount < 5) {
+//                    this.server.preconnect(this.address, this.reconnectCount + 1, true);
+//                    this.server.chatBox.newEntry(" have disconnected! Attempting to reconnect...");
+//                } else { //too much
+//                    alert(`You disconnected ${this.reconnectCount} times in a row. Error code 1011 (Internal Error).`);
+//                    console.log(`You disconnected ${this.reconnectCount} times in a row. Error code 1011 (Internal Error).`);
+//                    this.server.chatBox.newEntry(`You have disconnected ${this.reconnectCount} times and we have stopped trying.`);
+//                }
+//            } else {
+//                this.server.chatBox.newEntry(" have disconnected! Attempting to reconnect...");
+//            }
+
+            this.server.chatBox.newEntry(" have disconnected! [Esc] to go back to Main Menu.");
             this.server.gameStatus = false;
         }
 
-        //Note: needed to be passed to websocket obj so it can access vars
-        socket.server = this;
 
         socket.onmessage = function(event) {
 
