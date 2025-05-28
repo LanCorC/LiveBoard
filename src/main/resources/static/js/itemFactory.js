@@ -1,5 +1,5 @@
 import gameState from "/js/gameState.js";
-import {getMiscImages, prepareImages} from "/js/assets.js";
+import {getMiscImages, prepareImages, assets} from "/js/assets.js";
 
 function cycleCardImage(mod) {
     let item = this;
@@ -83,6 +83,9 @@ const genericFactory = function(type, images, coord) {
         images = getMiscImages(type);
     }
 
+    let name = "";
+    if (images[assets.frontImg].name) name = images[assets.frontImg].name;
+
     let { width, height } = images.at(0);
     let id = gameState.getID();
     let touchStyle = gameState.idToRGB(id);
@@ -122,20 +125,20 @@ const genericFactory = function(type, images, coord) {
         case "Card":
         case "Leader":
         case "Monster":
-            return {type, id, touchStyle, index, images, height, width, coord,
+            return {type, name, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, getImage, disabled, cycleImage: cycleCardImage,
                 selected, isDeck, flipMe};
         case "playMat":
         case "gameMat":
-            return {type, id, touchStyle, index, images, height, width, coord,
+            return {type, name, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, getImage, disabled,cycleImage: cycleCardImage,
                 anchored: true, selected, isDeck, flipMe};
         case "dice":
-            return {type, id, touchStyle, index, images, height, width, coord,
+            return {type, name, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, getImage, disabled, cycleImage: cycleDiceImage,
                 selected, isDeck, flipMe};
         case "deck":
-            return {type: images[0].type, id, touchStyle, index, images, height, width, coord,
+            return {type: images[0].type, name, id, touchStyle, index, images, height, width, coord,
                 dragStart, getX, getY, disabled, selected,
                 browsing: 0, //falsy integer, do not use boolean
                 isDeck: true,

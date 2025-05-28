@@ -140,56 +140,56 @@ function populateProperties() {
             duplicates: new Map(),
             uniqueCount: 95,
             perType: [[1, 74], [101, 106], [201,215]],
-            names: new Map()
+            names: []
         });
     expansionProperties.set("Warrior and Druid Expansion",
         { prefix: "HtS-WarDruid-",
             duplicates: new Map(),
             uniqueCount: 35,
             perType: [[1, 31], [101, 102], [201,202]],
-            names: new Map()
+            names: []
         });
     expansionProperties.set("Monster Expansion",
         { prefix: "HtS-PnP-Mon-",
             duplicates: new Map(),
             uniqueCount: 13,
             perType: [[201,213]],
-            names: new Map()
+            names: []
         });
     expansionProperties.set("Berserkers and Necromancers Expansion",
         { prefix: "HtS-BersNecr-",
             duplicates: new Map(),
             uniqueCount: 33,
             perType: [[1, 29], [101, 102], [201,202]],
-            names: new Map()
+            names: []
         });
     expansionProperties.set("Dragon Sorcerer Expansion",
         { prefix: "HtS-PnP-Drag-",
             duplicates: new Map(),
             uniqueCount: 16,
             perType: [[1, 14], [101, 101], [201,201]],
-            names: new Map()
+            names: []
         });
     expansionProperties.set("Exclusive",
         { prefix: "HtS-ConCard-",
             duplicates: new Map(),
             uniqueCount: 3,
             perType: [[101, 103]],
-            names: new Map()
+            names: []
         });
     expansionProperties.set("Blind Box Exclusive",
         { prefix: "HtS-NecBers-",
             duplicates: new Map(),
             uniqueCount: 2,
             perType: [[1, 2]],
-            names: new Map()
+            names: []
         });
     expansionProperties.set("KickStarter Exclusive",
         { prefix: "HtS-PnP-KSE-",
             duplicates: new Map(),
             uniqueCount: 25,
             perType: [[1, 21], [101, 104]],
-            names: new Map()
+            names: []
         });
 
     //Expansions without duplicates: WarDruids, Monsters, Exclusive, Dragon
@@ -315,6 +315,9 @@ function populateProperties() {
         "Malamammoth 8+",
         "Rex Major 8+"
     ]);
+    expansionProperties.get("Base Deck").names = names.get("Base Deck");
+//    console.log(names.get("Base Deck"));
+//    console.log(expansionProperties.get("Base Deck").names);
 //    expansionProperties.get("Base Deck").names
 //            .set("001");
 //    ;
@@ -406,6 +409,10 @@ function loadAssets(chosenExpansions) {
 
         //TODO - instead of chain, bulk-call; -- additional parameter: per-type numbers
 //        loadExpansionCards(1, key, value.prefix);
+//        if(value.names.length != 0) {
+//            console.log(`Expansion ${key} has names!:`);
+//            console.log(value.names);
+//        }
         loadExpansionCards(key, value);
     });
 }
@@ -519,10 +526,20 @@ const countVerbose = false;
 
 function loadExpansionCards(folderName, properties) {
     //where startEnd = [integerStart, integerEnd]
+    let cardNameIndex = 0;
     properties.perType.forEach((startEnd) => {
         for(let i = startEnd[0]; i <= startEnd[1]; i++) {
             const card = new Image();
+            //assign image filename identifier
             card.magicId = i;
+
+            //assign name
+            if(properties.names && properties.names.length) { //size=0, falsy
+                card.name = properties.names[cardNameIndex];
+//                console.log(`Name found! ${card.name}`);
+            }
+            cardNameIndex++;
+
             preProcessRefCard(card, folderName, properties.prefix);
         }
     });

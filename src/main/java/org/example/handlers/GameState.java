@@ -18,6 +18,7 @@ class PlayMat
 {
     public String type;
     public int id;
+    public String name;
     public String touchStyle;
     public int index;
     public ArrayList<String> images;
@@ -37,6 +38,7 @@ class Deck
 {
     public String type;
     public int id;
+    public String name;
     public String touchStyle;
     public int index;
     public ArrayList<Integer> images;
@@ -57,6 +59,7 @@ class Card
 {
     public String type;
     public int id;
+    public String name;
     public String touchStyle;
     public int index;
     public ArrayList<String> images;
