@@ -315,12 +315,48 @@ function populateProperties() {
         "Malamammoth 8+",
         "Rex Major 8+"
     ]);
-    expansionProperties.get("Base Deck").names = names.get("Base Deck");
-//    console.log(names.get("Base Deck"));
-//    console.log(expansionProperties.get("Base Deck").names);
-//    expansionProperties.get("Base Deck").names
-//            .set("001");
-//    ;
+    names.set("Warrior and Druid Expansion", [
+        "Rapid Refresh",
+        "Beast Call",
+        "Even Bigger Ring",
+        "Temporal Hourglass",
+        "Warror Mask",
+        "Druid Mask",
+        "Bottomless Bag",
+        "Soul Tether",
+        "Cursed Glove",
+        "MODIFIER +4 SPECIAL",              //010
+        "MODIFIER -4 SPECIAL",
+        "MODIFIER +1/-1 SPECIAL",
+        "MODIFIER +2/-1 SPECIAL",
+        "WARRIOR CHALLENGE",
+        "DRUID CHALLENGE",
+        "Magus Moose 5-",
+        "Doe Fallow 7-",
+        "Buck Omens 6-",
+        "Glowing Antler 7-",
+        "Big Buckley 8-",                   //020
+        "Stagguard 8-",
+        "Majestelk 7-",
+        "Maegisty 7-",
+        "Looting Lupo 5+",
+        "Hardened Warrior 9+",
+        "Blinding Blade 8+",
+        "Wolfgang Pack 5+",
+        "Agile Dagger 7+",
+        "Critical Fang 6+",
+        "Tenacious Timber 8+",              //030
+        "Silent Shield 6+",
+        "The Piercing Howl",
+        "The Noble Shaman",
+        "Muscipula Rex 10+",
+        "Feral Dragon 9+"
+    ])
+;
+    
+    names.forEach((value, key, map) => {
+        if(value.length) expansionProperties.get(key).names = value;
+    });
 }
 populateProperties();
 //console.log(expansionProperties);
