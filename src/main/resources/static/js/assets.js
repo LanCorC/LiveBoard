@@ -315,6 +315,41 @@ function populateProperties() {
         "Malamammoth 8+",
         "Rex Major 8+"
     ]);
+    names.set("Berserkers and Necromancers Expansion", [
+        "Grim Pupper 8+",
+        "Boston Terror 7+",
+        "Bark Hexer 7+",
+        "Perfect Vessel 4+",
+        "Bone Collector 7+",
+        "Hollow Husk 6+",
+        "Shadow Saint 5+",
+        "Beholden Retriever 5+",
+        "Roaryal Guard 9+",
+        "Brawling Spirit 9+",                   //010
+        "Unbridled Fury 8+",
+        "Annihilator 6+",
+        "Meowntain 6+",
+        "Vicious Wildcat 12+",
+        "Rabid Beast 6+",
+        "Gruesome Gladiator 10+",
+        "NECROMANCER CHALLENGE",
+        "BERSERKER CHALLENGE",
+        "MODIFIER +2/-2 SPECIAL",
+        "MODIFIER 7+ SPECIAL",                  //020
+        "Lightning Labrys",
+        "Mass Sacrifice",
+        "Necromancer Mask",
+        "Berserker Mask",
+        "Goblet of Caffeination",
+        "Biggest Ring Ever",
+        "Silver Lining",
+        "Dragon's Bile",
+        "Soulbound Grimoire",                   //...029
+        "The Gnawng Dread",
+        "The Raging Manticore",
+        "Reptilian Ripper 7+",
+        "Doombringer 8+"
+    ]);
     names.set("Warrior and Druid Expansion", [
         "Rapid Refresh",
         "Beast Call",
@@ -353,7 +388,7 @@ function populateProperties() {
         "Feral Dragon 9+"
     ])
 ;
-    
+
     names.forEach((value, key, map) => {
         if(value.length) expansionProperties.get(key).names = value;
     });
