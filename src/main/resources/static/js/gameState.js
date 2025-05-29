@@ -869,7 +869,7 @@ const gameState = (function() {
         'Exclusive',
         'KickStarter Exclusive',
         'Monster Expansion',
-        'Warrior and Druid Expansion',
+        'Warrior and Druid Expansion'
     ];
 
     //TODO- only call if server not connected OR server connected + no game existing OR loading solo OR loading demo

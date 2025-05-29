@@ -335,7 +335,7 @@ function populateProperties() {
         "NECROMANCER CHALLENGE",
         "BERSERKER CHALLENGE",
         "MODIFIER +2/-2 SPECIAL",
-        "MODIFIER 7+ SPECIAL",                  //020
+        "MODIFIER +7 SPECIAL",                  //020
         "Lightning Labrys",
         "Mass Sacrifice",
         "Necromancer Mask",
@@ -349,6 +349,75 @@ function populateProperties() {
         "The Raging Manticore",
         "Reptilian Ripper 7+",
         "Doombringer 8+"
+    ]);
+    names.set("Blind Box Exclusive", [
+        "Howl of the Dead 7+",
+        "Reigning King 11+"
+    ]);
+    names.set("Dragon Sorcerer Expansion", [
+        "Egg of Fortune",
+        "Sorcerer Mask",
+        "MODIFIER -6 SPECIAL",
+        "MODIFIER +6 SPECIAL",
+        "SORCERER CHALLENGE",
+        "Extraga 7+",
+        "Smok 8+",
+        "Dystortivern 10+",
+        "Renovern 8+",
+        "Dragalter 7+",
+        "Luut 7+",
+        "Mirroryu 7+",
+        "Oracon 7+",
+        "Shamanaga 7+",
+        "The Fearless Flame",
+        "Calamity Mongrel 8+"
+    ]);
+    names.set("Exclusive", [
+        "The Fierce Panguardian",
+        "The Illusive Trickster",
+        "The Rhythmic Archer"
+    ]);
+    names.set("KickStarter Exclusive", [
+        "Mask of Misfortune",
+        "Mysterious Feather",
+        "Captivating Spell",
+        "MODIFIER +3/-2",
+        "MODIFIER +1/-4",
+        "MODIFIER +2/-3",
+        "MODIFIER +4/-1",
+        "GUARDIAN CHALLENGE",
+        "THIEF CHALLENGE",
+        "FIGHTER CHALLENGE",                    //010
+        "RANGER CHALLENGE",
+        "WIZARD CHALLENGE",
+        "BARD CHALLENGE",
+        "Purring Bandit 7+",
+        "Hamlet 7+",
+        "Mimi 4+",
+        "Complex Illusion 8+",
+        "Hoodwink 8+",
+        "Bearserker 6+",
+        "Nimble Gray 9+",                       //020
+        "Enchantler 7-",
+        "The Mystical Maestro",
+        "The Brutal Bow",
+        "The Veiled Raider",
+        "The Unstable Unicorn"
+    ]);
+    names.set("Monster Expansion", [
+        "Goretelodont 9+",
+        "Voltclaw Lion 7+",
+        "Lumbering Demon 8+",
+        "Reef Ripper 6-",
+        "Ancient Megashark 9+",
+        "Dragon Wasp 7+",
+        "Scavenger Griffin 9+",
+        "Wandering Behemoth 10+",
+        "Venomous Gemini 7+",
+        "Wicked Sea Serpent 7+",                //210
+        "Clawed Nightmare 9+",
+        "Possessed Plush 7+",
+        "Saffyre Phoenix 13+",
     ]);
     names.set("Warrior and Druid Expansion", [
         "Rapid Refresh",
