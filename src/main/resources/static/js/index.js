@@ -1,10 +1,41 @@
 import bindCanvas from "./bindCanvas.js";
 import gameState from "./gameState.js";
-//import main from "./itemFactory.js";
 import { loadAssets, assets } from "./assets.js";
 import * as userInterface from "./boardInterface.js";
 import server from "./serverConnection.js";
 import * as pregameInterface from "./frontPageInterface.js";
+
+//let bindCanvas;
+// import("./bindCanvas.js").then(
+//    (module) => { bindCanvas = module.default},
+//    () => import("/js/bindCanvas.js").then((module) => { bindCanvas = module.default})
+//);
+//let gameState;
+// import("./gameState.js").then(
+//    (module) => { gameState = module.default},
+//    () => import("/js/gameState.js").then((module) => { gameState = module.default})
+//);
+//let loadAssets;
+//let assets;
+// import("./assets.js").then(
+//    (module) => ({loadAssets: loadAssets, assets: assets} = module),
+//    () => import("/js/assets.js").then((module) => ({loadAssets: loadAssets, assets: assets} = module))
+//);
+//let userInterface;
+// import("./boardInterface.js").then(
+//    (module) => { userInterface = module},
+//    () => import("/js/boardInterface.js").then((module) => { userInterface = module })
+//);
+//let server;
+// import("./serverConnection.js").then(
+//    (module) => { server = module.default},
+//    () => import("/js/serverConnection.js").then((module) => { server = module.default})
+//);
+//let pregameInterface;
+// import("./frontPageInterface.js").then(
+//    (module) => { pregameInterface = module},
+//    () => import("/js/frontPageInterface.js").then((module) => { pregameInterface = module })
+//);
 
 //Variables
 const board = document.getElementById("gameBoard");
@@ -24,7 +55,22 @@ let pinBoard = false;
 //lastly, gameState <-> server = fetch player info, gameState.items from server copy
     //gameState loads as empty players, fetches server playerList (if any), then adds self
 
-//TODO- frontpage(+loadscreen) connects with serverConnection
+//Prioritize visuals
+const backgroundUrl = [
+    "url(images/backgrounds/rainbow-vortex.svg)",
+    "url(images/backgrounds/hollowed-boxes.svg)",
+    "url(images/backgrounds/colorful-stingrays.svg)",
+    "url(images/backgrounds/confetti-doodles.svg)"
+];
+let backgroundIndex = Math.floor(Math.random() * backgroundUrl.length);
+board.style.background = backgroundUrl[backgroundIndex];
+function cycleBackground() {
+    console.log(backgroundIndex % 5);
+    board.style.background = backgroundUrl[++backgroundIndex % backgroundUrl.length];
+}
+board.height = window.innerHeight;
+board.width = window.innerWidth;
+
 pregameInterface.initialize();
 
 window.onload = function() {
@@ -763,11 +809,11 @@ window.onload = function() {
 //                itemFocus = null;
 
                 //Iteration2: clear itemFocus + dragging=false, as opposed to wiping selected[]
-                if(itemFocus.selected == user.id) itemFocus.selected = 0; //simulating this is taken by someone else in a gameupdate
-                itemFocus = null;
-                startPoint = null; //make dragging invalid - works good
-
-                if(selected.includes(itemFocus)) selected.splice(selected.indexOf(itemFocus), 1); //insurance
+//                if(itemFocus.selected == user.id) itemFocus.selected = 0; //simulating this is taken by someone else in a gameupdate
+//                itemFocus = null;
+//                startPoint = null; //make dragging invalid - works good
+//
+//                if(selected.includes(itemFocus)) selected.splice(selected.indexOf(itemFocus), 1); //insurance
 
                 break;
             case "ENTER":
@@ -795,19 +841,6 @@ window.onload = function() {
                 return;
         }
     }, false);
-
-    const backgroundUrl = [
-        "url(../static/images/backgrounds/rainbow-vortex.svg)",
-        "url(../static/images/backgrounds/hollowed-boxes.svg)",
-        "url(../static/images/backgrounds/colorful-stingrays.svg)",
-        "url(../static/images/backgrounds/confetti-doodles.svg)"
-    ];
-    let backgroundIndex = Math.floor(Math.random() * backgroundUrl.length);
-    board.style.background = backgroundUrl[backgroundIndex];
-    function cycleBackground() {
-        console.log(backgroundIndex % 5);
-        board.style.background = backgroundUrl[++backgroundIndex % backgroundUrl.length];
-    }
 
     //[Usage: inserted inside redraw() codeblock]
     function correctTranslation() {

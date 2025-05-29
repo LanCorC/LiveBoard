@@ -25,15 +25,15 @@ const sizes = {
 
 const assets = (function() {
     const tapIcon = new Image();
-    tapIcon.src = `../static/images/Tokens/hand-tap-svgrepo-com.svg`;
+    tapIcon.src = `./images/Tokens/hand-tap-svgrepo-com.svg`;
     const deckIcon = new Image();
-    deckIcon.src = `../static/images/Tokens/stack-push-svgrepo-com.svg`;
+    deckIcon.src = `./images/Tokens/stack-push-svgrepo-com.svg`;
     const moveTo = new Image();
-    moveTo.src = `../static/images/Tokens/send-svgrepo-com.svg`;
+    moveTo.src = `./images/Tokens/send-svgrepo-com.svg`;
     const no = new Image();
-    no.src = `../static/images/Tokens/no-svgrepo-com.svg`;
+    no.src = `./images/Tokens/no-svgrepo-com.svg`;
     const view = new Image();
-    view.src = `../static/images/Tokens/magnifier-glass-svgrepo-com.svg`;
+    view.src = `./images/Tokens/magnifier-glass-svgrepo-com.svg`;
     const backImg = 0;
     const frontImg = 1;
 
@@ -139,49 +139,57 @@ function populateProperties() {
         { prefix: "HtS-PnP-Base-",
             duplicates: new Map(),
             uniqueCount: 95,
-            perType: [[1, 74], [101, 106], [201,215]]
+            perType: [[1, 74], [101, 106], [201,215]],
+            names: []
         });
     expansionProperties.set("Warrior and Druid Expansion",
         { prefix: "HtS-WarDruid-",
             duplicates: new Map(),
             uniqueCount: 35,
-            perType: [[1, 31], [101, 102], [201,202]]
+            perType: [[1, 31], [101, 102], [201,202]],
+            names: []
         });
     expansionProperties.set("Monster Expansion",
         { prefix: "HtS-PnP-Mon-",
             duplicates: new Map(),
             uniqueCount: 13,
-            perType: [[201,213]]
+            perType: [[201,213]],
+            names: []
         });
     expansionProperties.set("Berserkers and Necromancers Expansion",
         { prefix: "HtS-BersNecr-",
             duplicates: new Map(),
             uniqueCount: 33,
-            perType: [[1, 29], [101, 102], [201,202]]
+            perType: [[1, 29], [101, 102], [201,202]],
+            names: []
         });
     expansionProperties.set("Dragon Sorcerer Expansion",
         { prefix: "HtS-PnP-Drag-",
             duplicates: new Map(),
             uniqueCount: 16,
-            perType: [[1, 14], [101, 101], [201,201]]
+            perType: [[1, 14], [101, 101], [201,201]],
+            names: []
         });
     expansionProperties.set("Exclusive",
         { prefix: "HtS-ConCard-",
             duplicates: new Map(),
             uniqueCount: 3,
-            perType: [[101, 103]]
+            perType: [[101, 103]],
+            names: []
         });
     expansionProperties.set("Blind Box Exclusive",
         { prefix: "HtS-NecBers-",
             duplicates: new Map(),
             uniqueCount: 2,
-            perType: [[1, 2]]
+            perType: [[1, 2]],
+            names: []
         });
     expansionProperties.set("KickStarter Exclusive",
         { prefix: "HtS-PnP-KSE-",
             duplicates: new Map(),
             uniqueCount: 25,
-            perType: [[1, 21], [101, 104]]
+            perType: [[1, 21], [101, 104]],
+            names: []
         });
 
     //Expansions without duplicates: WarDruids, Monsters, Exclusive, Dragon
@@ -207,6 +215,252 @@ function populateProperties() {
         .set("021", 2) //Lightning Labrys (magic)
         .set("022", 2) //Mass Sacrifice (magic)
     ;
+
+    //names:
+    let names = new Map();
+    names.set("Base Deck", [       //Base Game
+        "Sealing Key",                          //001
+        "Curse of the Snake's Eyes",
+        "Suspiciously Shiny Coin",
+        "Bard Mask",
+        "Ranger Mask",
+        "Wizard Mask",
+        "Fighter Mask",
+        "Guardian Mask",
+        "Thief Mask",
+        "Really Big Ring",                      //010
+        "Particularly Rusty Coin",
+        "Decoy Doll",
+        "Enchanted Spell",
+        "Forceful Winds",
+        "Entangling Trap",
+        "Winds of Change",
+        "Critical Boost",
+        "Destructive Spell",
+        "Call to the Fallen",
+        "Forced Exchange",                      //020
+        "MODIFIER +2/-2",
+        "MODIFIER -4",
+        "MODIFIER +4",
+        "MODIFIER +1/-3",
+        "MODIFIER +3/-1",
+        "CHALLENGE",
+        "Pan Chucks 8+",
+        "Heavy Bear 5+",
+        "Qi Bear 10+",
+        "Beary Wise 7+",                           //030
+        "Tough Teddy 4+",
+        "Fury Knuckle 5+",
+        "Bear Claw 7+",
+        "Bad Axe 8+",
+        "Peanut 7+",
+        "Napping Nibbles, Devourer of Worlds 2+",
+        "Mellow Dee 7+",
+        "Greedy Cheeks 8+",
+        "Fuzzy Cheeks 8+",
+        "Tipsy Tootie 6+",                      //040
+        "Dodgy Dealer 9+",
+        "Lucky Bucky 7+",
+        "Calming Voice 9+",
+        "Wise Shield 6+",
+        "Mighty Blade 8+",
+        "Radiant Horn 6+",
+        "Iron Resolve 8+",
+        "Holy Curselifter 5+",
+        "Vibrant Glow 9+",
+        "Guiding Light 7+",                     //050
+        "Sharp Fox 5+",
+        "Wildshot 8+",
+        "Wily Red 10+",
+        "Lookie Rookie 5+",
+        "Bullseye 7+",
+        "Quick Draw 8+",
+        "Hook 6+",
+        "Serious Grey 9+",
+        "Smooth Mimimeow 7+",
+        "Plundering Puma 6+",                   //060
+        "Shuriktty 9+",
+        "Meowzio 10+",
+        "Slippery Paws 6+",
+        "Sly Pickings 6+",
+        "Kit Napper 9+",
+        "Silent Shadow 8+",
+        "Snowball 6+",
+        "Bun Bun 5+",
+        "Wiggles 10+",
+        "Spooky 10+",                           //070
+        "Fluffy 10+",
+        "Buttons 6+",
+        "Whiskers 11+",
+        "Hopper 7+",
+        "The Protecting Horn",
+        "The Shadow Claw",
+        "The Fist of Reason",
+        "The Cloaked Sage",
+        "The Divine Arrow",
+        "The Charismatic Song",
+        "Dracos 5-",
+        "Orthus 8+",
+        "Dark Dragon King 8+",
+        "Terratuga 11+",
+        "Crowned Serpent 10+",
+        "Titan Wyvern 8+",
+        "Corrupted Sabretooth 9+",
+        "Mega Slime 8+",
+        "Warworn Owlbear 8+",
+        "Arctic Aries 10+",
+        "Anuran Cauldron 7+",
+        "Bloodwing 9+",
+        "Abyss Queen 8+",
+        "Malamammoth 8+",
+        "Rex Major 8+"
+    ]);
+    names.set("Berserkers and Necromancers Expansion", [
+        "Grim Pupper 8+",
+        "Boston Terror 7+",
+        "Bark Hexer 7+",
+        "Perfect Vessel 4+",
+        "Bone Collector 7+",
+        "Hollow Husk 6+",
+        "Shadow Saint 5+",
+        "Beholden Retriever 5+",
+        "Roaryal Guard 9+",
+        "Brawling Spirit 9+",                   //010
+        "Unbridled Fury 8+",
+        "Annihilator 6+",
+        "Meowntain 6+",
+        "Vicious Wildcat 12+",
+        "Rabid Beast 6+",
+        "Gruesome Gladiator 10+",
+        "NECROMANCER CHALLENGE",
+        "BERSERKER CHALLENGE",
+        "MODIFIER +2/-2 SPECIAL",
+        "MODIFIER +7 SPECIAL",                  //020
+        "Lightning Labrys",
+        "Mass Sacrifice",
+        "Necromancer Mask",
+        "Berserker Mask",
+        "Goblet of Caffeination",
+        "Biggest Ring Ever",
+        "Silver Lining",
+        "Dragon's Bile",
+        "Soulbound Grimoire",                   //...029
+        "The Gnawng Dread",
+        "The Raging Manticore",
+        "Reptilian Ripper 7+",
+        "Doombringer 8+"
+    ]);
+    names.set("Blind Box Exclusive", [
+        "Howl of the Dead 7+",
+        "Reigning King 11+"
+    ]);
+    names.set("Dragon Sorcerer Expansion", [
+        "Egg of Fortune",
+        "Sorcerer Mask",
+        "MODIFIER -6 SPECIAL",
+        "MODIFIER +6 SPECIAL",
+        "SORCERER CHALLENGE",
+        "Extraga 7+",
+        "Smok 8+",
+        "Dystortivern 10+",
+        "Renovern 8+",
+        "Dragalter 7+",
+        "Luut 7+",
+        "Mirroryu 7+",
+        "Oracon 7+",
+        "Shamanaga 7+",
+        "The Fearless Flame",
+        "Calamity Mongrel 8+"
+    ]);
+    names.set("Exclusive", [
+        "The Fierce Panguardian",
+        "The Illusive Trickster",
+        "The Rhythmic Archer"
+    ]);
+    names.set("KickStarter Exclusive", [
+        "Mask of Misfortune",
+        "Mysterious Feather",
+        "Captivating Spell",
+        "MODIFIER +3/-2",
+        "MODIFIER +1/-4",
+        "MODIFIER +2/-3",
+        "MODIFIER +4/-1",
+        "GUARDIAN CHALLENGE",
+        "THIEF CHALLENGE",
+        "FIGHTER CHALLENGE",                    //010
+        "RANGER CHALLENGE",
+        "WIZARD CHALLENGE",
+        "BARD CHALLENGE",
+        "Purring Bandit 7+",
+        "Hamlet 7+",
+        "Mimi 4+",
+        "Complex Illusion 8+",
+        "Hoodwink 8+",
+        "Bearserker 6+",
+        "Nimble Gray 9+",                       //020
+        "Enchantler 7-",
+        "The Mystical Maestro",
+        "The Brutal Bow",
+        "The Veiled Raider",
+        "The Unstable Unicorn"
+    ]);
+    names.set("Monster Expansion", [
+        "Goretelodont 9+",
+        "Voltclaw Lion 7+",
+        "Lumbering Demon 8+",
+        "Reef Ripper 6-",
+        "Ancient Megashark 9+",
+        "Dragon Wasp 7+",
+        "Scavenger Griffin 9+",
+        "Wandering Behemoth 10+",
+        "Venomous Gemini 7+",
+        "Wicked Sea Serpent 7+",                //210
+        "Clawed Nightmare 9+",
+        "Possessed Plush 7+",
+        "Saffyre Phoenix 13+",
+    ]);
+    names.set("Warrior and Druid Expansion", [
+        "Rapid Refresh",
+        "Beast Call",
+        "Even Bigger Ring",
+        "Temporal Hourglass",
+        "Warror Mask",
+        "Druid Mask",
+        "Bottomless Bag",
+        "Soul Tether",
+        "Cursed Glove",
+        "MODIFIER +4 SPECIAL",              //010
+        "MODIFIER -4 SPECIAL",
+        "MODIFIER +1/-1 SPECIAL",
+        "MODIFIER +2/-1 SPECIAL",
+        "WARRIOR CHALLENGE",
+        "DRUID CHALLENGE",
+        "Magus Moose 5-",
+        "Doe Fallow 7-",
+        "Buck Omens 6-",
+        "Glowing Antler 7-",
+        "Big Buckley 8-",                   //020
+        "Stagguard 8-",
+        "Majestelk 7-",
+        "Maegisty 7-",
+        "Looting Lupo 5+",
+        "Hardened Warrior 9+",
+        "Blinding Blade 8+",
+        "Wolfgang Pack 5+",
+        "Agile Dagger 7+",
+        "Critical Fang 6+",
+        "Tenacious Timber 8+",              //030
+        "Silent Shield 6+",
+        "The Piercing Howl",
+        "The Noble Shaman",
+        "Muscipula Rex 10+",
+        "Feral Dragon 9+"
+    ])
+;
+
+    names.forEach((value, key, map) => {
+        if(value.length) expansionProperties.get(key).names = value;
+    });
 }
 populateProperties();
 //console.log(expansionProperties);
@@ -243,7 +497,7 @@ let padHundred = function(number) {
     return result + number.toString();
 }
 
-let baseAddress = "../static/images";
+let baseAddress = "./images";
 const loadAll = true; //testing variable: if true, loads all expansions
 
 //TODO- expansionCardsExpected, tested for ALL and ONE(base) line up along
@@ -295,6 +549,10 @@ function loadAssets(chosenExpansions) {
 
         //TODO - instead of chain, bulk-call; -- additional parameter: per-type numbers
 //        loadExpansionCards(1, key, value.prefix);
+//        if(value.names.length != 0) {
+//            console.log(`Expansion ${key} has names!:`);
+//            console.log(value.names);
+//        }
         loadExpansionCards(key, value);
     });
 }
@@ -408,10 +666,20 @@ const countVerbose = false;
 
 function loadExpansionCards(folderName, properties) {
     //where startEnd = [integerStart, integerEnd]
+    let cardNameIndex = 0;
     properties.perType.forEach((startEnd) => {
         for(let i = startEnd[0]; i <= startEnd[1]; i++) {
             const card = new Image();
+            //assign image filename identifier
             card.magicId = i;
+
+            //assign name
+            if(properties.names && properties.names.length) { //size=0, falsy
+                card.name = properties.names[cardNameIndex];
+//                console.log(`Name found! ${card.name}`);
+            }
+            cardNameIndex++;
+
             preProcessRefCard(card, folderName, properties.prefix);
         }
     });
@@ -431,8 +699,6 @@ function preProcessRefCard(card, expansion, prefix) {
 
     card.src = `${baseAddress}/Game/${expansion}/${prefix}${padHundred(card.magicId)}.png`;
     card.source = `${baseAddress}/Game/${expansion}/${prefix}${padHundred(card.magicId)}.png`;
-
-
 }
 
 //Note: assumes there can only be x01 -> x99 of a type
