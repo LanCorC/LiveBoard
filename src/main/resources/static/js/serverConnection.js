@@ -181,6 +181,15 @@ class Server {
 
                         this.server.game.updateItems(data);
                         break;
+                    //TODO - do not take in update if player is not connected to game
+                    //and/or, ensure 'Start Game' sets to 0 first (cleanSlate)
+                    case "NewItemCount":
+                        if(data.senderId == this.server.game.clientUser.id) {
+                            console.log(`returned ${header}!`);
+                            //Do not process;
+                            break;
+                        }
+                        this.server.game.newItemCount(data.itemCount);
                     case "NewPlayer":
                         if(data.senderId == this.server.game.clientUser.id) {
                             console.log(`returned ${header}!`);
@@ -532,7 +541,7 @@ class Server {
     //process outbound permissions
     //serverCheckItems- the most relevant items that end up manipulated at end of func
     //e,g, 'selectView' is the item.deck, often triggered on topCard (not deck)
-    permission(func, funcArgs, serverCheckItems) {
+    permission(func, funcArgs, serverCheckItems, explicit) {
         if(this.connection == undefined || this.connection.readyState != 1) {
             func(...funcArgs);
             return;
@@ -550,6 +559,7 @@ class Server {
 
         let message = {};
         message.messageHeader = "PermissionGameAction";
+        if(explicit) message.explicit = explicit;
         message.senderId = this.game.clientUser.id;     //sender
         message.timeStamp = currentId;
         //Note: weak code, assumes is 'card' or 'deck', and only holds 1 item
