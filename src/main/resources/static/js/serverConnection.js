@@ -1,4 +1,4 @@
-import gameState from "/js/gameState.js";
+import gameState from "./gameState.js";
 
 //Purpose: manage all (websocket) server connections
 //Example: updates received from server - gameActions or serverStatus

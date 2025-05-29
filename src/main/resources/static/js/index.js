@@ -1,10 +1,41 @@
-import bindCanvas from "/js/bindCanvas.js";
-import gameState from "/js/gameState.js";
-//import main from /js/itemFactory.js";
-import { loadAssets, assets } from "/js/assets.js";
-import * as userInterface from "/js/boardInterface.js";
-import server from "/js/serverConnection.js";
-import * as pregameInterface from "/js/frontPageInterface.js";
+import bindCanvas from "./bindCanvas.js";
+import gameState from "./gameState.js";
+import { loadAssets, assets } from "./assets.js";
+import * as userInterface from "./boardInterface.js";
+import server from "./serverConnection.js";
+import * as pregameInterface from "./frontPageInterface.js";
+
+//let bindCanvas;
+// import("./bindCanvas.js").then(
+//    (module) => { bindCanvas = module.default},
+//    () => import("/js/bindCanvas.js").then((module) => { bindCanvas = module.default})
+//);
+//let gameState;
+// import("./gameState.js").then(
+//    (module) => { gameState = module.default},
+//    () => import("/js/gameState.js").then((module) => { gameState = module.default})
+//);
+//let loadAssets;
+//let assets;
+// import("./assets.js").then(
+//    (module) => ({loadAssets: loadAssets, assets: assets} = module),
+//    () => import("/js/assets.js").then((module) => ({loadAssets: loadAssets, assets: assets} = module))
+//);
+//let userInterface;
+// import("./boardInterface.js").then(
+//    (module) => { userInterface = module},
+//    () => import("/js/boardInterface.js").then((module) => { userInterface = module })
+//);
+//let server;
+// import("./serverConnection.js").then(
+//    (module) => { server = module.default},
+//    () => import("/js/serverConnection.js").then((module) => { server = module.default})
+//);
+//let pregameInterface;
+// import("./frontPageInterface.js").then(
+//    (module) => { pregameInterface = module},
+//    () => import("/js/frontPageInterface.js").then((module) => { pregameInterface = module })
+//);
 
 //Variables
 const board = document.getElementById("gameBoard");

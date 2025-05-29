@@ -1,7 +1,7 @@
-import server from "/js/serverConnection.js";
-import gameState from "/js/gameState.js";
-import { initialize as initializeAssets } from "/js/assets.js";
-import { createChat } from "/js/boardInterface.js";
+import server from "./serverConnection.js";
+import gameState from "./gameState.js";
+import { initialize as initializeAssets } from "./assets.js";
+import { createChat } from "./boardInterface.js";
 
 //Purpose: control frontPage controls, 'loading screen', and server status (on/offline)
 

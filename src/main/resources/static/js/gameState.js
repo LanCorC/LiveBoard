@@ -1,8 +1,8 @@
-import {assets, sizes} from "/js/assets.js";
-import {loadCards, loadMisc, deckify} from "/js/itemFactory.js";
-import {userInterface, initializeBoardInterface} from "/js/boardInterface.js";
-import server from "/js/serverConnection.js";
-import presets from "/js/presets.js";
+import {assets, sizes} from "./assets.js";
+import {loadCards, loadMisc, deckify} from "./itemFactory.js";
+import {userInterface, initializeBoardInterface} from "./boardInterface.js";
+import server from "./serverConnection.js";
+import presets from "./presets.js";
 
 const gameState = (function() {
     //in order to render

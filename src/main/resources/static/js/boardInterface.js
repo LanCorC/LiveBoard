@@ -1,5 +1,5 @@
-import {Hand} from "/js/itemClasses.js";
-import gameState from "/js/gameState.js";
+import {Hand} from "./itemClasses.js";
+import gameState from "./gameState.js";
 
 const verbose = false;
 

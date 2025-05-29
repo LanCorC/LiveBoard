@@ -1,5 +1,5 @@
-import gameState from "/js/gameState.js";
-import {getMiscImages, prepareImages, assets} from "/js/assets.js";
+import gameState from "./gameState.js";
+import {getMiscImages, prepareImages, assets} from "./assets.js";
 
 function cycleCardImage(mod) {
     let item = this;
