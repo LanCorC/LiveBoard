@@ -1,6 +1,5 @@
 package org.example.handlers;
 
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
@@ -117,13 +116,11 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         System.out.println(status.getCode());
 
         AtomicReference<String> userId = new AtomicReference<>();
-        if(clients.containsValue(session)) {
-            clients.forEach((key, value) -> {
-                if (value == session) {
-                    userId.set(key);
-                }
-            });
-        }
+        clients.forEach((key, value) -> {
+            if (value.getId().equals(session.getId())) {
+                userId.set(key);
+            }
+        });
 
         // Removing the connection info from the list
         webSocketSessions.removeIf(item -> item.getId().equals(session.getId()));
