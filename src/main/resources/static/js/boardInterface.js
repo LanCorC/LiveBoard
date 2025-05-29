@@ -597,7 +597,7 @@ class ChatBox {
         let count = items.length == 1 ? 0 : 1;
 
         body.append(this.#formatName(sender));
-        body.append(` pinged item`);
+        body.append(` pinged ${items[0].type.toLowerCase() || "item" }`);
         count ? body.append(`s `) : body.append(` `);
 
         items.forEach((item) => {
