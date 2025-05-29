@@ -73,7 +73,7 @@ public class RequestProcessor {
         try{
             SimpleRequest message = objMapper.readValue(s, SimpleRequest.class);
 //            System.out.printf("New request! %s %s%n", message.explicit, message.timeStamp);
-//            System.out.printf("Processing %s %s...%n", message.messageHeader, message.explicit);
+//            System.out.printf("handleMessage, header: [%s] explicit: [%s]...%n", message.messageHeader, message.explicit);
             switch (message.messageHeader) {
 
                 case "GameSetup":
@@ -90,6 +90,7 @@ public class RequestProcessor {
                     //If denied, "break;" early, do not broadcast, do not gameUpdate(), send back to OG
                     //rejectGameUpdate();
 
+//                    if(user == null || !user.live) {
                     if(quickRef.getOrDefault(message.senderId, null) == null) {
                         System.out.println(message.messageHeader +
                                 " rejected: player \"GameUpdate\", id not found in existing gameState instance");
@@ -133,7 +134,9 @@ public class RequestProcessor {
                     break;
                 //else, with 'no'
                 case "PermissionGameAction":
+//                    if(user == null || !user.live) {
                     if(quickRef.getOrDefault(message.senderId, null) == null) {
+
                         System.out.println(message.messageHeader +
                                 " rejected: player \"Permission\", id not found in existing gameState instance");
                         return;
@@ -148,7 +151,9 @@ public class RequestProcessor {
 
                     break;
                 case "ResetGame":
+//                    if(user == null || !user.live) {
                     if(quickRef.getOrDefault(message.senderId, null) == null) {
+
                         System.out.println(message.messageHeader +
                                 " rejected: player \"ResetGame\", id not found in existing gameState instance");
                         return;
@@ -438,6 +443,22 @@ public class RequestProcessor {
         return true;
     }
 
+    //call after every permission, for purpose of minimizing cross-client id clashes
+    private void newItemCount(Long senderId) {
+        SimpleRequest sr = new SimpleRequest();
+        sr.setSenderId(senderId).setItemCount(itemCount++).setMessageHeader("NewItemCount");
+
+        try {
+            String str = objMapper.writeValueAsString(sr);
+            server.broadcast(str);
+        } catch(JsonProcessingException e) {
+            System.out.println("Could not JSONify 'newItemCount'.");
+            System.out.println(e.getMessage());
+        } catch(IOException e) {
+            System.out.println("Problem sending message to client!");
+        }
+    }
+
     private void checkPermissionStale(WebSocketSession conn, SimpleRequest message) {
         message.bool = true; //default, if checks fail
 
@@ -486,6 +507,13 @@ public class RequestProcessor {
             Long timeStamp = message.timeStamp;
             if(!cards.isEmpty()) cards.forEach((card) -> card.timeStamp = timeStamp);
             if(!decks.isEmpty()) decks.forEach((deck) -> deck.timeStamp = timeStamp);
+
+            //uses "please reserve one" - if recipient is not a deck + addToDeck, reserve itemId
+            if(message.explicit != null && !message.explicit.isEmpty()) {
+                itemCount++;
+                message.setItemCount(itemCount);
+                newItemCount(message.senderId);
+            }
         }
 
 //        System.out.printf("Value: %s %n", message.bool);

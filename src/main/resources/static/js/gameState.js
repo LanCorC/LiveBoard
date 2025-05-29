@@ -1473,10 +1473,13 @@ const gameState = (function() {
 
         //!isDeck only happens in Canvas interaction, no index
         if(!recipient.isDeck) {
-            push(deckify(donorCards, recipient));
+            let callback = () => {
+                push(deckify(donorCards, recipient));
 
-            relevant.add(donorCards[0].deck);
-            server.pushGameAction("addToDeck", new Array(...relevant));
+                relevant.add(donorCards[0].deck);
+                server.pushGameAction("addToDeck", new Array(...relevant));
+            }
+            server.permission(callback, "", [recipient], "please reserve one");
             return true;
         }
 
@@ -1959,6 +1962,10 @@ const gameState = (function() {
         redraw.triggerRedraw();
     }
 
+    function newItemCount(number) {
+        itemCount = number;
+    }
+
     return {
         getID,
         idToRGB,
@@ -2005,6 +2012,7 @@ const gameState = (function() {
         showHand,
         disconnection,
         clientMovement,
+        newItemCount,
         cleanSlate //for testing - remove once finished testing
     };
 })();
