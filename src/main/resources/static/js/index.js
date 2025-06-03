@@ -412,7 +412,6 @@ window.onload = function() {
             handleEdgePanlooping = false;
         }
     }
-
     const handleDrag = function(event) {
         if(!startPoint) {
             return;
@@ -498,6 +497,7 @@ window.onload = function() {
             gameState.offset(null);
         } else {
             //Valid drag/select point
+            document.body.classList.add("grabbing");
             startPoint = contextVis.transformPoint(mouse.x, mouse.y);
             gameState.startPoint(startPoint);
             gameState.offset(
@@ -565,6 +565,7 @@ window.onload = function() {
 
     window.addEventListener("mouseup", function(event) {
         startPoint = null;
+        document.body.classList.remove("grabbing");
 
         let markForPurge = false;
 
