@@ -33,8 +33,9 @@ class Server {
 
     //boolean- if gameState exists on server
     gameStatus = false;
-    //TODO 'gameConnected' boolean;
-    //TODO: for game actions check server.gameConnected() for executions
+
+    //Determine if player is in active, online game;
+    inGame = false;
 
     //To hold the WebSocket reference
     connection;
@@ -111,8 +112,8 @@ class Server {
         }
 
         socket.onclose = function(event) {
+            console.log("Clean disconnect: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
             if(event.wasClean) {
-                console.log("Clean disconnect: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
                 frontUI.connectionFailed("Clean disconnect: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
             } else {
                 //also triggers if connection attempt fails (server offline)
@@ -138,8 +139,39 @@ class Server {
 //            } else {
 //                this.server.chatBox.newEntry(" have disconnected! Attempting to reconnect...");
 //            }
-
-            this.server.chatBox.newEntry(" have disconnected! [Esc] to go back to Main Menu.");
+            let message = "";
+            switch(event.code) {
+                case 1000:
+                    if(this.server.inGame) {
+                        message = " have left the live game.";
+                    } else {
+                    }
+                    frontUI.connectionFailed(`Connection successfully disconnected. Termnation code: ${event.code}`);
+                    break;
+                case 1001: //server-side has decided 1001 is also for terminating an older connection
+                    if(this.server.inGame) {
+                        message = ", a newer instance has connected on this browser! This tab is now disconnected.";
+                    } else {
+                    }
+                    frontUI.connectionFailed("Connection dropped: replaced by a fresh connection on another tab!");
+                    break;
+                case 1006:
+                    if(this.server.inGame) {
+                        message = ", your connection has dropped unexpectedly! [Esc] to go to Main Menu.";
+                        alert("Your connection has dropped unexpectedly! [Esc] to go to Main Menu.");
+                    } else {
+                    }
+                    frontUI.connectionFailed(
+                        `Error ${event.code}: the server "${this.address}" could not be reached at this time!`);
+                    break;
+                default:
+                        message = `Your connection from ${this.address} has dropped unexpectedly. Termination code: ${event.code}.`;
+                        frontUI.connectionFailed(message);
+                        alert(message);
+                    break;
+            }
+            this.server.chatBox.newEntry(message);
+            this.server.inGame = false;
             this.server.gameStatus = false;
         }
 
@@ -158,6 +190,7 @@ class Server {
                         console.log(`GameStatus: ${this.server.gameStatus}`);
                         break;
                     case "GameSetup":
+                        this.server.inGame = true;
                         this.server.game.rebuildBoard(data.gameState, data.players, data.itemCount, false);
                         this.server.chatBox.joinChat();
                         break;
@@ -310,6 +343,8 @@ class Server {
     pushGame(data) {
         //'1' => Websocket.OPEN; '0' => Webocket.CONNECTING
         if(this.connection == undefined || this.connection.readyState != 1) return;
+
+        this.inGame = true;
 
         //data[0] - Object  -> GameState (items)
         //data[1] - Array   ->ArrayList<Users>

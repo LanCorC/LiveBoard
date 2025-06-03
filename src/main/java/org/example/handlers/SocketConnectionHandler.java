@@ -73,7 +73,7 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
 
                     if(!oldConnection.getId().equals(session.getId())) {
                         oldConnection.sendMessage(new TextMessage("Yer Old"));
-                        oldConnection.close();
+                        oldConnection.close(CloseStatus.GOING_AWAY);    //client handles as 'new connection found'
                         System.out.println("Terminated older connection: " + oldConnection.getId());
                     }
                 } else {
