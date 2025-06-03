@@ -619,7 +619,7 @@ class ChatBox {
     joinChat(isFirst) {
         let p = document.createElement("p");
         if(isFirst) {
-            this.newEntry(" are the first to join the table!");
+            this.newEntry(" are the first to join the live table!");
             return;
         }
 
@@ -644,7 +644,19 @@ class ChatBox {
             p.append(this.#formatName(player));
             p.append("]");
         });
-        p.append(".");
+        p.append(" at the live table.");
+        this.newEntry(p);
+    }
+
+    //for SOLO and DEMO; TODO: demo includes other inactive 'NPCs'
+    join(mode) {
+        let p = document.createElement("p");
+
+        //Welcome player (You)! You are joining
+        p.append(`Welcome to ${mode}, `);
+        p.append(this.#formatName());
+        p.append("!");
+
         this.newEntry(p);
     }
 

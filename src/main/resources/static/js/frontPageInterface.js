@@ -74,6 +74,7 @@ const frontPage = (function() {
 
 //        tools.disable(demoButton);
 //        tools.enable(soloButton);
+        tools.chat.join("DEMO");
     });
 
     //Note: not async, never had an issue with redraw() and asset onload mismatch
@@ -91,6 +92,7 @@ const frontPage = (function() {
 //        tools.disable(soloButton);
 //        tools.enable(demoButton);
 //        tools.enable(soloButton);
+        tools.chat.join("SOLO");
     });
 
     function revealGame() {
