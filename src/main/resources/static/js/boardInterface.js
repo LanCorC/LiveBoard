@@ -1,5 +1,6 @@
 import {Hand} from "./itemClasses.js";
 import gameState from "./gameState.js";
+import {MenuSidebar, MenuOption} from "./sidebar.js";
 
 const verbose = false;
 
@@ -719,6 +720,24 @@ export function createChat(user) {
     return chatBox;
 }
 
+//testing function - new sidebar menu @ top left of screen
+function createMenu() {
+    const tokenRoot = "./images/Tokens";
+    let sidebar = new MenuSidebar();
+    let settings = new MenuOption();
+    settings.setFallback("Settings")
+            .setSrc(`${tokenRoot}/settings-ui-svgrepo-com.svg`);
+    let info = new MenuOption();
+    info.setFallback("Info")
+        .setSrc(`${tokenRoot}/info-svgrepo-com.svg`);
+    let help = new MenuOption();
+    help.setFallback("Help")
+        .setSrc(`${tokenRoot}/faq-svgrepo-com.svg`);
+
+    sidebar.addButton(settings, info, help);
+    document.body.append(sidebar.getElement());
+}
+
 //TODO- wip, see comments
 export function initializeBoardInterface(clientUser) {
     createBottomRow(clientUser);
@@ -727,9 +746,11 @@ export function initializeBoardInterface(clientUser) {
 
     //create buttons
 
-    //create chat
-
     //create player heads
+
+    //create menuBar
+    createMenu();
+
     //>>require initialization to accept gameState
     //>>use gameState to then store copy (address) of players{}
 }

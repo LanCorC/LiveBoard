@@ -50,6 +50,34 @@
             display: none;
         }
 
+        /* Holds menu object game GUI */
+        #sidebarMenu {
+            position: absolute;
+            user-select: none;
+            max-width: 20%;
+            max-height: 25%;
+
+            top: 5px;
+            left: 5px;
+            row-gap: 15px;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* TODO: round buttons, space out between */
+        .sidebarButton {
+            border-radius: 25px;
+            background-color: rgba(178, 190, 181, 0.7);
+
+            pointer-events: initial;
+            cursor: pointer;
+        }
+
+        .sidebarButton:hover {
+            background-color: rgba(178, 190, 181, 0.3);
+        }
+
         /*TODO- purpose: left/right padding to allow dragging of preview*/
         /* ALSO parentStyle of the container*/
         .previewBoxContainer {
