@@ -81,6 +81,8 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
                 }
             }
 
+            //TODO- if ID already exists in GameState, return message with "reapply name + color" to client
+
         } else {
             clients.put(name, wrappedSession);
             System.out.printf("Let's welcome the newcomer, %s!%n", name);

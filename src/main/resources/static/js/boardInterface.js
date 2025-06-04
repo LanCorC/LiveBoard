@@ -317,6 +317,10 @@ class ChatBox {
         this.chatInput.value = "";
     }
 
+    triggerHelp = function() {
+        this.#processCommand(["/h"]);
+    }
+
     //TODO- have each case call a method that RETURNS STRING/FORMAT in preparation for entry
     //example: VIP- giveRandom() -> processes (sends to server...), returns cardObj or 'false',
     //example cont.d: processCommand prints "Player (You) gave [card] to [player] at random!"
@@ -724,15 +728,36 @@ export function createChat(user) {
 function createMenu() {
     const tokenRoot = "./images/Tokens";
     let sidebar = new MenuSidebar();
+    //TODO settings: trigger context menu: [Leave game] | [Change BG][other...]
     let settings = new MenuOption();
     settings.setFallback("Settings")
-            .setSrc(`${tokenRoot}/settings-ui-svgrepo-com.svg`);
+        .setSrc(`${tokenRoot}/settings-ui-svgrepo-com.svg`)
+        .addOnClick(()=>console.log("settingsMenu"))
+    ;
+    //TODO info: trigger "QuickTips" context menu, likely [<][>] + html
+    //aka
+        //'Discard' removes from your hand.
+        //'Sacrifice' removes from your party.
+        //A stolen, sacrified, or destroyed hero takes all its equipment with it.
+        //You may not use [The Shadow Claw] as your Party Leader in 2-player games.
+        //Your Party Leader's class counts for Monster requirements.
+        //One hero's effects can only be rolled once each turn:
+            //as it is played,
+            //by spending an action point,
+        //unless repeated/copied by special items and effects.
+        //Each card can only be challenged once.
+        //All players must be given an opportunity to CHALLENGE a Hero, Item, or Magic played from hand.
+        //When CHALLENGED, defending player must beat offensive player's roll.
     let info = new MenuOption();
     info.setFallback("Info")
-        .setSrc(`${tokenRoot}/info-svgrepo-com.svg`);
+        .setSrc(`${tokenRoot}/info-svgrepo-com.svg`)
+        .addOnClick(()=>console.log("infoMenu"))
+    ;
     let help = new MenuOption();
     help.setFallback("Help")
-        .setSrc(`${tokenRoot}/faq-svgrepo-com.svg`);
+        .setSrc(`${tokenRoot}/faq-svgrepo-com.svg`)
+        .addOnClick(()=>userInterface.chatBox.triggerHelp())
+    ;
 
     sidebar.addButton(settings, info, help);
     document.body.append(sidebar.getElement());

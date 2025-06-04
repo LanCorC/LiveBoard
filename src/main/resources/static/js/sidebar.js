@@ -1,7 +1,7 @@
 //Purpose: sidebar buttons, topright,
 //[Menu]
 //[(i) - quick rules]
-//[ ?  - help]
+//[(?)  - help]
 
 //create div, and respective CSS - absolute positioning, arranging buttons horizontally
 
@@ -50,6 +50,10 @@ export class MenuOption {
     }
     setFallback(alt) {
         this.image.alt = alt;
+        return this;
+    }
+    addOnClick(func) {
+        this.container.addEventListener(`pointerdown`, func, false);
         return this;
     }
 
