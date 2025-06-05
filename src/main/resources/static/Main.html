@@ -91,16 +91,28 @@
             pointer-events: initial;
 
             border-radius: 25px;
-            background-color: yellow;
+            background-color: rgba(178, 190, 181, 0.7);
 
             z-index: 9999;
             position: absolute;
 
-            min-height: 200px;
+            min-height: 50px;
             min-width: 50px;
             max-height: 400px;
-            max-width: 100px;
+            max-width: 400px;
 
+            padding: 10px 10px 10px 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contextChild {
+            padding: 10px 10px 10px 10px;
+            margin: 0px 0px 0px 0px;
+        }
+
+        .contextChildButton:hover {
+            background-color: white;
         }
 
         /*TODO- purpose: left/right padding to allow dragging of preview*/

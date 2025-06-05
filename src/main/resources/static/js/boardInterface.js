@@ -1,7 +1,7 @@
 import {Hand} from "./itemClasses.js";
 import gameState from "./gameState.js";
 import {MenuSidebar, MenuOption} from "./sidebar.js";
-import {ContextMenu} from "./contextMenu.js";
+import createSmallBody from "./tinyContentHtml.js";
 
 const verbose = false;
 
@@ -728,7 +728,7 @@ export function createChat(user) {
 //testing function - new sidebar menu @ top left of screen
 function createMenu() {
     const tokenRoot = "./images/Tokens";
-    let sidebar = new MenuSidebar();
+    let sidebar = new MenuSidebar(MenuSidebar.SETTINGSBAR);
     //TODO settings: trigger context menu: [Leave game] | [Change BG][other...]
     let settings = new MenuOption();
     settings.setFallback("Settings")
@@ -749,10 +749,19 @@ function createMenu() {
         //Each card can only be challenged once.
         //All players must be given an opportunity to CHALLENGE a Hero, Item, or Magic played from hand.
         //When CHALLENGED, defending player must beat offensive player's roll.
+    let content = createSmallBody(
+        "this is the title",
+        "paragraph1, hi hello",
+        "paragraph2, hi nice to meet you",
+        "paragraph3, lorem ipsum"
+    );
     let info = new MenuOption();
     info.setFallback("Info")
         .setSrc(`${tokenRoot}/info-svgrepo-com.svg`)
         .addOnClick()
+        .addBuildSpecification("test-keepOpen", ()=>console.log("press!"), MenuOption.KEEP)
+        .addBuildSpecification("test-clickClose", ()=>console.log("press!"), MenuOption.DISCARD)
+        .addBuildSpecification(content, null, MenuOption.KEEP);
     ;
     let help = new MenuOption();
     help.setFallback("Help")

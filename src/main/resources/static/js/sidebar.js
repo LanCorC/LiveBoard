@@ -9,9 +9,11 @@ import { ContextMenu } from "./contextMenu.js";
 
 //to hold sidebar buttons, topleft;
 export class MenuSidebar {
-    constructor() {
+    static SETTINGSBAR = "sidebarMenu";
+    static PLAYERBAR = "playerMenu"; //TODO, CSS styling is WIP
+    constructor(id) {
         const container = document.createElement("div");
-        container.id = "sidebarMenu";
+        container.id = id;
 
         this.container = container;
     }
@@ -31,8 +33,8 @@ export class MenuSidebar {
 export class MenuOption {
     //true - contextMenu closed once option is triggered
     //false - contextMenu remains open once option is triggered
-    static closeOnAction = true;
-    static keepOnAction = false;
+    static DISCARD = true;
+    static KEEP = false;
 
     constructor() {
         const container = document.createElement("div");
@@ -46,14 +48,11 @@ export class MenuOption {
         this.image = image;
 
         //ordered array of ContextMenu build patterns - populated after MenuOption creation
-        //items are
-        //      obj {
-        //          contextMenuOption: innerText/innerHTML/String,
-        //          onclick: function to call,
-        //          closeOnSelection: boolean, //if 'true', closes on click
-        //      }
-        this.contextBuildSpecifications = [];
-            //note: needs special route for 'quicktips'
+        //items are also arrays:
+            //[0] = innerText,HTMLobj,String
+            //[1] = onclick function, if any
+            //[2] = boolean, if true, closes on click
+        this.contextBuildSpecifications = new Array();
     }
 
     //Hold properties:
@@ -88,22 +87,25 @@ export class MenuOption {
     }
 
     contextMenu = undefined;
-    createContextMenu(event) {
+    createContextMenu = function(event) {
         if(this.contextMenu) {
             this.contextMenu.remove();
             return;
         }
 
         this.contextMenu = new ContextMenu(this);
-    }
 
-    //TODO- add to, if relevant, contextMenu
-        //example => menuOption
-            //.addMenu("Leave Game", func, MenuOption.close)
-                //arg1: text or innerText or innerHTML
-                //arg2: onpress functionality,
-                //arg3: refer to static for readability: to menu or not
+        if(this.contextBuildSpecifications.length == 0) return;
+        this.contextBuildSpecifications.forEach((entry) => {
+            //expecting: [0]=content, [1]=func, [2]=bool)
+            this.contextMenu.addStructure(...entry);
+        });
+    }.bind(this);
 
-    //
+    //Example: addMenu("Leave Game", leaveGameFunction, MenuOption.close)
+    addBuildSpecification = function(content, func, closeOnTrigger) {
+        this.contextBuildSpecifications.push([...arguments]);
+        return this;
+    }.bind(this);
 }
 

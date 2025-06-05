@@ -21,6 +21,10 @@ var instance = null;
 
 let count = 1;
 export class ContextMenu {
+    static Separator(contextMenu) {
+        //append separator to contextMenu instance passed
+    }
+
     constructor(parent) { //TODO - remove event, redundant
 
         if(instance) {
@@ -29,6 +33,8 @@ export class ContextMenu {
         instance = this;
         instance.parent = parent;
 
+        let parentContainer = parent.getElement();
+
         const container = document.createElement("div");
 
         container.id = "contextMenu";
@@ -36,11 +42,11 @@ export class ContextMenu {
 
         //attaching unique identifier for caller/callee reference
         container.setAttribute('numberId', count);
-        parent.setAttribute('numberId', count);
+        parentContainer.setAttribute('numberId', count);
         count++;
 
         //present contextMenu cleanly against parent div ('button')
-        let offset = parent.getBoundingClientRect();
+        let offset = parentContainer.getBoundingClientRect();
         container.style.top = `${offset.top}px`;
         container.style.left = `${offset.left + offset.width}px`;
 
@@ -52,6 +58,49 @@ export class ContextMenu {
     //TODO - take in custom constructions;
         //handle: innerHTML? 'pages'?
         //handle, text, UL, separators
+        //is a vertical grid; each entry is one row;
+            //an entry can be string + emoji
+            //an entry can, likewise, be an innerHTML
+    //somehow make a static "separator" etc, so ContextMenu.Separator
+    addStructure(content, onclick, closeOnTrigger) {
+        if(typeof content === 'function') {
+            content(this); //purpose of knowing what instance to append to
+            return;
+        }
+
+        //else proceed as usual
+        switch(typeof content) {
+            case "object":
+                    //assume this is HTML
+                    //do nothing, append as is
+                break;
+            case "string":
+            case "number":
+                let p = document.createElement("p");
+                p.innerText = content;
+
+                content = p;
+                break;
+            default:
+                alert(`typeof: ${typeof content} not accounted for`);
+                break;
+        }
+
+        if(typeof onclick === 'function') {
+            content.addEventListener(`pointerdown`, () => {
+                    onclick();
+                    if(closeOnTrigger) this.remove();
+                },
+            false);
+            //contain special interaction? give special format (:hover)
+            content.classList.add("contextChildButton");
+        } else if (closeOnTrigger) {
+            content.addEventListener(`pointerdown`, () => this.remove(),false);
+        }
+
+        content.classList.add("contextChild");
+        this.container.append(content);
+    }
 
 
     //Clear instance, repair parent (sidebar.js) ref, remove self from documentObj
