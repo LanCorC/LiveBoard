@@ -1,6 +1,7 @@
 import {Hand} from "./itemClasses.js";
 import gameState from "./gameState.js";
 import {MenuSidebar, MenuOption} from "./sidebar.js";
+import {ContextMenu} from "./contextMenu.js";
 
 const verbose = false;
 
@@ -732,7 +733,7 @@ function createMenu() {
     let settings = new MenuOption();
     settings.setFallback("Settings")
         .setSrc(`${tokenRoot}/settings-ui-svgrepo-com.svg`)
-        .addOnClick(()=>console.log("settingsMenu"))
+        .addOnClick()
     ;
     //TODO info: trigger "QuickTips" context menu, likely [<][>] + html
     //aka
@@ -751,7 +752,7 @@ function createMenu() {
     let info = new MenuOption();
     info.setFallback("Info")
         .setSrc(`${tokenRoot}/info-svgrepo-com.svg`)
-        .addOnClick(()=>console.log("infoMenu"))
+        .addOnClick()
     ;
     let help = new MenuOption();
     help.setFallback("Help")

@@ -72,7 +72,7 @@
 
         /* TODO: round buttons, space out between */
         .sidebarButton {
-            border-radius: 25px;
+            border-radius: 999px;
             background-color: rgba(178, 190, 181, 0.7);
 
             pointer-events: initial;
@@ -81,6 +81,26 @@
 
         .sidebarButton:hover {
             background-color: rgba(178, 190, 181, 0.3);
+        }
+
+        .sidebarButton img {
+            pointer-events: none;
+        }
+
+        .contextMenu {
+            pointer-events: initial;
+
+            border-radius: 25px;
+            background-color: yellow;
+
+            z-index: 9999;
+            position: absolute;
+
+            min-height: 200px;
+            min-width: 50px;
+            max-height: 400px;
+            max-width: 100px;
+
         }
 
         /*TODO- purpose: left/right padding to allow dragging of preview*/
