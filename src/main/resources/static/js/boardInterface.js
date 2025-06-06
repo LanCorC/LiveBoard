@@ -1,7 +1,7 @@
 import {Hand} from "./itemClasses.js";
 import gameState from "./gameState.js";
 import {MenuSidebar, MenuOption} from "./sidebar.js";
-import createSmallBody from "./tinyContentHtml.js";
+import {createSmallBody, Element} from "./tinyContentHtml.js";
 
 const verbose = false;
 
@@ -735,34 +735,60 @@ function createMenu() {
         .setSrc(`${tokenRoot}/settings-ui-svgrepo-com.svg`)
         .addOnClick()
     ;
-    //TODO info: trigger "QuickTips" context menu, likely [<][>] + html
-    //aka
-        //'Discard' removes from your hand.
-        //'Sacrifice' removes from your party.
-        //A stolen, sacrified, or destroyed hero takes all its equipment with it.
-        //You may not use [The Shadow Claw] as your Party Leader in 2-player games.
-        //Your Party Leader's class counts for Monster requirements.
-        //One hero's effects can only be rolled once each turn:
-            //as it is played,
-            //by spending an action point,
-        //unless repeated/copied by special items and effects.
-        //Each card can only be challenged once.
-        //All players must be given an opportunity to CHALLENGE a Hero, Item, or Magic played from hand.
-        //When CHALLENGED, defending player must beat offensive player's roll.
-    let content = createSmallBody(
-        "this is the title",
-        "paragraph1, hi hello",
-        "paragraph2, hi nice to meet you",
-        "paragraph3, lorem ipsum"
-    );
+
+    //creates fresh object each time, to evade mix-ups of old/overwritten elements
+    let content = [
+        () => createSmallBody(
+            Element.BOLD("QuickTips 1/4"), Element.BREAK(),
+            Element.SEPARATOR(),
+            Element.ITALICS("DISCARD"), " removes from your hand.", Element.BREAK(),
+            Element.ITALICS("SACRIFICE"), " removes from your party.", Element.BREAK(),
+            Element.ITALICS("DESTROY"), " removes from another player's party.", Element.BREAK(),
+            Element.ITALICS("EQUIPMENTS"), " follow the hero it is equipped on— stolen, destroyed, or sacrificed.", Element.BREAK()
+        ),
+        () => createSmallBody(
+            Element.BOLD("QuickTips 2/4"), Element.BREAK(),
+            Element.SEPARATOR(),
+            "Cards can only be ", Element.ITALICS("CHALLENGED"), " once.", Element.BREAK(),
+            "All players must be given an opportunity to ", Element.ITALICS("CHALLENGE"), " a Hero, Item, or Magic card played from hand.", Element.BREAK(),
+            Element.ITALICS("CHALLENGED"), " player must roll higher than their opponent to resist.", Element.BREAK(),
+        ),
+        () => createSmallBody(
+            Element.BOLD("QuickTips 3/4"), Element.BREAK(),
+            Element.SEPARATOR(),
+            Element.ITALICS("PARTY LEADERS'"), " class count for Monster and Party-Win requirements.", Element.BREAK(),
+            Element.ITALICS("PARTY LEADER"), " The Shadow Claw is not recommended for 2-player games.", Element.BREAK(),
+        ),
+        () => createSmallBody(
+            Element.BOLD("QuickTips 4/4"), Element.BREAK(),
+            Element.SEPARATOR(),
+            "One Hero's ", Element.ITALICS("EFFECT"), " can only be rolled once per turn— ", Element.BREAK(),
+            "a) as it's played,", Element.BREAK(),
+            "b) by spending an action point", Element.BREAK(),
+            "—unless otherwise repeated/copied by special effects."
+        )
+    ];
+    let tipsIndex = 0;
+    let cycleTips = function(index) {
+        let html;
+        if(index || index == 0) {
+            html = content[index]()
+        } else {
+            html = content[++tipsIndex % content.length]();
+        }
+        return html;
+    }.bind(this);
+
     let info = new MenuOption();
     info.setFallback("Info")
         .setSrc(`${tokenRoot}/info-svgrepo-com.svg`)
         .addOnClick()
-        .addBuildSpecification("test-keepOpen", ()=>console.log("press!"), MenuOption.KEEP)
-        .addBuildSpecification("test-clickClose", ()=>console.log("press!"), MenuOption.DISCARD)
-        .addBuildSpecification(content, null, MenuOption.KEEP);
-    ;
+        .addBuildSpecification(cycleTips(0), (content) => {
+            content.innerHTML = ''; //purge
+            let html = cycleTips();
+            content.append(...html.childNodes);
+        }, MenuOption.KEEP);
+
     let help = new MenuOption();
     help.setFallback("Help")
         .setSrc(`${tokenRoot}/faq-svgrepo-com.svg`)

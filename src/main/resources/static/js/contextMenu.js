@@ -87,15 +87,16 @@ export class ContextMenu {
         }
 
         if(typeof onclick === 'function') {
-            content.addEventListener(`pointerdown`, () => {
-                    onclick();
+            content.onpointerdown = (e) => {    //onpointerdown overwrites each time, prevents listener stacking bug
+                    onclick(content);
                     if(closeOnTrigger) this.remove();
-                },
-            false);
-            //contain special interaction? give special format (:hover)
+            }
+            //contain special interaction => give special format (:hover)
             content.classList.add("contextChildButton");
         } else if (closeOnTrigger) {
-            content.addEventListener(`pointerdown`, () => this.remove(),false);
+            content.onpointerdown = (e) => {
+                    this.remove();
+            }
         }
 
         content.classList.add("contextChild");

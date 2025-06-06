@@ -99,7 +99,7 @@
             min-height: 50px;
             min-width: 50px;
             max-height: 400px;
-            max-width: 400px;
+            max-width: 500px;
 
             padding: 10px 10px 10px 10px;
             display: flex;
@@ -111,8 +111,20 @@
             margin: 0px 0px 0px 0px;
         }
 
+        .contextChildButton b,br,p,I {
+            pointer-events: none;   <!-- needed to prevent contextMenu from self-closing -->
+
+            -webkit-touch-callout: none; <!-- attempt to stop text highlight -->
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
         .contextChildButton:hover {
             background-color: white;
+            cursor: pointer;
         }
 
         /*TODO- purpose: left/right padding to allow dragging of preview*/
