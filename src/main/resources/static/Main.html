@@ -111,7 +111,7 @@
             margin: 0px 0px 0px 0px;
         }
 
-        .contextChildButton b,br,p,I {
+        .contextChildButton b,hr,br,p,I {
             pointer-events: none;   <!-- needed to prevent contextMenu from self-closing -->
 
             -webkit-touch-callout: none; <!-- attempt to stop text highlight -->
@@ -120,6 +120,10 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+        }
+
+        .contextChild hr {
+            margin: 2px 0px;
         }
 
         .contextChildButton:hover {

@@ -76,7 +76,7 @@ export class ContextMenu {
                 break;
             case "string":
             case "number":
-                let p = document.createElement("p");
+                let p = document.createElement("div");  //child p,br,hr,b,I -> pointer-events: none
                 p.innerText = content;
 
                 content = p;

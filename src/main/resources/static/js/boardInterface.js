@@ -733,7 +733,9 @@ function createMenu() {
     let settings = new MenuOption();
     settings.setFallback("Settings")
         .setSrc(`${tokenRoot}/settings-ui-svgrepo-com.svg`)
-        .addOnClick()
+        .addOnClick() //default - will create ContextMenu
+        .addBuildSpecification("Leave Game",(content)=>console.log("leave-WIP"),MenuOption.DISCARD)
+        .addBuildSpecification("Cycle Background",(content)=>console.log("cycleBG-WIP"),MenuOption.KEEP)
     ;
 
     //creates fresh object each time, to evade mix-ups of old/overwritten elements
