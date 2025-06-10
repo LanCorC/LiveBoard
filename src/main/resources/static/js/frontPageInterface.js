@@ -17,7 +17,8 @@ let tools = {
     assetReady: false,
     miscReady: false,
     readyFunc: function(){}, //purpose: initialized in frontPage, on trigger, readies buttons
-    chat: undefined
+    chat: undefined,
+    leaveGame: undefined
 }; //store 'outside functions' like context redraw
 
 //purpose: handle all frontPage - connect button, load board, [join lobby?]
@@ -94,6 +95,13 @@ const frontPage = (function() {
 //        tools.enable(soloButton);
         tools.chat.join("SOLO");
     });
+
+    tools.leaveGame = function() {
+        server.disconnect(1000, "Client has left the game.");
+        gameLoadMessage("You have left the game.");
+        server.inGame = false;
+        hideGame();
+    }.bind(this);
 
     function revealGame() {
         frontPage.style.visibility = "hidden";
@@ -319,8 +327,6 @@ const loading = (function() {
     const demoButton = document.getElementById("loadDemo");
     const soloButton = document.getElementById("loadSolo");
     //tracking properties (array of updates? e.g. list of assets received)
-
-
 
     //update methods
     function send(message) {

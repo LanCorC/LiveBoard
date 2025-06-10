@@ -1,10 +1,12 @@
 import {Hand} from "./itemClasses.js";
 import gameState from "./gameState.js";
 import {MenuSidebar, MenuOption} from "./sidebar.js";
-import {createSmallBody, Element} from "./tinyContentHtml.js";
-import { cycleBackground } from "./index.js";
+import { createSmallBody, Element} from "./tinyContentHtml.js";
 
 const verbose = false;
+const FrontPage = { tools: undefined };             //frontpage.js imports
+const Controls = { cycleBackground: undefined };    //index.js imports
+const tools = [FrontPage, Controls];                //bundling for 'lazy imports'
 
 //purpose: to set up HTML counterparts; such as: managing relevant context buttons,
 //initializing 'hand', and other tools [drop hand, UI], managing playerBubbles,
@@ -371,6 +373,12 @@ class ChatBox {
             case "RG":
             case "RESETGAME":
                 //TODO- alert, yes / no, confirmation
+                //strictly rg / resetgame entries
+                    //solved by "are you sure" popup, but placeholder for now
+                if(args.length != 0) {
+                    this.newEntry(", please use '/rg' or '/resetgame' to reset the game.");
+                    break;
+                }
                 this.#resetGame();
                 this.newEntry(entry);
                 this.server.resetGame();
@@ -736,9 +744,9 @@ function createMenu() {
     settings.setFallback("Settings")
         .setSrc(`${tokenRoot}/settings-ui-svgrepo-com.svg`)
         .addOnClick() //default - will create ContextMenu
-        .addBuildSpecification("Leave Game",(content)=>console.log("leave-WIP"),MenuOption.DISCARD)
-        .addBuildSpecification(createSmallBody(Element.SEPARATOR( )),undefined,MenuOption.KEEP)
-        .addBuildSpecification("Cycle Background",cycleBackground,MenuOption.KEEP)
+        .addBuildSpecification("Leave Game",FrontPage.tools.leaveGame,MenuOption.DISCARD)
+        .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
+        .addBuildSpecification("Cycle Background",Controls.cycleBackground,MenuOption.KEEP)
     ;
 
     //creates fresh object each time, to evade mix-ups of old/overwritten elements
@@ -815,7 +823,39 @@ export function initializeBoardInterface(clientUser) {
     //create player heads
 
     //create menuBar
-    createMenu();
+    //dynamic import, and on both, then createMenu()
+    //Purpose: spaghetti code imports across multiple files caused sequencing issues
+    Promise.all([
+        import("./index.js"),
+        import("./frontPageInterface.js")
+    ]).then((values)=> {
+        //pluck out specific properties to-find in our 'lazy import'
+        //TODO future- just place the entire module?
+        let valuesToGo = new Map();
+
+        //tools = [module, module]
+        tools.forEach(
+            //entries = [ [propertyName, val] : index, [propertyName, val] : index ]
+            (module) => Object.entries(module).forEach(
+                (key, value) => valuesToGo.set(key[0], module)
+            )
+        );
+
+        for(const module of values) {
+            for(const [key, value] of Object.entries(module)) {
+                let entries = Object.entries(module);
+                for (const entry of entries) {
+                    if(valuesToGo.has(entry[0])) {
+                        valuesToGo.get(entry[0])[entry[0]] = module[entry[0]];
+                        valuesToGo.delete(entry[0]);
+                    }
+                }
+            }
+        }
+
+        createMenu();
+    });
+
 
     //>>require initialization to accept gameState
     //>>use gameState to then store copy (address) of players{}

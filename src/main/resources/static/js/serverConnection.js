@@ -198,6 +198,7 @@ class Server {
                         this.server.frontPage.connectionSuccess(data.explicit);
                         break;
                     case "GameUpdate":
+                        if(!this.server.inGame) return; //reject updates if not 'in'
                         //Purpose messages received here are 'server approved'; we may apply immediately
 
 //                        console.log("Game update received, printing .cards, .decks, .playMats:");
@@ -217,6 +218,7 @@ class Server {
                     //TODO - do not take in update if player is not connected to game
                     //and/or, ensure 'Start Game' sets to 0 first (cleanSlate)
                     case "NewItemCount":
+                        if(!this.server.inGame) return; //reject updates if not 'in'
                         if(data.senderId == this.server.game.clientUser.id) {
                             console.log(`returned ${header}!`);
                             //Do not process;
@@ -238,6 +240,7 @@ class Server {
 
                         break;
                     case "ChatUpdate":
+                        if(!this.server.inGame) return; //reject updates if not 'in'
 //                        if(data.player && data.player.id == this.server.game.clientUser.id) {
 //                            break; //skip processing: message came from us
 //                        }
@@ -290,6 +293,7 @@ class Server {
 
                         break;
                     case "PermissionGameAction":
+                        if(!this.server.inGame) return; //reject updates if not 'in'
                         console.log(data);
                         this.server.processPermission(data);
                         break;
@@ -388,6 +392,10 @@ class Server {
             this.game.loadBoard();
             return;
         }
+        if(!this.inGame) {
+            this.chatBox.newEntry(", you are connected but have not joined the live game. Reset denied!");
+            return;
+        }
 
         let message = {};
         message.messageHeader = "ResetGame";
@@ -404,7 +412,7 @@ class Server {
     //TODO- server update on gameAction
     pushGameAction(stringAction, items, ...fallbackState)  {
         //TODO important note: uncomment when not testing
-        if(this.connection == undefined || this.connection.readyState != 1) return;
+        if(this.connection == undefined || this.connection.readyState != 1 || !this.inGame) return;
 
         //TakeFromDeck* - permission based (wait for server response)
 
@@ -540,7 +548,7 @@ class Server {
 
     //note: "items" is strictly cards- no playmats, decks, tokens
     sendChat = function(stringData, stringAction, cards, recipient) {
-        if(this.connection == undefined || this.connection.readyState != 1) return;
+        if(this.connection == undefined || this.connection.readyState != 1 || !this.inGame) return;
         if(cards && !Array.isArray(cards)) cards = [cards];
 
         //TODO- allow for 'PingHand' route for 'SeeHand' gameaction
@@ -577,7 +585,7 @@ class Server {
     //serverCheckItems- the most relevant items that end up manipulated at end of func
     //e,g, 'selectView' is the item.deck, often triggered on topCard (not deck)
     permission(func, funcArgs, serverCheckItems, explicit) {
-        if(this.connection == undefined || this.connection.readyState != 1) {
+        if(this.connection == undefined || this.connection.readyState != 1 || !this.inGame) {
             func(...funcArgs);
             return;
         }
