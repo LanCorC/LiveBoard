@@ -9,7 +9,7 @@ var instance = null;
 
 //Purpose: handle special effects that purge existing contextMenu
 (()=>{
-    document.addEventListener("pointerdown", function(event) {
+    document.addEventListener("click", function(event) {
         let contextMenu = document.getElementById("contextMenu");
         if(!contextMenu) return;
 
@@ -87,14 +87,14 @@ export class ContextMenu {
         }
 
         if(typeof onclick === 'function') {
-            content.onpointerdown = (e) => {    //onpointerdown overwrites each time, prevents listener stacking bug
+            content.onclick = (e) => {    //onpointerdown overwrites each time, prevents listener stacking bug
                     onclick(content);
                     if(closeOnTrigger) this.remove();
             }
             //contain special interaction => give special format (:hover)
             content.classList.add("contextChildButton");
         } else if (closeOnTrigger) {
-            content.onpointerdown = (e) => {
+            content.onclick = (e) => {
                     this.remove();
             }
         }
