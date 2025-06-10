@@ -104,6 +104,14 @@
             padding: 10px 10px 10px 10px;
             display: flex;
             flex-direction: column;
+
+            <!-- attempt to stop text highlight -->
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         .contextChild {
@@ -113,13 +121,6 @@
 
         .contextChildButton b,hr,br,p,I {
             pointer-events: none;   <!-- needed to prevent contextMenu from self-closing -->
-
-            -webkit-touch-callout: none; <!-- attempt to stop text highlight -->
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
         }
 
         .contextChild hr {
@@ -358,6 +359,8 @@
             background-color: #1F1F1F;
             color: white;
             padding: 0;
+
+            border-radius: 20px;
             border: 0;
         }
 
