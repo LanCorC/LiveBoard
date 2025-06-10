@@ -325,6 +325,10 @@ class ChatBox {
         this.#processCommand(["/h"]);
     }
 
+    triggerResetGame = function() {
+        this.#processCommand(["/rg"]);
+    }
+
     //TODO- have each case call a method that RETURNS STRING/FORMAT in preparation for entry
     //example: VIP- giveRandom() -> processes (sends to server...), returns cardObj or 'false',
     //example cont.d: processCommand prints "Player (You) gave [card] to [player] at random!"
@@ -747,6 +751,7 @@ function createMenu() {
         .addBuildSpecification("Leave Game",FrontPage.tools.leaveGame,MenuOption.DISCARD)
         .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
         .addBuildSpecification("Cycle Background",Controls.cycleBackground,MenuOption.KEEP)
+        .addBuildSpecification("Reset Game",()=>userInterface.chatBox.triggerResetGame(),MenuOption.DISCARD)
     ;
 
     //creates fresh object each time, to evade mix-ups of old/overwritten elements
