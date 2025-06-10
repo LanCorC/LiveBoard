@@ -64,10 +64,10 @@ const backgroundUrl = [
 ];
 let backgroundIndex = Math.floor(Math.random() * backgroundUrl.length);
 board.style.background = backgroundUrl[backgroundIndex];
-function cycleBackground() {
-    console.log(backgroundIndex % 5);
+export const cycleBackground = function() {
+//    console.log(backgroundIndex % 5);
     board.style.background = backgroundUrl[++backgroundIndex % backgroundUrl.length];
-}
+}.bind(this);
 board.height = window.innerHeight;
 board.width = window.innerWidth;
 

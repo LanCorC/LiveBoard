@@ -2,6 +2,7 @@ import {Hand} from "./itemClasses.js";
 import gameState from "./gameState.js";
 import {MenuSidebar, MenuOption} from "./sidebar.js";
 import {createSmallBody, Element} from "./tinyContentHtml.js";
+import { cycleBackground } from "./index.js";
 
 const verbose = false;
 
@@ -726,6 +727,7 @@ export function createChat(user) {
 }
 
 //testing function - new sidebar menu @ top left of screen
+//SELF NOTE: best to import Controls (index) and GameState here to centralize modification of game menu
 function createMenu() {
     const tokenRoot = "./images/Tokens";
     let sidebar = new MenuSidebar(MenuSidebar.SETTINGSBAR);
@@ -735,7 +737,8 @@ function createMenu() {
         .setSrc(`${tokenRoot}/settings-ui-svgrepo-com.svg`)
         .addOnClick() //default - will create ContextMenu
         .addBuildSpecification("Leave Game",(content)=>console.log("leave-WIP"),MenuOption.DISCARD)
-        .addBuildSpecification("Cycle Background",(content)=>console.log("cycleBG-WIP"),MenuOption.KEEP)
+        .addBuildSpecification(createSmallBody(Element.SEPARATOR( )),undefined,MenuOption.KEEP)
+        .addBuildSpecification("Cycle Background",cycleBackground,MenuOption.KEEP)
     ;
 
     //creates fresh object each time, to evade mix-ups of old/overwritten elements
