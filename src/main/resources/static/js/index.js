@@ -64,12 +64,19 @@ const backgroundUrl = [
 ];
 let backgroundIndex = Math.floor(Math.random() * backgroundUrl.length);
 board.style.background = backgroundUrl[backgroundIndex];
+
+//exports, delayed, to 'boardInterface.js' for menu/GUI
 export const cycleBackground = function() {
-//    console.log(backgroundIndex % 5);
     board.style.background = backgroundUrl[++backgroundIndex % backgroundUrl.length];
 }.bind(this);
 board.height = window.innerHeight;
 board.width = window.innerWidth;
+
+//exports, delayed, to 'boardInterface.js' for menu/GUI
+export let rotateBoard = undefined;
+
+//exports, delayed, to 'boardInterface.js' for menu/GUI
+export let roll2d6 = undefined;
 
 pregameInterface.initialize();
 
@@ -694,7 +701,9 @@ window.onload = function() {
         }
         maxZoomOut = false;
         pulseRedraw();
-    }
+    }.bind(this);
+
+    rotateBoard = handleBoardRotate;
 
     window.addEventListener("keydown", function(event){
         if(!event.key) return;
@@ -758,6 +767,14 @@ window.onload = function() {
         let b = Math.ceil(Math.random() * 6);
         return ` rolled [${a}][${b}] for a total of ${a+b}!`;
     }
+
+    const triggerRollDice = function() {
+        let text = roll2d6Text();
+        userInterface.userInterface.chatBox.sendChat(text,"ChatUpdate");
+        userInterface.userInterface.chatBox.newEntry(text,undefined,"");
+    }.bind(this);
+
+    roll2d6 = triggerRollDice;
 
     let testBool = false;
     window.addEventListener("keyup", function(event){

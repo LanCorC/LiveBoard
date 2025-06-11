@@ -5,7 +5,11 @@ import { createSmallBody, Element} from "./tinyContentHtml.js";
 
 const verbose = false;
 const FrontPage = { tools: undefined };             //frontpage.js imports
-const Controls = { cycleBackground: undefined };    //index.js imports
+const Controls = {
+    cycleBackground:    undefined,
+    rotateBoard:        undefined,
+    roll2d6:            undefined
+};    //index.js imports
 const tools = [FrontPage, Controls];                //bundling for 'lazy imports'
 
 //purpose: to set up HTML counterparts; such as: managing relevant context buttons,
@@ -748,10 +752,13 @@ function createMenu() {
     settings.setFallback("Settings")
         .setSrc(`${tokenRoot}/settings-ui-svgrepo-com.svg`)
         .addOnClick() //default - will create ContextMenu
-        .addBuildSpecification("Leave Game",FrontPage.tools.leaveGame,MenuOption.DISCARD)
-        .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
+        .addBuildSpecification("Roll Dice", Controls.roll2d6,MenuOption.KEEP)
+        .addBuildSpecification("Switch Seats", Controls.rotateBoard,MenuOption.KEEP)
         .addBuildSpecification("Cycle Background",Controls.cycleBackground,MenuOption.KEEP)
-        .addBuildSpecification("Reset Game",()=>userInterface.chatBox.triggerResetGame(),MenuOption.DISCARD)
+        .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
+        .addBuildSpecification("\u26A0 Reset Game \u26A0",()=>userInterface.chatBox.triggerResetGame(),MenuOption.DISCARD)
+        .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
+        .addBuildSpecification("Leave Game",FrontPage.tools.leaveGame,MenuOption.DISCARD)
     ;
 
     //creates fresh object each time, to evade mix-ups of old/overwritten elements
@@ -767,23 +774,23 @@ function createMenu() {
         () => createSmallBody(
             Element.BOLD("QuickTips 2/4"), Element.BREAK(),
             Element.SEPARATOR(),
-            "Cards can only be ", Element.ITALICS("CHALLENGED"), " once.", Element.BREAK(),
             "All players must be given an opportunity to ", Element.ITALICS("CHALLENGE"), " a Hero, Item, or Magic card played from hand.", Element.BREAK(),
+            "Cards can only be ", Element.ITALICS("CHALLENGED"), " once.", Element.BREAK(),
             Element.ITALICS("CHALLENGED"), " player must roll higher than their opponent to resist.", Element.BREAK(),
         ),
-        () => createSmallBody(
-            Element.BOLD("QuickTips 3/4"), Element.BREAK(),
-            Element.SEPARATOR(),
-            Element.ITALICS("PARTY LEADERS'"), " class count for Monster and Party-Win requirements.", Element.BREAK(),
-            Element.ITALICS("PARTY LEADER"), " The Shadow Claw is not recommended for 2-player games.", Element.BREAK(),
-        ),
+         () => createSmallBody(
+             Element.BOLD("QuickTips 3/4"), Element.BREAK(),
+             Element.SEPARATOR(),
+             "One Hero's ", Element.ITALICS("EFFECT"), " can only be rolled once per turn— ", Element.BREAK(),
+             "a) as it's played,", Element.BREAK(),
+             "b) by spending an action point", Element.BREAK(),
+             "—unless otherwise repeated/copied by special effects."
+         ),
         () => createSmallBody(
             Element.BOLD("QuickTips 4/4"), Element.BREAK(),
             Element.SEPARATOR(),
-            "One Hero's ", Element.ITALICS("EFFECT"), " can only be rolled once per turn— ", Element.BREAK(),
-            "a) as it's played,", Element.BREAK(),
-            "b) by spending an action point", Element.BREAK(),
-            "—unless otherwise repeated/copied by special effects."
+            Element.ITALICS("PARTY LEADERS'"), " class count for Party-Win and Monster requirements.", Element.BREAK(),
+            Element.ITALICS("PARTY LEADER"), " The Shadow Claw is not recommended for 2-player games.", Element.BREAK(),
         )
     ];
     let tipsIndex = 0;
