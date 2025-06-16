@@ -265,6 +265,23 @@ class ViewDeck extends PreviewBox {
     }
 }
 
+//Excised from ChatBox functions, to reuse in playerMenu
+function formatName(sender) {
+    let name = document.createElement("I");
+    let nameInner;
+    if(sender && sender.id != gameState.clientUser.id) {
+        nameInner = sender.name;
+    } else {
+        sender = gameState.clientUser;
+        nameInner =`${gameState.clientUser.name} (You)`;
+    }
+    name.innerText = nameInner;
+
+    name.style.color = sender.color;
+
+    return name; //italic html element
+}
+
 class ChatBox {
     constructor(user) {
         //create box div, class (css to manipulate which corner/edge of board to populate + player)
@@ -432,7 +449,7 @@ class ChatBox {
         let players = gameState.getPlayers();
         players.forEach((player) => {
             p.append("[");
-            p.append(this.#formatName(player));
+            p.append(formatName(player));
             p.append(`:${player.hand.images.length}`);
             p.append("]");
         })
@@ -451,9 +468,9 @@ class ChatBox {
 
         //sender, recipient, item
         let p = document.createElement("p");
-        p.append(this.#formatName(sender));
+        p.append(formatName(sender));
         p.append(` gave `);
-        p.append(this.#formatName(recipient));
+        p.append(formatName(recipient));
         p.append(" ");
 
         if(!sender || sender.id == this.user.id || recipient.id == this.user.id) {
@@ -476,9 +493,9 @@ class ChatBox {
         //sender, recipient, item
         //X is showing Y their hand
         let p = document.createElement("p");
-        p.append(this.#formatName(sender));
+        p.append(formatName(sender));
         p.append(` is showing `);
-        p.append(this.#formatName(recipient));
+        p.append(formatName(recipient));
         p.append(" their hand");
 
         //X is showing Y their hand, but it's empty!
@@ -504,21 +521,21 @@ class ChatBox {
         this.sendChat("", "ShowHand", items, recipient)
     }
 
-    #formatName(sender) {
-        let name = document.createElement("I");
-        let nameInner;
-        if(sender && sender.id != this.user.id) {
-            nameInner = sender.name;
-        } else {
-            sender = this.user;
-            nameInner =`${this.user.name} (You)`;
-        }
-        name.innerText = nameInner;
-
-        name.style.color = sender.color;
-
-        return name; //italic html element
-    }
+//    #formatName(sender) {
+//        let name = document.createElement("I");
+//        let nameInner;
+//        if(sender && sender.id != this.user.id) {
+//            nameInner = sender.name;
+//        } else {
+//            sender = this.user;
+//            nameInner =`${this.user.name} (You)`;
+//        }
+//        name.innerText = nameInner;
+//
+//        name.style.color = sender.color;
+//
+//        return name; //italic html element
+//    }
 
     //use real item, else default "[Card]"
     #formatCard(card) {
@@ -542,7 +559,7 @@ class ChatBox {
         if(!text) return;
 
         if(typeof text === "string") {
-            entry.append(this.#formatName(sender));
+            entry.append(formatName(sender));
             entry.append(`${text}`);
         } else { //pre-formatted innerHTML
             entry = text;
@@ -619,7 +636,7 @@ class ChatBox {
         //if single (length==1), keep 0 (falsy)
         let count = items.length == 1 ? 0 : 1;
 
-        body.append(this.#formatName(sender));
+        body.append(formatName(sender));
         body.append(` pinged ${items[0].type.toLowerCase() || "item" }`);
         count ? body.append(`s `) : body.append(` `);
 
@@ -650,7 +667,7 @@ class ChatBox {
 
         //Welcome player (You)! You are joining
         p.append("Welcome ");
-        p.append(this.#formatName());
+        p.append(formatName());
         p.append("! You are joining ");
 
         //Welcome player (You)! You are joining ...oh, it's just yourself for now.
@@ -664,7 +681,7 @@ class ChatBox {
         gameState.getPlayers().forEach((player) => {
             if(this.user == player) return;
             p.append("[");
-            p.append(this.#formatName(player));
+            p.append(formatName(player));
             p.append("]");
         });
         p.append(" at the live table.");
@@ -677,7 +694,7 @@ class ChatBox {
 
         //Welcome player (You)! You are joining
         p.append(`Welcome to ${mode}, `);
-        p.append(this.#formatName());
+        p.append(formatName());
         p.append("!");
 
         this.newEntry(p);
@@ -685,14 +702,14 @@ class ChatBox {
 
     disconnected(id) {
         let p = document.createElement("p");
-        p.append(this.#formatName(gameState.getPlayer(id)));
+        p.append(formatName(gameState.getPlayer(id)));
         p.append(" has disconnected.");
         this.newEntry(p);
     }
 
     newPlayer(player) {
         let p = document.createElement("p");
-        p.append(this.#formatName(player));
+        p.append(formatName(player));
         p.append(" has joined the table!");
         this.newEntry(p);
     }
@@ -824,6 +841,36 @@ function createMenu() {
     document.body.append(sidebar.getElement());
 }
 
+//TODO create a greater 'playerbar' object, attach to userInterface,
+//*gameState will use userInterface.playerBar.update() / etc to process changes
+
+//TODO somehow attach id to property of MenuOption for context-ref;
+    //else, keep the lambda local to THIS file-- access to player + gameState function
+function createPlayerBar() {
+    let playerBar = new MenuSidebar(MenuSidebar.PLAYERBAR);
+
+    //TODO - iterate through playerbase, populate the playerBar;
+    //TODO: store all buttons in some array, or Map;
+    //TODO: on player update, have gameState find the correct button, then change...
+        //name, color, status, cardCount
+        //if id already exists, overwrite
+        //if id not already exists, new player, add new element
+    //
+    let help = new MenuOption();
+    help.setBody(formatName())
+        .addOnClick()
+//        .addOnClick(()=>userInterface.chatBox.triggerHelp())
+        .addBuildSpecification("Switch Seats", Controls.rotateBoard,MenuOption.KEEP)
+        .addBuildSpecification("Cycle Background",Controls.cycleBackground,MenuOption.KEEP)
+        .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
+        .addBuildSpecification("\u26A0 Reset Game \u26A0",()=>userInterface.chatBox.triggerResetGame(),MenuOption.DISCARD)
+        .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
+        .addBuildSpecification("Leave Game",FrontPage.tools.leaveGame,MenuOption.DISCARD)
+    ;
+    playerBar.addButton(help);
+    document.body.append(playerBar.getElement());
+}
+
 //TODO- wip, see comments
 export function initializeBoardInterface(clientUser) {
     createBottomRow(clientUser);
@@ -866,6 +913,8 @@ export function initializeBoardInterface(clientUser) {
         }
 
         createMenu();
+
+        createPlayerBar();
     });
 
 
