@@ -5,6 +5,13 @@
     <title>&#127993; Here To Play! - Virtual Table Top &#9876;
     </title>
     <style>
+        :root {
+            --menuTopOffset: 5px;
+            --menuLeftOffset: 5px;
+
+            --menuMaxHeight: 25%;
+        }
+
         body {
             height: 100vh;
             width: 100vw;
@@ -56,22 +63,72 @@
         }
 
         /* Holds menu object game GUI */
-        #sidebarMenu {
+
+        .menuBar { /* Parent to sidebarMenu and playerMenu */
             position: absolute;
             user-select: none;
             max-width: 20%;
-            max-height: 25%;
-
-            top: 5px;
-            left: 5px;
-            row-gap: 15px;
 
             display: flex;
             flex-direction: column;
         }
 
+        .sidebarMenu {
+            top: var(--menuTopOffset);
+            left: var(--menuLeftOffset);
+
+            max-height: var(--menuMaxHeight);
+
+            row-gap: 15px;
+        }
+
+        .playerMenu {
+            top: var(--menuMaxHeight);
+            left: var(--menuLeftOffset);
+
+            max-height: var(--menuMaxHeight);
+
+            row-gap: 15px;
+        }
+
+        .playerMenu .sidebarButton {
+            min-width: 50px;
+            max-width: 200px;
+            height: auto;
+        }
+
+        .playerMenu .sidebarButton {
+            border-radius: 10px;
+            height: 40px;
+
+            white-space: nowrap;
+            font-weight: bold;
+
+            overflow: hidden;
+            text-overflow: clip;
+        }
+
+        .playerMenu .sidebarButton I {
+            vertical-align: middle;
+        }
+
+        .playerMenu .sidebarButton:hover {
+            width: auto;
+            overflow: visible;
+        }
+
+/*
+        .playerMenu .sidebarButton:active:hover {
+            cursor: copy;
+        }
+*/
+
         /* TODO: round buttons, space out between */
         .sidebarButton {
+
+            width: 50px;
+            height: 50px;
+
             border-radius: 999px;
             background-color: rgba(178, 190, 181, 0.7);
 
@@ -80,7 +137,7 @@
         }
 
         .sidebarButton:hover {
-            background-color: rgba(178, 190, 181, 0.3);
+            background-color: rgba(178, 190, 181, 1.0);
         }
 
         .sidebarButton img {
