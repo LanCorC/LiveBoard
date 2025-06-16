@@ -13,7 +13,8 @@ export class MenuSidebar {
     static PLAYERBAR = "playerMenu"; //TODO, CSS styling is WIP
     constructor(id) {
         const container = document.createElement("div");
-        container.id = id;
+        container.classList.add("menuBar");
+        container.classList.add(id);
 
         this.container = container;
     }
@@ -68,6 +69,12 @@ export class MenuOption {
         this.image.alt = alt;
         return this;
     }
+
+    setBody(body) { //expect string or innerHTML
+        this.container.append(body);
+        return this;
+    }
+
     addOnClick(func) {
         if(!func) { //defaults to creating a popup contextMenu
             func = this.createContextMenu;
