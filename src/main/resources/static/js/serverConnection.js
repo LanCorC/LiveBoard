@@ -247,7 +247,6 @@ class Server {
                             break; //skip processing: message came from us
                         }
                         let sender = this.server.game.getPlayer(data.senderId);
-                        //TODO- differentate between normal chat entry, ping item, ping hand
 
                         switch(data.subHeader) {
                             case "ChatUpdate":
@@ -329,7 +328,6 @@ class Server {
         this.game = gameState;
         this.chatBox = chatBox;
 
-        //TODO- implement client-side send to server chat message
         chatBox.setServer(this);
 
 //        console.log(this.frontPage);
@@ -340,8 +338,6 @@ class Server {
 //        this.connect();
     }
 
-    //TODO- validate if connected; additional: way to handle if connection drops?
-    //or leave for unlikely
     pushGame(data) {
         //'1' => Websocket.OPEN; '0' => Webocket.CONNECTING
         if(this.connection == undefined || this.connection.readyState != 1) return;
@@ -407,20 +403,13 @@ class Server {
         this.connection.send(message);
     }
 
-    //TODO- server update on gameAction
     pushGameAction(stringAction, items, ...fallbackState)  {
-        //TODO important note: uncomment when not testing
         if(this.connection == undefined || this.connection.readyState != 1 || !this.inGame) return;
 
-        //TakeFromDeck* - permission based (wait for server response)
-
-        //for now, just push
-
-        //TODO preview all actions are being read
+        //Testing: preview all actions are being read
 //        console.log(stringAction);
 //        console.log(items);
 //        console.log(`VIP: ${this.requestFreePass}`);
-
 
         //items assumed array, make (items.deck)[]
         if(!Array.isArray(items)) items = new Array(items);
@@ -549,7 +538,6 @@ class Server {
         if(this.connection == undefined || this.connection.readyState != 1 || !this.inGame) return;
         if(cards && !Array.isArray(cards)) cards = [cards];
 
-        //TODO- allow for 'PingHand' route for 'SeeHand' gameaction
         let message = {};
         message.messageHeader = "ChatUpdate";
         message.subHeader = stringAction;
@@ -565,8 +553,6 @@ class Server {
     //purpose: send clientUser updates to server
     clientUpdate(subHeader) {
         if(this.connection == undefined || this.connection.readyState != 1) return;
-
-        //TODO- if mousemove, include coords
 
         let message = {};
         message.messageHeader = "ClientUpdate";
@@ -662,7 +648,6 @@ class Server {
                     if(value && value.isDeck) return value.id; //value is deck, return its id
                     return value; //or 0, if value != deck
                 case "images":  //of 'decks' and 'hands' with backreferences
-                    //TODO-check is actually related to deck
                     let newImagesRef = [];
                     if(value.length == 0) return newImagesRef;  //handle "empty" hand
                     if(!Object.hasOwn(value[0], "index")) {     //are NOT card objects
@@ -674,7 +659,6 @@ class Server {
                     }
                     return newImagesRef;
                 case "players":
-                    //TODO- test if i can handle MAP to just return arr objs values
 //                    console.log(key);
                 default:
                     return value;
