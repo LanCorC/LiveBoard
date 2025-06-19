@@ -1633,7 +1633,7 @@ const gameState = (function() {
     //dissolve hand
     function dropHand() {
         //placeholder
-        alert("This is a WIP!");
+        alert("This is a [W]ork [I]n [P]rogress!");
 
         //take last (aka back) card away, coord = 0,0
         //equivalent of

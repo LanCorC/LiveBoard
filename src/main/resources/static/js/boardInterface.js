@@ -781,7 +781,6 @@ function createMenu() {
     settings.setFallback("Settings")
         .setSrc(`${tokenRoot}/settings-ui-svgrepo-com.svg`)
         .addOnClick() //default - will create ContextMenu
-        .addBuildSpecification("Roll Dice (r)", Controls.roll2d6,MenuOption.KEEP)
         .addBuildSpecification("Switch Seats (a, d)", Controls.rotateBoard,MenuOption.KEEP)
         .addBuildSpecification("Cycle Background (=)",Controls.cycleBackground,MenuOption.KEEP)
         .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
@@ -897,7 +896,8 @@ class PlayerBar {
         ;
 
         if(user.id == gameState.clientUser.id) {
-            button.addBuildSpecification("Show Hand (all)", ()=>userInterface.chatBox.showHandToChat(),MenuOption.DISCARD)
+            button.addBuildSpecification("Roll Dice (r)", Controls.roll2d6,MenuOption.KEEP)
+            .addBuildSpecification("Show Hand (all)", ()=>userInterface.chatBox.showHandToChat(),MenuOption.DISCARD)
             .addBuildSpecification("Reroll Name", ()=>gameState.rerollUser(), MenuOption.KEEP)
             .addBuildSpecification("\u26A0 Drop Hand (WIP) \u26A0",()=>{
                 //Game action
