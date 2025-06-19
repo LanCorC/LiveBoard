@@ -62,7 +62,7 @@ export class ContextMenu {
             //an entry can be string + emoji
             //an entry can, likewise, be an innerHTML
     //somehow make a static "separator" etc, so ContextMenu.Separator
-    addStructure(content, onclick, closeOnTrigger) {
+    addStructure(content, onclick, closeOnTrigger, specialProperty) {
         if(typeof content === 'function') {
             content(this); //purpose of knowing what instance to append to
             return;
@@ -100,6 +100,7 @@ export class ContextMenu {
         }
 
         content.classList.add("contextChild");
+        if(specialProperty) content.special = specialProperty;
         this.container.append(content);
     }
 

@@ -22,7 +22,8 @@ const gameState = (function() {
 
     let frontPage = null;
 
-    let players = new Map();
+    //assume remains constant; note: pointer stored in playerBar for GUI update purposes
+    const players = new Map();
 
     //Note re: rebuilding, this contains HAND OBJ with .ref
     //on rebuild, check THIS and players (Map obj) for hand with matching id,
@@ -95,10 +96,19 @@ const gameState = (function() {
     }
 
     function addPlayer(user) {
+        let returning = players.has(user.id);
+
         players.set(user.id, user);
 
         console.log("adding player, here is the updated player map:")
         console.log(players);
+
+        if(user == clientUser) return;
+        if(returning) {
+            userInterface.playerBar.playerUpdate(user);
+        } else {
+            userInterface.playerBar.update();
+        }
     }
 
     //on disconnect, 'deactivate' player? - set all 'selected' on player to null
@@ -126,16 +136,21 @@ const gameState = (function() {
     function changeUserName(stringName, noRedraw) {
         clientUser.name = stringName;
         server.clientUpdate("customize");
+
+        if(userInterface.playerBar) userInterface.playerBar.playerUpdate();
     }
     //Purpose: strictly for clientUser
     function changeUserColor(hexString, noRedraw) {
         clientUser.color = hexString;
         server.clientUpdate("customize");
 
+        if(userInterface.playerBar) userInterface.playerBar.playerUpdate();
         if(!noRedraw) redraw.triggerRedraw();
     }
     //Purpose: changes regarding OTHER players
-    function updatePlayer(newCopy) {
+    //"customize" = new name +/- color
+    //"movement" = new coordinate
+    function updatePlayer(newCopy, subHeader) {
         let ourCopy = players.get(newCopy.id);
         if(!ourCopy) return;
 
@@ -143,6 +158,10 @@ const gameState = (function() {
         ourCopy.name = newCopy.name;
         ourCopy.color = newCopy.color;
         ourCopy.coord = newCopy.coord;
+
+        if(subHeader == "customize") {
+            userInterface.playerBar.playerUpdate(ourCopy);
+        }
 
         redraw.triggerRedraw();
     }
@@ -925,6 +944,7 @@ const gameState = (function() {
         //TODO- push to server; -- likely do processing at server
         //TODO- likely keep all non-server module interactions abstracted
         server.pushGame([items, players, itemCount]);
+        userInterface.playerBar.update();
         redraw.triggerRedraw();
     }
 
@@ -1165,6 +1185,8 @@ const gameState = (function() {
         console.log("Players, supposedly:");
         console.log(players);
 
+        userInterface.playerBar.update();
+        userInterface.playerBar.playerUpdate();
         redraw.triggerRedraw();
     }
 
@@ -1275,6 +1297,7 @@ const gameState = (function() {
         //TODO future- if own player's hand, update visual? in the event of future 'viewHand' 'takeRandomFromHand'
                 //will likely take a different path;
         let skip = false;
+        let handToUpdate = null;
         newStateObjects.forEach((item) => {
 //            console.log("Attempting changes in itemUpdate...");
             if(skip) return;
@@ -1292,6 +1315,7 @@ const gameState = (function() {
 //                    console.log(getPlayers());
                 } else {
                     realItem = players.get(item.id).hand;
+                    handToUpdate = item.id;
                     console.log("found in players!");
                 }
             }
@@ -1353,11 +1377,10 @@ const gameState = (function() {
                         item.images.forEach((number) => newImages.push(quickRef[number]));
                         realItem.images = newImages;
 
-                        //TODO- if own hand, or own view, update
-                        //TODO- to be tested on voluntary 'giveRandom()'- another clientUser sends card to this client
-                        if(item.id == clientUser.id) {
-                            clientUser.hand.ref.update();
-                        }
+                        //Code seems non-impoprtant; remove if nothing breaks
+//                        if(item.id == clientUser.id) {
+//                            clientUser.hand.ref.update();
+//                        }
                     }
                     break;
                 case 'drag': //only focus coord; also forward!
@@ -1410,6 +1433,8 @@ const gameState = (function() {
             }
         });
 
+        if(handToUpdate) userInterface.playerBar.playerUpdate(handToUpdate);
+
         redraw.triggerRedraw();
     }
 
@@ -1425,6 +1450,14 @@ const gameState = (function() {
         if(donor.includes(recipient) || recipient == null) {
 //            console.log(`addToDeck error: '${recipient}' null or included in donors`);
             return false;
+        }
+
+        //in the case of "Drop Here to Give" GUI
+        //Simple - one card at a time
+        if(recipient.special && donor.length == 1 && !donor[0].isDeck) {
+            donor[0].selected = 0;
+            userInterface.chatBox.giveToChat("", recipient.special, donor[0], false);
+            return true;
         }
 
         let index;
@@ -1496,7 +1529,10 @@ const gameState = (function() {
         //Inject at specific index (reordering)
         recipient.images.splice(index, 0, ...donorCards)
 
-        if(recipient.ref) recipient.ref.update();
+        if(recipient.ref) {
+            userInterface.playerBar.playerUpdate();
+            recipient.ref.update();
+        }
 
         server.pushGameAction("addToDeck", new Array(...relevant));
         return true;
@@ -1542,6 +1578,7 @@ const gameState = (function() {
 
         //ref = visual interface (preview)
         if(deck.ref) {
+            userInterface.playerBar.playerUpdate();
             deck.ref.update();
         }
 
@@ -1590,6 +1627,18 @@ const gameState = (function() {
         }
 //        delete card.deck;
         card.deck = 0; //falsy
+    }
+
+    //TODO future/hobby
+    //dissolve hand
+    function dropHand() {
+        //placeholder
+        alert("This is a WIP!");
+
+        //take last (aka back) card away, coord = 0,0
+        //equivalent of
+
+        //then, apply
     }
 
     function selectView(deck) {
@@ -1907,9 +1956,15 @@ const gameState = (function() {
             return `You have no cards to give away!`;
         }
 
-        let user = validateUserString(usernameString);
-        if(typeof user == "string") {
-            return user;
+        let user = usernameString;
+        if(typeof user != "object") {
+            user = validateUserString(usernameString);
+            if(typeof user == "string") return user;
+        }
+
+        if(user.live == false) {
+//            alert("That player is not active. ")
+            return ", your 'GiveRandom' was denied: target is away!";
         }
 
         //call function -- assume it always goes through
@@ -1946,6 +2001,7 @@ const gameState = (function() {
     function disconnection(id) {
         if(players.get(id)) {
             players.get(id).live = false;
+            userInterface.playerBar.playerUpdate(id);
         }
 
         console.log(`${id} has disconnected!`);
@@ -2013,6 +2069,7 @@ const gameState = (function() {
         disconnection,
         clientMovement,
         newItemCount,
+        dropHand,
         cleanSlate //for testing - remove once finished testing
     };
 })();

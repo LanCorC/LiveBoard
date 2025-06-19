@@ -232,7 +232,6 @@ class Server {
                             break;
                         }
 
-                        //TODO- update chat
                         console.log(`New player received! ${data.senderId}`);
 
                         this.server.game.addPlayer(data.player);
@@ -259,9 +258,9 @@ class Server {
                                     this.server.game.findItems(data.cards), sender
                                 );
                                 break;
-                            case "GiveRandom":
-                                this.server.chatBox.giveRandomToChat(sender, data.player,
-                                    this.server.game.findItems(data.cards));
+                            case "GiveCard":
+                                this.server.chatBox.giveToChat(sender, data.player,
+                                    this.server.game.findItems(data.cards), true);
                                 break;
                             case "ShowHand":
                                 this.server.chatBox.showHandToChat(sender, data.player,
@@ -280,14 +279,13 @@ class Server {
 
                         switch(data.subHeader) {
                             case "Disconnection":
-                                //TODO- update chat
                                 this.server.game.disconnection(data.senderId);
                                 this.server.chatBox.disconnected(data.senderId);
                                 break;
                             case "customize":
                             case "movement":
                             default: //name, color, coord aka "customize" and "movement" subheaders
-                                this.server.game.updatePlayer(data.player);
+                                this.server.game.updatePlayer(data.player, data.subHeader);
                                 break;
                         }
 

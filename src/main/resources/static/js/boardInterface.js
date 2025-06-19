@@ -429,7 +429,7 @@ class ChatBox {
             return;
         }
 
-        this.giveRandomToChat("", result[1], result[0]);
+        this.giveToChat("", result[1], result[0], true);
         //then send to server to broadcast
     }
 
@@ -458,13 +458,17 @@ class ChatBox {
     }
 
     //giveRandom to chat - as sender, recipient, 3rd party
-    giveRandomToChat(sender, recipient, item) {
+//    giveRandomToChat(sender, recipient, item) {
+    giveToChat(sender, recipient, item, wasRandom) {
         if(Array.isArray(item)) {
             item = item[0];
         }
 
         //ensure VIP - purpose: only the client modifies own hand, prevent raceCondition
-        if(recipient.id == this.user.id) gameState.addToDeck(item, this.user.hand);
+        if(recipient.id == this.user.id) {
+            item.selected = 0; //move to gameState?
+            gameState.addToDeck(item, this.user.hand);
+        }
 
         //sender, recipient, item
         let p = document.createElement("p");
@@ -480,29 +484,39 @@ class ChatBox {
             p.append("a card");
         }
 
-        p.append(` at random!`);
+        p.append(wasRandom ? ` at random!` : "!");
         this.newEntry(p);
 
         if(sender) return; //falsy only when this was own client
-        this.sendChat("", "GiveRandom", item, recipient)
+        this.sendChat("", "GiveCard", item, recipient)
     }
 
     //strictly array items
     showHandToChat(sender, recipient, items) {
 
+        //Applicable only via: "Show All" GUI
+        if(!items) {
+            items = gameState.clientUser.hand.images;
+        }
+
         //sender, recipient, item
         //X is showing Y their hand
         let p = document.createElement("p");
         p.append(formatName(sender));
-        p.append(` is showing `);
-        p.append(formatName(recipient));
+        p.append(` is showing`);
+        if(recipient) {
+            p.append(` `);
+            p.append(formatName(recipient));
+        }
         p.append(" their hand");
+        //Applicable via: "Show All" GUI
+        if(!recipient) p.append(` to everyone`);
 
         //X is showing Y their hand, but it's empty!
         if(!items || items.length == 0) {
-            p.append(", but it's empty!");
+            p.append(", and it's empty!");
         } else {
-            if(!sender || sender.id == this.user.id || recipient.id == this.user.id) {
+            if(!sender || !recipient || sender.id == this.user.id || recipient.id == this.user.id) {
                 //X is showing Y their hand: [] [] []
                 p.append(": ");
                 items.forEach((item) => {
@@ -748,7 +762,6 @@ function createTopView() {
     userInterface.preview = topViewContainer;
 }
 
-//TODO- link to server, diceroll, game, etc
 export function createChat(user) {
     const chatBox = new ChatBox(user);
 
@@ -764,16 +777,19 @@ export function createChat(user) {
 function createMenu() {
     const tokenRoot = "./images/Tokens";
     let sidebar = new MenuSidebar(MenuSidebar.SETTINGSBAR);
-    //TODO settings: trigger context menu: [Leave game] | [Change BG][other...]
     let settings = new MenuOption();
     settings.setFallback("Settings")
         .setSrc(`${tokenRoot}/settings-ui-svgrepo-com.svg`)
         .addOnClick() //default - will create ContextMenu
-        .addBuildSpecification("Roll Dice", Controls.roll2d6,MenuOption.KEEP)
-        .addBuildSpecification("Switch Seats", Controls.rotateBoard,MenuOption.KEEP)
-        .addBuildSpecification("Cycle Background",Controls.cycleBackground,MenuOption.KEEP)
+        .addBuildSpecification("Roll Dice (r)", Controls.roll2d6,MenuOption.KEEP)
+        .addBuildSpecification("Switch Seats (a, d)", Controls.rotateBoard,MenuOption.KEEP)
+        .addBuildSpecification("Cycle Background (=)",Controls.cycleBackground,MenuOption.KEEP)
         .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
-        .addBuildSpecification("\u26A0 Reset Game \u26A0",()=>userInterface.chatBox.triggerResetGame(),MenuOption.DISCARD)
+        .addBuildSpecification("\u26A0 Reset Game \u26A0",()=>{
+            if(window.confirm("Are you sure you want to RESET GAME?")) {
+                userInterface.chatBox.triggerResetGame();
+            }
+        },MenuOption.DISCARD)
         .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
         .addBuildSpecification("Leave Game",FrontPage.tools.leaveGame,MenuOption.DISCARD)
     ;
@@ -843,32 +859,130 @@ function createMenu() {
 
 //TODO create a greater 'playerbar' object, attach to userInterface,
 //*gameState will use userInterface.playerBar.update() / etc to process changes
+class PlayerBar {
 
-//TODO somehow attach id to property of MenuOption for context-ref;
-    //else, keep the lambda local to THIS file-- access to player + gameState function
+    players = gameState.getPlayers()
+
+    //key:id, val:correspondingUserButton
+    //for purpose of
+    buttons = new Map();
+
+    constructor() {
+        //Initialize: create object, attach this player;
+
+        let menuSideBar = new MenuSidebar(MenuSidebar.PLAYERBAR);
+
+        //Apply variables
+        this.menuSideBar = menuSideBar;
+
+        this.addPlayer(gameState.clientUser);
+
+        document.body.append(menuSideBar.getElement());
+    }
+
+    addPlayer(user) {   //to use: Name, Color, handSize, liveStatus
+        //skip if exists
+        if(this.buttons.has(user.id)) {
+            this.updateBody(user);
+            return;
+        }
+
+        let button = new MenuOption();
+
+        this.buttons.set(user.id, button);
+        this.updateBody(user);
+
+        button
+            .addOnClick()
+        ;
+
+        if(user.id == gameState.clientUser.id) {
+            button.addBuildSpecification("Show Hand (all)", ()=>userInterface.chatBox.showHandToChat(),MenuOption.DISCARD)
+            .addBuildSpecification("Reroll Name", ()=>gameState.rerollUser(), MenuOption.KEEP)
+            .addBuildSpecification("\u26A0 Drop Hand (WIP) \u26A0",()=>{
+                //Game action
+                gameState.dropHand();
+                //Chat update
+            },MenuOption.DISCARD)
+        } else {
+            button.addBuildSpecification(createSmallBody(Element.ITALICS("[Drop Here to Give]")),()=>{},MenuOption.KEEP,user)
+            .addBuildSpecification("Show Hand",()=>{
+                userInterface.chatBox.showHandToChat("", user)
+            },MenuOption.DISCARD)
+            .addBuildSpecification("Give Random",()=>{
+                let result = gameState.giveRandom(user);
+                if(typeof result == "string") {
+                    userInterface.chatBox.newEntry(result);
+                    return;
+                }
+                userInterface.chatBox.giveToChat("", user, result[0], true);
+            },MenuOption.DISCARD)
+            .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
+            .addBuildSpecification("\u26A0 See Hand (WIP) \u26A0",()=>{},MenuOption.DISCARD)
+            .addBuildSpecification("\u26A0 Drop Hand (WIP) \u26A0",()=>{},MenuOption.DISCARD)
+        }
+
+        this.menuSideBar.addButton(button);
+    }
+
+    updateBody(user) {
+
+        //default to current player
+        if(!user) user = gameState.clientUser;
+        //User (You)
+        //{hand}: # (LIVE || AWAY)
+        if(!this.buttons.has(user.id)) return;
+        this.buttons.get(user.id).setBody(
+        createSmallBody(
+            formatName(user),Element.BREAK(),
+            `\u270B: ${user.hand.images.length || 0}`, ` ${user.live ? "(LIVE)" : "(AWAY)"}`
+        ));
+
+        return;
+    }
+
+    //TODO on-leave- i.e. player leaving
+        //simply grey out, or move to bottom
+        //optional: if hand is empty, remove
+
+    update() {
+        //note: does not handle players leaving
+
+        //functionality: if buttons entry not found in players, remove from playerBar
+        let remove = new Set();
+        this.buttons.forEach((playerButton, playerId, map) => {
+            if(!this.players.has(playerId)) {
+                this.menuSideBar.removeButton(playerButton);
+                remove.add(playerId);
+            }
+        });
+        for(const entry of remove.entries()) {
+            this.buttons.delete(entry[0]);
+        }
+
+        //functionality: if entry in players not in playerBar, add
+        let include = new Set();
+        this.players.forEach((player, playerId, map) => {
+            if(!this.buttons.has(playerId)) {
+                include.add(player);
+            }
+        });
+        for(const entry of include.entries()) {
+            this.addPlayer(entry[0]);
+        }
+
+    }
+
+    playerUpdate(player) {
+        if(typeof player != 'object') {
+            player = this.players.get(player);
+        }
+        this.updateBody(player);
+    }
+}
+
 function createPlayerBar() {
-    let playerBar = new MenuSidebar(MenuSidebar.PLAYERBAR);
-
-    //TODO - iterate through playerbase, populate the playerBar;
-    //TODO: store all buttons in some array, or Map;
-    //TODO: on player update, have gameState find the correct button, then change...
-        //name, color, status, cardCount
-        //if id already exists, overwrite
-        //if id not already exists, new player, add new element
-    //
-    let help = new MenuOption();
-    help.setBody(formatName())
-        .addOnClick()
-//        .addOnClick(()=>userInterface.chatBox.triggerHelp())
-        .addBuildSpecification("Switch Seats", Controls.rotateBoard,MenuOption.KEEP)
-        .addBuildSpecification("Cycle Background",Controls.cycleBackground,MenuOption.KEEP)
-        .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
-        .addBuildSpecification("\u26A0 Reset Game \u26A0",()=>userInterface.chatBox.triggerResetGame(),MenuOption.DISCARD)
-        .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
-        .addBuildSpecification("Leave Game",FrontPage.tools.leaveGame,MenuOption.DISCARD)
-    ;
-    playerBar.addButton(help);
-    document.body.append(playerBar.getElement());
+    userInterface.playerBar = new PlayerBar();
 }
 
 //TODO- wip, see comments

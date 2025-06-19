@@ -25,6 +25,12 @@ export class MenuSidebar {
         }
     }
 
+    removeButton() {
+        for(const menuOption of arguments) {
+            menuOption.getElement().remove();
+        }
+    }
+
     getElement() {
         return this.container;
     }
@@ -43,7 +49,7 @@ export class MenuOption {
 
         container.classList.add("sidebarButton");
 
-        container.append(image);
+//        container.append(image);
 
         this.container = container;
         this.image = image;
@@ -63,14 +69,17 @@ export class MenuOption {
 
     setSrc(src) {
         this.image.src = src;
+        this.container.append(this.image);
         return this;
     }
     setFallback(alt) {
         this.image.alt = alt;
+        this.container.append(this.image);
         return this;
     }
 
     setBody(body) { //expect string or innerHTML
+        this.container.innerHTML = '';
         this.container.append(body);
         return this;
     }
@@ -109,7 +118,7 @@ export class MenuOption {
         });
     }.bind(this);
 
-    //Example: addMenu("Leave Game", leaveGameFunction, MenuOption.close)
+    //Example: addMenu("Leave Game", leaveGameFunction, MenuOption.DISCARD / KEEP)
     addBuildSpecification = function(content, func, closeOnTrigger) {
         this.contextBuildSpecifications.push([...arguments]);
         return this;
