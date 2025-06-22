@@ -488,7 +488,7 @@ class ChatBox {
         this.newEntry(p);
 
         if(sender) return; //falsy only when this was own client
-        this.sendChat("", "GiveCard", item, recipient)
+        this.sendChat("", "GiveCard", item, recipient, wasRandom)
     }
 
     //strictly array items

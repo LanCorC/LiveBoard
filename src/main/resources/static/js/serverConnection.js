@@ -259,7 +259,7 @@ class Server {
                                 break;
                             case "GiveCard":
                                 this.server.chatBox.giveToChat(sender, data.player,
-                                    this.server.game.findItems(data.cards), true);
+                                    this.server.game.findItems(data.cards), data.bool);
                                 break;
                             case "ShowHand":
                                 this.server.chatBox.showHandToChat(sender, data.player,
@@ -534,7 +534,7 @@ class Server {
     }
 
     //note: "items" is strictly cards- no playmats, decks, tokens
-    sendChat = function(stringData, stringAction, cards, recipient) {
+    sendChat = function(stringData, stringAction, cards, recipient, bool) {
         if(this.connection == undefined || this.connection.readyState != 1 || !this.inGame) return;
         if(cards && !Array.isArray(cards)) cards = [cards];
 
@@ -545,6 +545,7 @@ class Server {
         message.explicit = stringData;
         if(recipient) message.player = recipient;          //recipient
         if(cards) message.cards = cards;
+        if(bool != undefined) message.bool = bool;
         message = JSON.stringify(message, this.replacer());
 
         this.connection.send(message);

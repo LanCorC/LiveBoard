@@ -1983,7 +1983,7 @@ const gameState = (function() {
         itemFromRGB,
         items,
         addPlayer,
-        removePlayer,
+//        removePlayer,
         push,
         select,
         selected,
