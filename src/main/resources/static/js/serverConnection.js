@@ -13,9 +13,6 @@ import gameState from "./gameState.js";
 //Example: if (... == "chatUpdate") => [process]...boardInterface.chat(processed)
 //Example: if (... == "chatUpdate") => [process]...boardInterface.chat(processed)
 
-
-//TODO- experiment with having ONE server spit out the html, and the SAME connection to server
-//TODO cont- to upgrade to ws (websocket) for joining the game
 //Goal: localhost the server is enough for me to load html + 'start a lobby/game' with self
 //Goal2: have github spit out the HTML, the ws attempt, and loading screen + demo ready
 //attempt at connecting to local server
@@ -139,6 +136,9 @@ class Server {
 //            } else {
 //                this.server.chatBox.newEntry(" have disconnected! Attempting to reconnect...");
 //            }
+
+            frontUI.howToConnect();
+
             let message = "";
             switch(event.code) {
                 case 1000:
@@ -146,14 +146,15 @@ class Server {
                         message = " have left the live game.";
                     } else {
                     }
-                    frontUI.connectionFailed(`Connection successfully disconnected. Termnation code: ${event.code}`);
+                    frontUI.connectionFailed(`Connection successfully disconnected. Termination code: ${event.code}`);
                     break;
                 case 1001: //server-side has decided 1001 is also for terminating an older connection
                     if(this.server.inGame) {
                         message = ", a newer instance has connected on this browser! This tab is now disconnected.";
                     } else {
                     }
-                    frontUI.connectionFailed("Connection dropped: replaced by a fresh connection on another tab!");
+                    frontUI.connectionFailed("A newer instance has connected on this browser! This tab is now disconnected.");
+                    frontUI.gameLoadMessage("Tip: If you want to simulate two players yourself, please load Incognito Mode, a different browser, or another device.");
                     break;
                 case 1006:
                     if(this.server.inGame) {
@@ -215,7 +216,6 @@ class Server {
 
                         this.server.game.updateItems(data);
                         break;
-                    //TODO - do not take in update if player is not connected to game
                     //and/or, ensure 'Start Game' sets to 0 first (cleanSlate)
                     case "NewItemCount":
                         if(!this.server.inGame) return; //reject updates if not 'in'
@@ -322,7 +322,7 @@ class Server {
 
     //purpose: receive relevant UI elements for visual updates
     //TODO TBD: when to connect to our gameState (on loadscreen? on connect (single lobby?)
-    initialize(frontObj, loadObj, gameObj, chatBox) { //TODO- add chatObj
+    initialize(frontObj, loadObj, gameObj, chatBox) {
         this.frontPage = frontObj;
         this.loading = loadObj;
         this.game = gameState;
@@ -480,7 +480,6 @@ class Server {
                 break;
         }
 
-        //TODO important: separate decks and items
         let itemsDecks = new Set();
         let itemsCards = new Set();
         let itemsPlayMats = new Set();

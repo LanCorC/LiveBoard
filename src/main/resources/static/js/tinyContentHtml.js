@@ -36,5 +36,13 @@ export class Element {
     static SEPARATOR() {
         return document.createElement("hr");
     }
+    static LINK(linkString) {
+        let a = document.createElement("a");
+        a.href = linkString;
+        a.innerText = linkString;
+        a.target = "_blank";
+        a.style.pointerEvents = "initial";
+
+        return a;
+    }
 }
-//TODO- likely incorporate <br> between each entry instead, <p> has too much margin between each instance
