@@ -131,7 +131,6 @@ let refExpansionCards = {
 //store in hashmap - key is the image file directory, value is prefix to use on the images
 const expansionProperties = new Map();
 
-//TODO: add a per-type count on each value, incl: startIndex,endIndex
 //Placed in method to encapsulate function:
 function populateProperties() {
     //Include the expansion name (key), and file prefix and duplicates (value)
@@ -500,9 +499,6 @@ let padHundred = function(number) {
 let baseAddress = "./images";
 const loadAll = true; //testing variable: if true, loads all expansions
 
-//TODO- expansionCardsExpected, tested for ALL and ONE(base) line up along
-//TODO cont.- with #loaded expansionCards; same with expansionsLeft;
-//TODO cont.- use expansionsLeft as means to trigger board to create objects
 //"This won't take long.."
 
 //TODO future feature: broadcast progress to server/gameState
@@ -522,8 +518,6 @@ let count = {
     miscCardsExpected: 39
 }
 
-//TODO - have this update an html view to update the user
-//TODO: only call array of chosen expansion names, for sake of fast load (temporary)? TBD
 //purpose: load all assets
 function loadAssets(chosenExpansions) {
 
@@ -622,47 +616,6 @@ let itemCount = {
 
 const countVerbose = false;
 
-//function loadExpansionCards(number, folderName, prefix) {
-//    //'magicId' required as reference for recursion
-//    const card = new Image();
-//    card.magicId = number;
-//
-//    //propagage recursion along 'bucket'
-//    card.onload = () => {
-//        loadExpansionCards(card.magicId + 1, folderName, prefix);
-//        itemCount[folderName]++;
-//
-//        processRefCard(card, folderName);
-//
-//        //TODO- push an incremented count, and/or filename
-////        console.log(`${prefix}${padHundred(number)}.png: received`);
-//        if(updateInterface.loading) updateInterface.loading.increment();
-//    };
-//
-//    card.onerror = () => {
-//        //transition to next bucket, X01
-//        //0XX is 'cards', 1XX is 'leaders', 2XX is 'monsters'
-//        switch(Math.floor(card.magicId / 100)) {
-//            case 0:
-//                loadExpansionCards(101, folderName, prefix);
-//                break;
-//            case 1:
-//                loadExpansionCards(201, folderName, prefix);
-//                break;
-//            default:
-//                if(--count.expansionsLeft == 0) {
-//                    console.log("Finished loading all expansions");
-////                    console.log(count.expansionCards);
-//                }
-//                if (countVerbose) {
-//                    console.log(itemCount);
-//                }
-//                return;
-//        }
-//    };
-//
-//    card.src = `${baseAddress}/Game/${folderName}/${prefix}${padHundred(number)}.png`;
-//}
 
 function loadExpansionCards(folderName, properties) {
     //where startEnd = [integerStart, integerEnd]
@@ -736,42 +689,6 @@ function processRefCard(card, expansion) {
     );
 }
 
-////some duplicate code, but modularized for clarity
-//function loadGameMats(number, folderName) {
-//    //'magicId' required as reference for recursion
-//    const card = new Image();
-//    card.magicId = number;
-//
-//    //propagate recursion along 'bucket'
-//    card.onload = () => {
-//        loadGameMats(card.magicId + 1, folderName);
-//        itemCount[folderName]++; //"PlayMats" folderName
-//        processPlayMat(card);
-//
-//        if(updateInterface.frontPage) updateInterface.frontPage.increment();
-////        count.miscCards++;
-//    };
-//
-//    card.onerror = () => {
-//        //transition to next bucket, X01
-//        //0XX is gameMat, 1XX is playmat
-//        if(card.magicId < 100) {
-//            loadGameMats(101, folderName);
-//            return;
-//        }
-//
-//        //terminate
-//        //TODO: ping loading that miscs have been done
-////        console.log(count.miscCards);
-//
-//
-//        //TBD if needed- this already sorts itself;
-//        miscRef.get("playMat").sort();
-//        miscRef.get("gameMat").sort();
-//    };
-//
-//    card.src = `${baseAddress}/${folderName}/${padHundred(number)}.png`;
-//}
 
 //hard coded 'folderName' (=PlayMats) and start/end indexes
 function loadGameMats() {
@@ -900,7 +817,6 @@ function prepareImages(expansions) {
 
 //TODO- purpose: references to loadscreen, interface is passed
 //to also pass to the objects 'ref numbers', like expected counts
-//TODO- we have a dynamic expectedCount for variable expansion choice at loadAssets()
 function initialize(frontObj, loadObj, verbose, assetCount) {
     updateInterface.frontPage = frontObj; //show Misc updates
     updateInterface.loading = loadObj; //show overall expansion updates
@@ -926,5 +842,4 @@ export {assets, loadAssets, getMiscImages, prepareImages, sizes, initialize};
 
 
 //TODO- add a way have assets "misc" load during frontPage,
-//TODO- add a way to calculate "%ge" progress for load page,
 //taking into account misc + chosen expansions

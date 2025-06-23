@@ -17,7 +17,6 @@
     let vis = visual.getContext("2d");
     let int = interact.getContext("2d", {willReadFrequently : true});
 
-     //-- TODO - tie userColor to make it clear which user has selected what
      //*optional, as the user's mouse will be tracked too
 
     let translate = vis.translate;
@@ -56,7 +55,6 @@
          return save.call(vis);
      }
 
-     //TODO: tbd, see if this causes lag / performance hit; else i have to explicitly call for specific codeblock
      let restore = vis.restore;
      vis.restore = function() {
          int.restore();

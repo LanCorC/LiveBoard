@@ -84,7 +84,6 @@ window.onload = function() {
     const expansionsToLoad = ["Base Deck"];
     loadAssets(expansionsToLoad);
 
-    //TODO - check server (if server, add to server, retrieve gameState; else create gameState)
     //Establishes uniqueID to storage if not already
     const user = gameState.initializeUser();
     //Connection 'requires' uniqueID to gauge new or old connection
@@ -316,18 +315,17 @@ window.onload = function() {
         event.preventDefault();
     }
 
+    //Retired code
     const pinInspect = function(event) {
         //Purpose - 'pinning' an inspection 'img' for an image ref
 
-        //TODO TBD: potential... allowing or not allowing 'pin' for handView/deckView
         if(inspectImage.style.visibility == "hidden") {
             //check valid element img to delete
             if(hoverElement instanceof HTMLImageElement && hoverElement.className == "floating-inspect") {
                 hoverElement.remove();
             } else if (hoverElement instanceof HTMLCanvasElement &&
             gameState.itemFromRGB(contextTouch, mouse) == null) {
-                //TODO- this is a bandaid;
-                //TODO- maybe allow this for other divs
+
 //                enableRightClickDefault();
                 return;
             }
@@ -428,7 +426,7 @@ window.onload = function() {
         let point = contextVis.transformPoint(mouse.x, mouse.y);
         let dx = point.x - startPoint.x;
         let dy = point.y - startPoint.y;
-        //TODO - send .anchored check to gameState
+
         if(itemFocus && !itemFocus.anchored && !event.ctrlKey) {
             if(itemFocus instanceof HTMLImageElement) {
                 dragElement(event, itemFocus);
@@ -543,16 +541,15 @@ window.onload = function() {
         //on mousedown, if available, valid item, select and redraw
         if(itemFocus && !(itemFocus instanceof HTMLElement)) {
 
-            //TODO- test with 1+ players, if still valid on items selected by OTHER client
             if(itemFocus.selected == user.id                            //Generic shallow check
             || itemFocus.deck && (itemFocus.deck.selected == user.id    //Deck check
             || itemFocus.deck.isHand && itemFocus.deck.id == user.id && !itemFocus.deck.browsing) //ownHand check
             ) {
                 server.requestFreePass = true;
-                console.log("VIP request! Already selected by clientUser.");
+//                console.log("VIP request! Already selected by clientUser.");
             } else {
                 server.requestFreePass = false;
-                console.log("Guest request! Requires server permission. Not already selected by clientUser.");
+//                console.log("Guest request! Requires server permission. Not already selected by clientUser.");
             }
 
             if(!itemFocus.selected && !itemFocus.anchored) {
@@ -560,7 +557,7 @@ window.onload = function() {
                 pulseRedraw();
             //else- already claimed by us, de-select
             } else if (itemFocus.selected != user.id) {
-                console.log("Item currently in use");
+//                console.log("Item currently in use");
             }
             //where .selected == user.id:
             //handled in 'mouseup', for cases where dragStart
@@ -630,7 +627,6 @@ window.onload = function() {
             }
         }
 
-    //TODO- include interaction of OpponentHand [boardInterface.js is relevant]
         //handles 'previewDivElement' selection, de-selection
         if(rightClick) {
             let item = gameState.itemFromRGB(contextTouch, mouse);
@@ -740,7 +736,6 @@ window.onload = function() {
     //TODO- player clarity?
     const anchorItem = function() {
         gameState.anchorItem(hoverElement);
-        //TODO- see if i must purgeSelected()
     }
 
     const rollDice = function() {
@@ -813,13 +808,12 @@ window.onload = function() {
             //Test code
             case "T":
                 break;
-            //TODO temp- testing on-demand board refresh 'from JSON'
-            case "U":
-                console.log("Here we go...");
-                gameState.rebuildBoard();
-                pulseRedraw();
-                break;
-            //TODO temp- testing purgeSelected, ifItemfocus= user.id, deselect; then itemFocus = null
+            //"U" => testing code for on-demand board refresh 'from JSON'
+//            case "U":
+//                console.log("Here we go...");
+//                gameState.rebuildBoard();
+//                pulseRedraw();
+//                break;
             //Purpose of testing: in event of 'rejected' request chain (gameActions denied by server)
             case "Y":
 //                if(itemFocus.selected == user.id) selected.push(itemFocus);
@@ -839,14 +833,12 @@ window.onload = function() {
                 if(!UI || !UI.chatBox) return;
                 UI.chatBox.toggleInputFocus();
                 break;
-            //TODO- enable toggle of, at least for now, changeUserColor/changeUserName
             //Note: ESCAPE breaks game, stops fetch requests (assets loading) stage
             //Currently, the 'tip' only appears once assets loaded to minimize overexcitement accidents
             case "ESCAPE":
                 pregameInterface.frontPage.toggleHomescreen();
                 break;
             //Placeholder destination for this function; = cycles through backgrounds
-            //TODO- move to a menu/UI
             case "=":
                 cycleBackground();
                 break;
@@ -855,7 +847,7 @@ window.onload = function() {
                 break;
             default:
                 //unregistered key, end of processing
-                console.log(`unregistered ${key} from original input ${event.key}`);
+//                console.log(`unregistered ${key} from original input ${event.key}`);
                 return;
         }
     }, false);
@@ -1061,7 +1053,7 @@ window.onload = function() {
         vp.style.width = '100vw';
         board.setHeight(window.innerHeight);
         board.setWidth(window.innerWidth);
-        console.log("resized");
+//        console.log("resized");
         user.position = 0;
         centerBoard();
         pulseRedraw();

@@ -55,8 +55,8 @@ export class ContextMenu {
         this.container = container;
     }
 
-    //TODO - take in custom constructions;
-        //handle: innerHTML? 'pages'?
+    //Takes in custom constructions;
+        //handle: innerHTML? 'pages'
         //handle, text, UL, separators
         //is a vertical grid; each entry is one row;
             //an entry can be string + emoji

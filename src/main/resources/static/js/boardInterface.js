@@ -898,7 +898,9 @@ class PlayerBar {
         if(user.id == gameState.clientUser.id) {
             button.addBuildSpecification("Roll Dice (r)", Controls.roll2d6,MenuOption.KEEP)
             .addBuildSpecification("Show Hand (all)", ()=>userInterface.chatBox.showHandToChat(),MenuOption.DISCARD)
+            .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
             .addBuildSpecification("Reroll Name", ()=>gameState.rerollUser(), MenuOption.KEEP)
+            .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
             .addBuildSpecification("\u26A0 Drop Hand (WIP) \u26A0",()=>{
                 //Game action
                 gameState.dropHand();

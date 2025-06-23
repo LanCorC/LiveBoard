@@ -10,7 +10,7 @@ import { ContextMenu } from "./contextMenu.js";
 //to hold sidebar buttons, topleft;
 export class MenuSidebar {
     static SETTINGSBAR = "sidebarMenu";
-    static PLAYERBAR = "playerMenu"; //TODO, CSS styling is WIP
+    static PLAYERBAR = "playerMenu";
     constructor(id) {
         const container = document.createElement("div");
         container.classList.add("menuBar");

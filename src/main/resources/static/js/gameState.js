@@ -278,7 +278,7 @@ const gameState = (function() {
         let initialState = new Set();
         items.forEach(item => {
             initialState.add(JSON.parse(JSON.stringify(item, server.replacer())));
-            //TODO- test to see how objects compare
+            //Test code: to see how objects compare
 //            console.log(item);
 //            console.log(item instanceof HTMLElement);
 //            console.log(initialState);
@@ -454,9 +454,6 @@ const gameState = (function() {
                 }
 
                 //then remove from deck
-                //TODO- edgecase. last item of a deck reads as not having a deck, due to dissolve
-                //how to repeat: drag all items (multiple) from a deck preview to canvas
-                //*hands are fine, because it's never deleted
                 takeFromDeck(item);
 
             } else {
@@ -864,7 +861,7 @@ const gameState = (function() {
         visual.rotate((-clientUser.position * -90) * Math.PI / 180);
         visual.restore();
 
-        //TODO note: code for testing boundaries (visual) code; not for demo or 'official release'
+        //Test code: for visualizing boundaries 'gameboard boundaries'; not for demo or 'official release'
 //        visual.save();
 //        visual.fillStyle = `RGB(0, 255, 0, 0.3)`;
 //        visual.fillRect(assets.dimensions.leftBorder, assets.dimensions.topBorder,
@@ -890,7 +887,6 @@ const gameState = (function() {
     function loadBoard(expansions) {
         cleanSlate();
         console.log("Loading board...");
-        //todo - from objectFactory, in conjunction with assets - hard coded set of objects - mats, dice
 
         let timeStamp = Date.now();
 
@@ -1109,12 +1105,6 @@ const gameState = (function() {
 
         console.log(items);
 
-
-        //TODO- rely or link to server, if (server.connection)
-        //as it returns "Yes", take current itemCount on server, set to clientGamestate itemcount,
-        //then process callback function => callback function will send new obj to at the new id;
-        //on new nonHand, nonDeck item, if id > itemCount, server.itemCount = id
-        //Early attempt at self correcting itemCount
         itemCount = largestId;
 
         //Recover 'selected' interface state
@@ -1403,8 +1393,6 @@ const gameState = (function() {
     //"index" - is nullable, provided when dragged into specific deck/hand preview index;
     const typeWhiteList = ["Card", "Leader", "Monster"];
     function addToDeck(donor, recipient) {
-        //TODO- 'hoverElement' is recipient, else find a way to set hoverElement to 'hand'; likely in index.js
-        //TODO- find out if 'lock' is important for race conditions
 
         if(!Array.isArray(donor)) donor = new Array(donor);
         if(donor.includes(recipient) || recipient == null) {
@@ -1714,7 +1702,6 @@ const gameState = (function() {
     }
 
     //Purpose: mousehover + button will anchor/unanchor item, allowing it to be dragged and selected
-    //TODO- determine if 'anchored' means cannot me imageCycle()'d; ask clientelle
     function anchorItem(items) {
         if(!items) return;
         if(!Array.isArray(items)) items = new Array(items);
