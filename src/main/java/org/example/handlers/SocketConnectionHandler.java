@@ -1,6 +1,5 @@
 package org.example.handlers;
 
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
@@ -74,13 +73,15 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
 
                     if(!oldConnection.getId().equals(session.getId())) {
                         oldConnection.sendMessage(new TextMessage("Yer Old"));
-                        oldConnection.close();
+                        oldConnection.close(CloseStatus.GOING_AWAY);    //client handles as 'new connection found'
                         System.out.println("Terminated older connection: " + oldConnection.getId());
                     }
                 } else {
                     System.out.println("Old session found already CLOSED via WebSocketSession.isOpen()");
                 }
             }
+
+            //TODO- if ID already exists in GameState, return message with "reapply name + color" to client
 
         } else {
             clients.put(name, wrappedSession);
@@ -117,13 +118,11 @@ public class SocketConnectionHandler extends TextWebSocketHandler {
         System.out.println(status.getCode());
 
         AtomicReference<String> userId = new AtomicReference<>();
-        if(clients.containsValue(session)) {
-            clients.forEach((key, value) -> {
-                if (value == session) {
-                    userId.set(key);
-                }
-            });
-        }
+        clients.forEach((key, value) -> {
+            if (value.getId().equals(session.getId())) {
+                userId.set(key);
+            }
+        });
 
         // Removing the connection info from the list
         webSocketSessions.removeIf(item -> item.getId().equals(session.getId()));

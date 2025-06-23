@@ -22,7 +22,8 @@ const gameState = (function() {
 
     let frontPage = null;
 
-    let players = new Map();
+    //assume remains constant; note: pointer stored in playerBar for GUI update purposes
+    const players = new Map();
 
     //Note re: rebuilding, this contains HAND OBJ with .ref
     //on rebuild, check THIS and players (Map obj) for hand with matching id,
@@ -95,17 +96,27 @@ const gameState = (function() {
     }
 
     function addPlayer(user) {
+        let returning = players.has(user.id);
+
         players.set(user.id, user);
 
         console.log("adding player, here is the updated player map:")
         console.log(players);
+
+        if(user == clientUser) return;
+        if(returning) {
+            userInterface.playerBar.playerUpdate(user);
+        } else {
+            userInterface.playerBar.update();
+        }
     }
 
+    //TODO- unused;
     //on disconnect, 'deactivate' player? - set all 'selected' on player to null
-    function removePlayer(user) {
-//        players.push(user);
-        //TODO
-    }
+//    function removePlayer(user) {
+////        players.push(user);
+//        //
+//    }
 
     function getPlayers() {
         return players;
@@ -126,16 +137,21 @@ const gameState = (function() {
     function changeUserName(stringName, noRedraw) {
         clientUser.name = stringName;
         server.clientUpdate("customize");
+
+        if(userInterface.playerBar) userInterface.playerBar.playerUpdate();
     }
     //Purpose: strictly for clientUser
     function changeUserColor(hexString, noRedraw) {
         clientUser.color = hexString;
         server.clientUpdate("customize");
 
+        if(userInterface.playerBar) userInterface.playerBar.playerUpdate();
         if(!noRedraw) redraw.triggerRedraw();
     }
     //Purpose: changes regarding OTHER players
-    function updatePlayer(newCopy) {
+    //"customize" = new name +/- color
+    //"movement" = new coordinate
+    function updatePlayer(newCopy, subHeader) {
         let ourCopy = players.get(newCopy.id);
         if(!ourCopy) return;
 
@@ -143,6 +159,10 @@ const gameState = (function() {
         ourCopy.name = newCopy.name;
         ourCopy.color = newCopy.color;
         ourCopy.coord = newCopy.coord;
+
+        if(subHeader == "customize") {
+            userInterface.playerBar.playerUpdate(ourCopy);
+        }
 
         redraw.triggerRedraw();
     }
@@ -258,7 +278,7 @@ const gameState = (function() {
         let initialState = new Set();
         items.forEach(item => {
             initialState.add(JSON.parse(JSON.stringify(item, server.replacer())));
-            //TODO- test to see how objects compare
+            //Test code: to see how objects compare
 //            console.log(item);
 //            console.log(item instanceof HTMLElement);
 //            console.log(initialState);
@@ -303,7 +323,6 @@ const gameState = (function() {
         items.forEach((item) => {
             if(item.isDeck && item.browsing) return;
 
-            //TODO: notify server release of 'lock';
             changes.push(item);
             item.selected = 0;
 
@@ -435,9 +454,6 @@ const gameState = (function() {
                 }
 
                 //then remove from deck
-                //TODO- edgecase. last item of a deck reads as not having a deck, due to dissolve
-                //how to repeat: drag all items (multiple) from a deck preview to canvas
-                //*hands are fine, because it's never deleted
                 takeFromDeck(item);
 
             } else {
@@ -545,7 +561,6 @@ const gameState = (function() {
 
         let relevant = new Set();
         items.forEach((item) => {
-            //TODO - to be made item.cycleImage(mod);
             //default increments +1
             if(!item.id) return;
 
@@ -607,7 +622,6 @@ const gameState = (function() {
                 }
                 if(item.flipMe) {
                     visual.save();
-                    //TODO: fix for positions 1,3 they are swapped around
                     visual.rotate((item.flipMe * -90) * Math.PI / 180);
                 }
                 switch(item.flipMe % 4) {
@@ -631,7 +645,6 @@ const gameState = (function() {
 
                 if(item.selected) {
                     //server-wide clarity
-                    //TODO- filter for user with id match, use user's .color
                     color = players.get(item.selected) ? players.get(item.selected).color : 'white';
                     visual.shadowColor = `${color}`;
                     visual.shadowBlur = 25;
@@ -763,8 +776,6 @@ const gameState = (function() {
                 if(item.browsing) {} else
                 if(!item.selected || item.disabled || !item.coord) return;
 
-                //TODO - include path for when 'hoverCompatible = true'
-                //+special route for hoverItem
                 let { x, y } = item.coord;
                 let { width, height } = item;
 
@@ -850,7 +861,7 @@ const gameState = (function() {
         visual.rotate((-clientUser.position * -90) * Math.PI / 180);
         visual.restore();
 
-        //TODO note: code for testing boundaries (visual) code; not for demo or 'official release'
+        //Test code: for visualizing boundaries 'gameboard boundaries'; not for demo or 'official release'
 //        visual.save();
 //        visual.fillStyle = `RGB(0, 255, 0, 0.3)`;
 //        visual.fillRect(assets.dimensions.leftBorder, assets.dimensions.topBorder,
@@ -872,11 +883,10 @@ const gameState = (function() {
         'Warrior and Druid Expansion'
     ];
 
-    //TODO- only call if server not connected OR server connected + no game existing OR loading solo OR loading demo
+    //Called when SOLO or starting the initializing 'live' board
     function loadBoard(expansions) {
         cleanSlate();
         console.log("Loading board...");
-        //todo - from objectFactory, in conjunction with assets - hard coded set of objects - mats, dice
 
         let timeStamp = Date.now();
 
@@ -922,9 +932,8 @@ const gameState = (function() {
 
         items.decks.forEach(deck => deck.shuffle());
 
-        //TODO- push to server; -- likely do processing at server
-        //TODO- likely keep all non-server module interactions abstracted
         server.pushGame([items, players, itemCount]);
+        userInterface.playerBar.update();
         redraw.triggerRedraw();
     }
 
@@ -956,7 +965,6 @@ const gameState = (function() {
 
     //if connecting from a game in session OR fetching server's copy of gameState
     //demo-boolean, "true" => load from presets
-    //TODO- implement numCount
     function rebuildBoard(gameObjects, playerObjects, numCount, demo) {
         cleanSlate();
 
@@ -986,7 +994,7 @@ const gameState = (function() {
 
         //Populate items object (renders list)
         let reconstructionItems = {}; //equivalent of "items" obj
-        let largestId = 0; //purpose: correcting gameState id; TODO: refer to server for gameId
+        let largestId = 0; //purpose: correcting gameState id;
 
         console.log("Printing new gameState ref:")
         for(const [key, value] of Object.entries(gameObjects)) {
@@ -1024,7 +1032,6 @@ const gameState = (function() {
         //Reconnect circular references, and JSON restructured properties
         for(const [key, value] of Object.entries(reconstructionItems)) {
             value.forEach((item) => {
-                //TODO- .deck can be a large number, as when in user.hand (user.id);
                 if(!item.isDeck && typeof item.deck === "number") {
                     //NOTE: arbitrary, large, fit most cases
                     if(item.deck > 10000) {
@@ -1079,8 +1086,6 @@ const gameState = (function() {
 
         Object.assign(items, reconstructionItems);
 
-        //TODO- also fix hand.images[], still stuck integers
-        //TODO- ensure hand.images[] and refs of cards are all OK
         reconstructionPlayers.forEach((v,k,m) => {
             //Apply to user interface 'MyHand'
             if(k == clientUser.id) {
@@ -1098,41 +1103,8 @@ const gameState = (function() {
             }
         });
 
-//        Object.assign(players, reconstructionPlayers);
-        //TODO ensure players are added; if same user, preserve reference
-//        console.log(clientUser);
-//        reconstructionPlayers.entries().forEach((entry) => {
-////            if(!players.has(userId)) addPlayer(user);
-////            if(player.has(userId)) Object.assign(clientUser.hand, user.hand); //is the player
-//            //[key, value] aka [userId, user]
-//            if(entry[0] == clientUser.id) {
-//                clientUser.hand.newSrc(entry[1].hand);
-//            } else {
-//                players.set(entry[0], entry[1]);
-//            }
-//        });
-
-
-
         console.log(items);
 
-//        //iter2.2: check user hands for .images to re-pointer
-        //NOTE: .ref is ommited; if .id == clientUser.id, transfer other properties;
-        //NOTE: never delete clientUser- this is the current client's identity
-
-        //TODO-attempt at isolating preview; if left for last, will this fix issues?
-//        quickRef.forEach((newItem) => {
-//            if(newItem.isDeck && newItem.browsing && newItem.browsing == clientUser.id) {
-//                console.log(newItem.images[0]);
-
-//            }
-//        })
-
-        //TODO- rely or link to server, if (server.connection)
-        //as it returns "Yes", take current itemCount on server, set to clientGamestate itemcount,
-        //then process callback function => callback function will send new obj to at the new id;
-        //on new nonHand, nonDeck item, if id > itemCount, server.itemCount = id
-        //Early attempt at self correcting itemCount
         itemCount = largestId;
 
         //Recover 'selected' interface state
@@ -1165,6 +1137,8 @@ const gameState = (function() {
         console.log("Players, supposedly:");
         console.log(players);
 
+        userInterface.playerBar.update();
+        userInterface.playerBar.playerUpdate();
         redraw.triggerRedraw();
     }
 
@@ -1272,9 +1246,8 @@ const gameState = (function() {
             //done this way to minimize repeated 'searching' code
         let fullChange = data.senderId != clientUser.id;
 
-        //TODO future- if own player's hand, update visual? in the event of future 'viewHand' 'takeRandomFromHand'
-                //will likely take a different path;
         let skip = false;
+        let handToUpdate = null;
         newStateObjects.forEach((item) => {
 //            console.log("Attempting changes in itemUpdate...");
             if(skip) return;
@@ -1286,24 +1259,25 @@ const gameState = (function() {
                 //to handle... temporary edge case: player tries to receive deck ALREADY destroyed
                 if(!players.get(item.id)) {
                     realItem = null;
-                    console.log("not found in players!");
+//                    console.log("not found in players!");
 //                    console.log(players.keys());
 //                    console.log(players);
 //                    console.log(getPlayers());
                 } else {
                     realItem = players.get(item.id).hand;
-                    console.log("found in players!");
+                    handToUpdate = item.id;
+//                    console.log("found in players!");
                 }
             }
             if(realItem == null) { //Error log
-                console.log("Real item not found!");
+//                console.log("Real item not found!");
                 console.log(item);
                 skip = true;
                 return;
             }
             if(realItem == item) {
-                console.log("New item added successfully");
-                console.log(item);
+//                console.log("New item added successfully");
+//                console.log(item);
                 return;
             }
 
@@ -1353,11 +1327,10 @@ const gameState = (function() {
                         item.images.forEach((number) => newImages.push(quickRef[number]));
                         realItem.images = newImages;
 
-                        //TODO- if own hand, or own view, update
-                        //TODO- to be tested on voluntary 'giveRandom()'- another clientUser sends card to this client
-                        if(item.id == clientUser.id) {
-                            clientUser.hand.ref.update();
-                        }
+                        //Code seems non-impoprtant; remove if nothing breaks
+//                        if(item.id == clientUser.id) {
+//                            clientUser.hand.ref.update();
+//                        }
                     }
                     break;
                 case 'drag': //only focus coord; also forward!
@@ -1410,6 +1383,8 @@ const gameState = (function() {
             }
         });
 
+        if(handToUpdate) userInterface.playerBar.playerUpdate(handToUpdate);
+
         redraw.triggerRedraw();
     }
 
@@ -1418,13 +1393,19 @@ const gameState = (function() {
     //"index" - is nullable, provided when dragged into specific deck/hand preview index;
     const typeWhiteList = ["Card", "Leader", "Monster"];
     function addToDeck(donor, recipient) {
-        //TODO- 'hoverElement' is recipient, else find a way to set hoverElement to 'hand'; likely in index.js
-        //TODO- find out if 'lock' is important for race conditions
 
         if(!Array.isArray(donor)) donor = new Array(donor);
         if(donor.includes(recipient) || recipient == null) {
 //            console.log(`addToDeck error: '${recipient}' null or included in donors`);
             return false;
+        }
+
+        //in the case of "Drop Here to Give" GUI
+        //Simple - one card at a time
+        if(recipient.special && donor.length == 1 && !donor[0].isDeck) {
+            donor[0].selected = 0;
+            userInterface.chatBox.giveToChat("", recipient.special, donor[0], false);
+            return true;
         }
 
         let index;
@@ -1496,16 +1477,16 @@ const gameState = (function() {
         //Inject at specific index (reordering)
         recipient.images.splice(index, 0, ...donorCards)
 
-        if(recipient.ref) recipient.ref.update();
+        if(recipient.ref) {
+            userInterface.playerBar.playerUpdate();
+            recipient.ref.update();
+        }
 
         server.pushGameAction("addToDeck", new Array(...relevant));
         return true;
     }
 
     //to only trigger where, onDragStart, a card.disabled = true was  found
-    //TODO future - have 'takeFromHand' (random) take a 'hand' object,
-    //TODO future cont. - generate random index 1-n, then pass said
-    //TODO future cont. cont. - card object into takeFromDeck (here)
     //actually, [random] likely just self inserts into calling person
     //'s hand
     function takeFromDeck(card) {
@@ -1535,13 +1516,13 @@ const gameState = (function() {
 
         //set 'leavingDeck' defaults
         setCardDefaults(card);
-        //TODO: deck view terminates as soon as we takeFrom
         if(!deck.browsing) deck.selected = 0;
 
         if(deck.images.length == 1) dissolveDeck(deck, false);
 
         //ref = visual interface (preview)
         if(deck.ref) {
+            userInterface.playerBar.playerUpdate();
             deck.ref.update();
         }
 
@@ -1590,6 +1571,18 @@ const gameState = (function() {
         }
 //        delete card.deck;
         card.deck = 0; //falsy
+    }
+
+    //TODO future/hobby
+    //dissolve hand
+    function dropHand() {
+        //placeholder
+        alert("This is a [W]ork [I]n [P]rogress!");
+
+        //take last (aka back) card away, coord = 0,0
+        //equivalent of
+
+        //then, apply
     }
 
     function selectView(deck) {
@@ -1709,7 +1702,6 @@ const gameState = (function() {
     }
 
     //Purpose: mousehover + button will anchor/unanchor item, allowing it to be dragged and selected
-    //TODO- determine if 'anchored' means cannot me imageCycle()'d; ask clientelle
     function anchorItem(items) {
         if(!items) return;
         if(!Array.isArray(items)) items = new Array(items);
@@ -1758,7 +1750,6 @@ const gameState = (function() {
 
     //Purpose: testing; iterate through all gameObjects and print out via hard-coded filters
     function logBrokenItems() {
-        //TODO
         //decks, !isHand, with 1 or less cards DONE
         //cards where !card.deck, but SOME deck.images() contains card aka ghost card copy DONE
         //cards where (disabled) && !card.deck aka sent to the void
@@ -1907,9 +1898,15 @@ const gameState = (function() {
             return `You have no cards to give away!`;
         }
 
-        let user = validateUserString(usernameString);
-        if(typeof user == "string") {
-            return user;
+        let user = usernameString;
+        if(typeof user != "object") {
+            user = validateUserString(usernameString);
+            if(typeof user == "string") return user;
+        }
+
+        if(user.live == false) {
+//            alert("That player is not active. ")
+            return ", your 'GiveRandom' was denied: target is away!";
         }
 
         //call function -- assume it always goes through
@@ -1946,6 +1943,7 @@ const gameState = (function() {
     function disconnection(id) {
         if(players.get(id)) {
             players.get(id).live = false;
+            userInterface.playerBar.playerUpdate(id);
         }
 
         console.log(`${id} has disconnected!`);
@@ -1972,7 +1970,7 @@ const gameState = (function() {
         itemFromRGB,
         items,
         addPlayer,
-        removePlayer,
+//        removePlayer,
         push,
         select,
         selected,
@@ -2013,6 +2011,7 @@ const gameState = (function() {
         disconnection,
         clientMovement,
         newItemCount,
+        dropHand,
         cleanSlate //for testing - remove once finished testing
     };
 })();

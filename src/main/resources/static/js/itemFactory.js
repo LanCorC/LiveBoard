@@ -63,7 +63,6 @@ function flipDeck() {
     reverseDeck.call(deck);
 }
 
-//TODO- see if this is all that takes
 function rearrangeDeck(newDeck) {
     let deck = this;
     deck.images = newDeck;

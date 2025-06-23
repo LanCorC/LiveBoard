@@ -2,6 +2,9 @@ import server from "./serverConnection.js";
 import gameState from "./gameState.js";
 import { initialize as initializeAssets } from "./assets.js";
 import { createChat } from "./boardInterface.js";
+import { createSmallBody, Element} from "./tinyContentHtml.js";
+
+const defaultProjectHost = "https://liveboard.onrender.com";
 
 //Purpose: control frontPage controls, 'loading screen', and server status (on/offline)
 
@@ -17,14 +20,13 @@ let tools = {
     assetReady: false,
     miscReady: false,
     readyFunc: function(){}, //purpose: initialized in frontPage, on trigger, readies buttons
-    chat: undefined
+    chat: undefined,
+    leaveGame: undefined
 }; //store 'outside functions' like context redraw
 
 //purpose: handle all frontPage - connect button, load board, [join lobby?]
 const frontPage = (function() {
     //element reference
-    //TODO- front page elements, objects
-    //TODO testing: preliminary test to demonstrate "Loaded asset tracking" for loading page; add to div
     const frontPage = document.getElementById("frontPage");
 
     const miscLoading = document.getElementById("miscLoad");
@@ -33,17 +35,12 @@ const frontPage = (function() {
     const serverConnectButton = document.getElementById("connectButton");
     const addressInput = document.getElementById("address");
 
-    //TODO- if server.gameState exists, reword to "Join Game"; client loads gameState from server
-    //TODO- if not already, reword to "Start Game"; this client creates then passes to server
     const serverJoinButton = document.getElementById("serverJoin");
-    //TODO: soloButton loads from scratch;
-    //TODO: demoButton loads from a "simulated" snapshot
     const demoButton = document.getElementById("loadDemo");
     const soloButton = document.getElementById("loadSolo");
 
     const gameLoading = document.getElementById("gameLoad");
 
-    //TODO- fetch gameState from server, then set up board
     //OR set up board and send new gameState to server
     serverJoinButton.addEventListener("click", ()=>{
 
@@ -53,7 +50,6 @@ const frontPage = (function() {
             gameState.loadBoard(); //also pushes to gameState
             tools.chat.joinChat(true);
         } else { //fetch
-            //TODO somehow; reveal only after loaded; maybe connect to after rebuildBoard
             server.fetchGameState();
             console.log("Fetching gamestate...");
             gameLoadMessage("Fetching gameState from server");
@@ -74,6 +70,7 @@ const frontPage = (function() {
 
 //        tools.disable(demoButton);
 //        tools.enable(soloButton);
+        tools.chat.join("DEMO");
     });
 
     //Note: not async, never had an issue with redraw() and asset onload mismatch
@@ -91,7 +88,15 @@ const frontPage = (function() {
 //        tools.disable(soloButton);
 //        tools.enable(demoButton);
 //        tools.enable(soloButton);
+        tools.chat.join("SOLO");
     });
+
+    tools.leaveGame = function() {
+        server.disconnect(1000, "Client has left the game.");
+        gameLoadMessage("You have left the game. Refresh [F5] or press [&#10226;] above to reconnect.");
+        server.inGame = false;
+        hideGame();
+    }.bind(this);
 
     function revealGame() {
         frontPage.style.visibility = "hidden";
@@ -120,7 +125,23 @@ const frontPage = (function() {
     serverConnectButton.onclick = serverConnectButtonEdit;
 
     function gameLoadMessage(message) {
-        gameLoading.innerHTML = message;
+        if(typeof message == "string") {
+            gameLoading.innerHTML = message;
+            return;
+        }
+
+        //assumes message is html object,
+        gameLoading.innerHTML = '';
+        gameLoading.append(message);
+    }
+
+    function howToConnect() {
+        gameLoadMessage(
+            createSmallBody(
+                "If you are viewing this project on Github, this webpage can only serve [DEMO] and [SOLO].", Element.BREAK(),
+                "To try the live project, grab a friend and visit ", Element.LINK(defaultProjectHost), "!"
+            )
+        );
     }
 
     //update methods
@@ -172,8 +193,6 @@ const frontPage = (function() {
     }
 
     function increment() { //Purpose: subtle 'miscAssets' loading
-        //TODO - reference of frontPage outside of  frontPageInterface.js finds .count obj
-        //TODO - but fails to work inside. i've seen this before        //TODO- separate divs
 
         assetCount.miscCards++;
 
@@ -191,9 +210,11 @@ const frontPage = (function() {
         if(boolean) {
             //true, - "Join Game";      //future: default for 'non PartyLeader'
             serverJoinButton.innerText = "Join Game";
+            gameLoadMessage("To join the game in session, press [Join Game]!");
         } else {
             //false, - "Start Game"     //future: default for 'PartyLeader'
             serverJoinButton.innerText = "Start Game";
+            gameLoadMessage("To start a game session, press [Start Game]!");
         }
     }
 
@@ -251,7 +272,7 @@ const frontPage = (function() {
         if(tools.assetReady && tools.miscReady) {
             demoButton.removeAttribute("disabled");
             soloButton.removeAttribute("disabled");
-            document.getElementById("ESCAPEtag").style.visibility = "inherit";
+//            document.getElementById("ESCAPEtag").style.visibility = "inherit";
             //if server ready, enable
             if(server.connection.readyState == 1) {
                 serverJoinButton.removeAttribute("disabled");
@@ -304,21 +325,17 @@ const frontPage = (function() {
         if(event.target == aboutDialog) aboutDialog.close();
     });
 
-    return { send, increment, connectionSuccess, connectionFailed, connectionStarted, gameLoadMessage,
+    return { send, increment, connectionSuccess, connectionFailed, connectionStarted, gameLoadMessage, howToConnect,
     gameBoardReady, toggleHomescreen, namePlaceholder};
 })();
 
 //purpose: handle all loading page,elements: connection to assets on loadscr
 const loading = (function() {
     //element reference
-    //TODO- front page elements, objects
-    //TODO testing: preliminary test to demonstrate "Loaded asset tracking" for loading page; add to div
     const loadingScreen = document.getElementById("assetLoad"); //bottomHalf div
     const demoButton = document.getElementById("loadDemo");
     const soloButton = document.getElementById("loadSolo");
     //tracking properties (array of updates? e.g. list of assets received)
-
-
 
     //update methods
     function send(message) {
@@ -341,7 +358,7 @@ const loading = (function() {
     return { send, increment };
 })();
 
-//TODO- purpose to make sure all reference are passed; i.e. 'serverConnection.js' receives its c
+//Purpose to make sure all reference are passed; i.e. 'serverConnection.js' receives its link to chat
 function initialize() {
     tools.chat = createChat(gameState.clientUser);
 

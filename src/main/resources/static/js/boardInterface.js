@@ -1,7 +1,16 @@
 import {Hand} from "./itemClasses.js";
 import gameState from "./gameState.js";
+import {MenuSidebar, MenuOption} from "./sidebar.js";
+import { createSmallBody, Element} from "./tinyContentHtml.js";
 
 const verbose = false;
+const FrontPage = { tools: undefined };             //frontpage.js imports
+const Controls = {
+    cycleBackground:    undefined,
+    rotateBoard:        undefined,
+    roll2d6:            undefined
+};    //index.js imports
+const tools = [FrontPage, Controls];                //bundling for 'lazy imports'
 
 //purpose: to set up HTML counterparts; such as: managing relevant context buttons,
 //initializing 'hand', and other tools [drop hand, UI], managing playerBubbles,
@@ -256,6 +265,23 @@ class ViewDeck extends PreviewBox {
     }
 }
 
+//Excised from ChatBox functions, to reuse in playerMenu
+function formatName(sender) {
+    let name = document.createElement("I");
+    let nameInner;
+    if(sender && sender.id != gameState.clientUser.id) {
+        nameInner = sender.name;
+    } else {
+        sender = gameState.clientUser;
+        nameInner =`${gameState.clientUser.name} (You)`;
+    }
+    name.innerText = nameInner;
+
+    name.style.color = sender.color;
+
+    return name; //italic html element
+}
+
 class ChatBox {
     constructor(user) {
         //create box div, class (css to manipulate which corner/edge of board to populate + player)
@@ -316,6 +342,14 @@ class ChatBox {
         this.chatInput.value = "";
     }
 
+    triggerHelp = function() {
+        this.#processCommand(["/h"]);
+    }
+
+    triggerResetGame = function() {
+        this.#processCommand(["/rg"]);
+    }
+
     //TODO- have each case call a method that RETURNS STRING/FORMAT in preparation for entry
     //example: VIP- giveRandom() -> processes (sends to server...), returns cardObj or 'false',
     //example cont.d: processCommand prints "Player (You) gave [card] to [player] at random!"
@@ -364,6 +398,12 @@ class ChatBox {
             case "RG":
             case "RESETGAME":
                 //TODO- alert, yes / no, confirmation
+                //strictly rg / resetgame entries
+                    //solved by "are you sure" popup, but placeholder for now
+                if(args.length != 0) {
+                    this.newEntry(", please use '/rg' or '/resetgame' to reset the game.");
+                    break;
+                }
                 this.#resetGame();
                 this.newEntry(entry);
                 this.server.resetGame();
@@ -389,7 +429,7 @@ class ChatBox {
             return;
         }
 
-        this.giveRandomToChat("", result[1], result[0]);
+        this.giveToChat("", result[1], result[0], true);
         //then send to server to broadcast
     }
 
@@ -409,7 +449,7 @@ class ChatBox {
         let players = gameState.getPlayers();
         players.forEach((player) => {
             p.append("[");
-            p.append(this.#formatName(player));
+            p.append(formatName(player));
             p.append(`:${player.hand.images.length}`);
             p.append("]");
         })
@@ -418,19 +458,23 @@ class ChatBox {
     }
 
     //giveRandom to chat - as sender, recipient, 3rd party
-    giveRandomToChat(sender, recipient, item) {
+//    giveRandomToChat(sender, recipient, item) {
+    giveToChat(sender, recipient, item, wasRandom) {
         if(Array.isArray(item)) {
             item = item[0];
         }
 
         //ensure VIP - purpose: only the client modifies own hand, prevent raceCondition
-        if(recipient.id == this.user.id) gameState.addToDeck(item, this.user.hand);
+        if(recipient.id == this.user.id) {
+            item.selected = 0; //move to gameState?
+            gameState.addToDeck(item, this.user.hand);
+        }
 
         //sender, recipient, item
         let p = document.createElement("p");
-        p.append(this.#formatName(sender));
+        p.append(formatName(sender));
         p.append(` gave `);
-        p.append(this.#formatName(recipient));
+        p.append(formatName(recipient));
         p.append(" ");
 
         if(!sender || sender.id == this.user.id || recipient.id == this.user.id) {
@@ -440,29 +484,39 @@ class ChatBox {
             p.append("a card");
         }
 
-        p.append(` at random!`);
+        p.append(wasRandom ? ` at random!` : "!");
         this.newEntry(p);
 
         if(sender) return; //falsy only when this was own client
-        this.sendChat("", "GiveRandom", item, recipient)
+        this.sendChat("", "GiveCard", item, recipient, wasRandom)
     }
 
     //strictly array items
     showHandToChat(sender, recipient, items) {
 
+        //Applicable only via: "Show All" GUI
+        if(!items) {
+            items = gameState.clientUser.hand.images;
+        }
+
         //sender, recipient, item
         //X is showing Y their hand
         let p = document.createElement("p");
-        p.append(this.#formatName(sender));
-        p.append(` is showing `);
-        p.append(this.#formatName(recipient));
+        p.append(formatName(sender));
+        p.append(` is showing`);
+        if(recipient) {
+            p.append(` `);
+            p.append(formatName(recipient));
+        }
         p.append(" their hand");
+        //Applicable via: "Show All" GUI
+        if(!recipient) p.append(` to everyone`);
 
         //X is showing Y their hand, but it's empty!
         if(!items || items.length == 0) {
-            p.append(", but it's empty!");
+            p.append(", and it's empty!");
         } else {
-            if(!sender || sender.id == this.user.id || recipient.id == this.user.id) {
+            if(!sender || !recipient || sender.id == this.user.id || recipient.id == this.user.id) {
                 //X is showing Y their hand: [] [] []
                 p.append(": ");
                 items.forEach((item) => {
@@ -481,21 +535,21 @@ class ChatBox {
         this.sendChat("", "ShowHand", items, recipient)
     }
 
-    #formatName(sender) {
-        let name = document.createElement("I");
-        let nameInner;
-        if(sender && sender.id != this.user.id) {
-            nameInner = sender.name;
-        } else {
-            sender = this.user;
-            nameInner =`${this.user.name} (You)`;
-        }
-        name.innerText = nameInner;
-
-        name.style.color = sender.color;
-
-        return name; //italic html element
-    }
+//    #formatName(sender) {
+//        let name = document.createElement("I");
+//        let nameInner;
+//        if(sender && sender.id != this.user.id) {
+//            nameInner = sender.name;
+//        } else {
+//            sender = this.user;
+//            nameInner =`${this.user.name} (You)`;
+//        }
+//        name.innerText = nameInner;
+//
+//        name.style.color = sender.color;
+//
+//        return name; //italic html element
+//    }
 
     //use real item, else default "[Card]"
     #formatCard(card) {
@@ -519,7 +573,7 @@ class ChatBox {
         if(!text) return;
 
         if(typeof text === "string") {
-            entry.append(this.#formatName(sender));
+            entry.append(formatName(sender));
             entry.append(`${text}`);
         } else { //pre-formatted innerHTML
             entry = text;
@@ -596,7 +650,7 @@ class ChatBox {
         //if single (length==1), keep 0 (falsy)
         let count = items.length == 1 ? 0 : 1;
 
-        body.append(this.#formatName(sender));
+        body.append(formatName(sender));
         body.append(` pinged ${items[0].type.toLowerCase() || "item" }`);
         count ? body.append(`s `) : body.append(` `);
 
@@ -619,7 +673,7 @@ class ChatBox {
     joinChat(isFirst) {
         let p = document.createElement("p");
         if(isFirst) {
-            this.newEntry(" are the first to join the table!");
+            this.newEntry(" are the first to join the live table!");
             return;
         }
 
@@ -627,7 +681,7 @@ class ChatBox {
 
         //Welcome player (You)! You are joining
         p.append("Welcome ");
-        p.append(this.#formatName());
+        p.append(formatName());
         p.append("! You are joining ");
 
         //Welcome player (You)! You are joining ...oh, it's just yourself for now.
@@ -641,23 +695,35 @@ class ChatBox {
         gameState.getPlayers().forEach((player) => {
             if(this.user == player) return;
             p.append("[");
-            p.append(this.#formatName(player));
+            p.append(formatName(player));
             p.append("]");
         });
-        p.append(".");
+        p.append(" at the live table.");
+        this.newEntry(p);
+    }
+
+    //for SOLO and DEMO; TODO: demo includes other inactive 'NPCs'
+    join(mode) {
+        let p = document.createElement("p");
+
+        //Welcome player (You)! You are joining
+        p.append(`Welcome to ${mode}, `);
+        p.append(formatName());
+        p.append("!");
+
         this.newEntry(p);
     }
 
     disconnected(id) {
         let p = document.createElement("p");
-        p.append(this.#formatName(gameState.getPlayer(id)));
+        p.append(formatName(gameState.getPlayer(id)));
         p.append(" has disconnected.");
         this.newEntry(p);
     }
 
     newPlayer(player) {
         let p = document.createElement("p");
-        p.append(this.#formatName(player));
+        p.append(formatName(player));
         p.append(" has joined the table!");
         this.newEntry(p);
     }
@@ -696,7 +762,6 @@ function createTopView() {
     userInterface.preview = topViewContainer;
 }
 
-//TODO- link to server, diceroll, game, etc
 export function createChat(user) {
     const chatBox = new ChatBox(user);
 
@@ -707,6 +772,221 @@ export function createChat(user) {
     return chatBox;
 }
 
+//testing function - new sidebar menu @ top left of screen
+//SELF NOTE: best to import Controls (index) and GameState here to centralize modification of game menu
+function createMenu() {
+    const tokenRoot = "./images/Tokens";
+    let sidebar = new MenuSidebar(MenuSidebar.SETTINGSBAR);
+    let settings = new MenuOption();
+    settings.setFallback("Settings")
+        .setSrc(`${tokenRoot}/settings-ui-svgrepo-com.svg`)
+        .addOnClick() //default - will create ContextMenu
+        .addBuildSpecification("Switch Seats (a, d)", Controls.rotateBoard,MenuOption.KEEP)
+        .addBuildSpecification("Cycle Background (=)",Controls.cycleBackground,MenuOption.KEEP)
+        .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
+        .addBuildSpecification("\u26A0 Reset Game \u26A0",()=>{
+            if(window.confirm("Are you sure you want to RESET GAME?")) {
+                userInterface.chatBox.triggerResetGame();
+            }
+        },MenuOption.DISCARD)
+        .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
+        .addBuildSpecification("Leave Game",FrontPage.tools.leaveGame,MenuOption.DISCARD)
+    ;
+
+    //creates fresh object each time, to evade mix-ups of old/overwritten elements
+    let content = [
+        () => createSmallBody(
+            Element.BOLD("QuickTips 1/4"), Element.BREAK(),
+            Element.SEPARATOR(),
+            Element.ITALICS("DISCARD"), " removes from your hand.", Element.BREAK(),
+            Element.ITALICS("SACRIFICE"), " removes from your party.", Element.BREAK(),
+            Element.ITALICS("DESTROY"), " removes from another player's party.", Element.BREAK(),
+            Element.ITALICS("EQUIPMENTS"), " follow the hero it is equipped on— stolen, destroyed, or sacrificed.", Element.BREAK()
+        ),
+        () => createSmallBody(
+            Element.BOLD("QuickTips 2/4"), Element.BREAK(),
+            Element.SEPARATOR(),
+            "All players must be given an opportunity to ", Element.ITALICS("CHALLENGE"), " a Hero, Item, or Magic card played from hand.", Element.BREAK(),
+            "Cards can only be ", Element.ITALICS("CHALLENGED"), " once.", Element.BREAK(),
+            Element.ITALICS("CHALLENGED"), " player must roll higher than their opponent to resist.", Element.BREAK(),
+        ),
+         () => createSmallBody(
+             Element.BOLD("QuickTips 3/4"), Element.BREAK(),
+             Element.SEPARATOR(),
+             "One Hero's ", Element.ITALICS("EFFECT"), " can only be rolled once per turn— ", Element.BREAK(),
+             "a) as it's played,", Element.BREAK(),
+             "b) by spending an action point", Element.BREAK(),
+             "—unless otherwise repeated/copied by special effects."
+         ),
+        () => createSmallBody(
+            Element.BOLD("QuickTips 4/4"), Element.BREAK(),
+            Element.SEPARATOR(),
+            Element.ITALICS("PARTY LEADERS'"), " class count for Party-Win and Monster requirements.", Element.BREAK(),
+            Element.ITALICS("PARTY LEADER"), " The Shadow Claw is not recommended for 2-player games.", Element.BREAK(),
+        )
+    ];
+    let tipsIndex = 0;
+    let cycleTips = function(index) {
+        let html;
+        if(index || index == 0) {
+            html = content[index]()
+        } else {
+            html = content[++tipsIndex % content.length]();
+        }
+        return html;
+    }.bind(this);
+
+    let info = new MenuOption();
+    info.setFallback("Info")
+        .setSrc(`${tokenRoot}/info-svgrepo-com.svg`)
+        .addOnClick()
+        .addBuildSpecification(cycleTips(0), (content) => {
+            content.innerHTML = ''; //purge
+            let html = cycleTips();
+            content.append(...html.childNodes);
+        }, MenuOption.KEEP);
+
+    let help = new MenuOption();
+    help.setFallback("Help")
+        .setSrc(`${tokenRoot}/faq-svgrepo-com.svg`)
+        .addOnClick(()=>userInterface.chatBox.triggerHelp())
+    ;
+
+    sidebar.addButton(settings, info, help);
+    document.body.append(sidebar.getElement());
+}
+
+//TODO create a greater 'playerbar' object, attach to userInterface,
+//*gameState will use userInterface.playerBar.update() / etc to process changes
+class PlayerBar {
+
+    players = gameState.getPlayers()
+
+    //key:id, val:correspondingUserButton
+    //for purpose of
+    buttons = new Map();
+
+    constructor() {
+        //Initialize: create object, attach this player;
+
+        let menuSideBar = new MenuSidebar(MenuSidebar.PLAYERBAR);
+
+        //Apply variables
+        this.menuSideBar = menuSideBar;
+
+        this.addPlayer(gameState.clientUser);
+
+        document.body.append(menuSideBar.getElement());
+    }
+
+    addPlayer(user) {   //to use: Name, Color, handSize, liveStatus
+        //skip if exists
+        if(this.buttons.has(user.id)) {
+            this.updateBody(user);
+            return;
+        }
+
+        let button = new MenuOption();
+
+        this.buttons.set(user.id, button);
+        this.updateBody(user);
+
+        button
+            .addOnClick()
+        ;
+
+        if(user.id == gameState.clientUser.id) {
+            button.addBuildSpecification("Roll Dice (r)", Controls.roll2d6,MenuOption.KEEP)
+            .addBuildSpecification("Show Hand (all)", ()=>userInterface.chatBox.showHandToChat(),MenuOption.DISCARD)
+            .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
+            .addBuildSpecification("Reroll Name", ()=>gameState.rerollUser(), MenuOption.KEEP)
+            .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
+            .addBuildSpecification("\u26A0 Drop Hand (WIP) \u26A0",()=>{
+                //Game action
+                gameState.dropHand();
+                //Chat update
+            },MenuOption.DISCARD)
+        } else {
+            button.addBuildSpecification(createSmallBody(Element.ITALICS("[Drop Here to Give]")),()=>{},MenuOption.KEEP,user)
+            .addBuildSpecification("Show Hand",()=>{
+                userInterface.chatBox.showHandToChat("", user)
+            },MenuOption.DISCARD)
+            .addBuildSpecification("Give Random",()=>{
+                let result = gameState.giveRandom(user);
+                if(typeof result == "string") {
+                    userInterface.chatBox.newEntry(result);
+                    return;
+                }
+                userInterface.chatBox.giveToChat("", user, result[0], true);
+            },MenuOption.DISCARD)
+            .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
+            .addBuildSpecification("\u26A0 See Hand (WIP) \u26A0",()=>{},MenuOption.DISCARD)
+            .addBuildSpecification("\u26A0 Drop Hand (WIP) \u26A0",()=>{},MenuOption.DISCARD)
+        }
+
+        this.menuSideBar.addButton(button);
+    }
+
+    updateBody(user) {
+
+        //default to current player
+        if(!user) user = gameState.clientUser;
+        //User (You)
+        //{hand}: # (LIVE || AWAY)
+        if(!this.buttons.has(user.id)) return;
+        this.buttons.get(user.id).setBody(
+        createSmallBody(
+            formatName(user),Element.BREAK(),
+            `\u270B: ${user.hand.images.length || 0}`, ` ${user.live ? "(LIVE)" : "(AWAY)"}`
+        ));
+
+        return;
+    }
+
+    //TODO on-leave- i.e. player leaving
+        //simply grey out, or move to bottom
+        //optional: if hand is empty, remove
+
+    update() {
+        //note: does not handle players leaving
+
+        //functionality: if buttons entry not found in players, remove from playerBar
+        let remove = new Set();
+        this.buttons.forEach((playerButton, playerId, map) => {
+            if(!this.players.has(playerId)) {
+                this.menuSideBar.removeButton(playerButton);
+                remove.add(playerId);
+            }
+        });
+        for(const entry of remove.entries()) {
+            this.buttons.delete(entry[0]);
+        }
+
+        //functionality: if entry in players not in playerBar, add
+        let include = new Set();
+        this.players.forEach((player, playerId, map) => {
+            if(!this.buttons.has(playerId)) {
+                include.add(player);
+            }
+        });
+        for(const entry of include.entries()) {
+            this.addPlayer(entry[0]);
+        }
+
+    }
+
+    playerUpdate(player) {
+        if(typeof player != 'object') {
+            player = this.players.get(player);
+        }
+        this.updateBody(player);
+    }
+}
+
+function createPlayerBar() {
+    userInterface.playerBar = new PlayerBar();
+}
+
 //TODO- wip, see comments
 export function initializeBoardInterface(clientUser) {
     createBottomRow(clientUser);
@@ -715,9 +995,45 @@ export function initializeBoardInterface(clientUser) {
 
     //create buttons
 
-    //create chat
-
     //create player heads
+
+    //create menuBar
+    //dynamic import, and on both, then createMenu()
+    //Purpose: spaghetti code imports across multiple files caused sequencing issues
+    Promise.all([
+        import("./index.js"),
+        import("./frontPageInterface.js")
+    ]).then((values)=> {
+        //pluck out specific properties to-find in our 'lazy import'
+        //TODO future- just place the entire module?
+        let valuesToGo = new Map();
+
+        //tools = [module, module]
+        tools.forEach(
+            //entries = [ [propertyName, val] : index, [propertyName, val] : index ]
+            (module) => Object.entries(module).forEach(
+                (key, value) => valuesToGo.set(key[0], module)
+            )
+        );
+
+        for(const module of values) {
+            for(const [key, value] of Object.entries(module)) {
+                let entries = Object.entries(module);
+                for (const entry of entries) {
+                    if(valuesToGo.has(entry[0])) {
+                        valuesToGo.get(entry[0])[entry[0]] = module[entry[0]];
+                        valuesToGo.delete(entry[0]);
+                    }
+                }
+            }
+        }
+
+        createMenu();
+
+        createPlayerBar();
+    });
+
+
     //>>require initialization to accept gameState
     //>>use gameState to then store copy (address) of players{}
 }

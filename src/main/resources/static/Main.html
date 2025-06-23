@@ -5,6 +5,13 @@
     <title>&#127993; Here To Play! - Virtual Table Top &#9876;
     </title>
     <style>
+        :root {
+            --menuTopOffset: 5px;
+            --menuLeftOffset: 5px;
+
+            --menuMaxHeight: 25%;
+        }
+
         body {
             height: 100vh;
             width: 100vw;
@@ -14,6 +21,11 @@
             /*            background-image: url(../Images/sticky-note-with-postponed-messageFreePikDotCom.jpg);*/
             font-family: 'Trebuchet MS', sans-serif;
         }
+
+        .grabbing {
+            cursor: grabbing !important;
+        }
+
         #gameBoard {
             background-position: center;
             background-color: white;
@@ -50,6 +62,139 @@
             display: none;
         }
 
+        /* Holds menu object game GUI */
+
+        .menuBar { /* Parent to sidebarMenu and playerMenu */
+            position: absolute;
+            user-select: none;
+            max-width: 20%;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebarMenu {
+            top: var(--menuTopOffset);
+            left: var(--menuLeftOffset);
+
+            max-height: var(--menuMaxHeight);
+
+            row-gap: 15px;
+        }
+
+        .playerMenu {
+            top: var(--menuMaxHeight);
+            left: var(--menuLeftOffset);
+
+            max-height: var(--menuMaxHeight);
+
+            row-gap: 15px;
+        }
+
+        .playerMenu .sidebarButton {
+            min-width: 50px;
+            max-width: 200px;
+            height: auto;
+        }
+
+        .playerMenu .sidebarButton {
+            border-radius: 10px;
+            height: 50px;
+            min-width: 90px;
+            max-width: 200px !important;
+
+            white-space: nowrap;
+            font-weight: bold;
+
+            overflow: hidden;
+            text-overflow: clip;
+        }
+
+        .playerMenu .sidebarButton I {
+            vertical-align: middle;
+        }
+
+        .playerMenu .sidebarButton:hover {
+            width: auto;
+            overflow: visible;
+        }
+
+/*
+        .playerMenu .sidebarButton:active:hover {
+            cursor: copy;
+        }
+*/
+
+        .sidebarButton {
+
+            width: 50px;
+            height: 50px;
+
+            border-radius: 999px;
+            background-color: rgba(178, 190, 181, 0.7);
+
+            pointer-events: initial;
+            cursor: pointer;
+        }
+
+        .sidebarButton:hover {
+            background-color: rgba(178, 190, 181, 1.0);
+        }
+
+        .sidebarButton img {
+            pointer-events: none;
+        }
+
+        .contextMenu {
+            pointer-events: initial;
+
+            border-radius: 25px;
+            background-color: rgba(178, 190, 181, 0.7);
+
+            z-index: 9999;
+            position: absolute;
+
+            min-height: 50px;
+            min-width: 50px;
+            max-height: 400px;
+            max-width: 500px;
+
+            padding: 10px 10px 10px 10px;
+            display: flex;
+            flex-direction: column;
+
+            <!-- attempt to stop text highlight -->
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .contextChild:has(hr) {
+            padding: 5px 0px;
+        }
+
+        .contextChild {
+            padding: 10px 10px 10px 10px;
+            margin: 0px 0px 0px 0px;
+        }
+
+        .contextChildButton b,hr,br,p,I {
+            pointer-events: none;   <!-- needed to prevent contextMenu from self-closing -->
+        }
+
+        .contextChild hr {
+            margin: 2px 0px;
+        }
+
+        .contextChildButton:hover {
+            background-color: white;
+            cursor: pointer;
+            border-radius: 15px;
+        }
+
         /*TODO- purpose: left/right padding to allow dragging of preview*/
         /* ALSO parentStyle of the container*/
         .previewBoxContainer {
@@ -63,7 +208,7 @@
             background-color: rgba(178, 190, 181, 0.5);
         }
 
-        /*TODO - this is the 'parentStyle' of both hand, and nonself hand/deck */
+        /*Note - this is the 'parentStyle' of both hand, and nonself hand/deck */
         .previewBox {
         /*            width: 70%; /* original* /*/
             height: 100%;
@@ -99,6 +244,7 @@
 
         .previewBox img:hover {
             border-style: ridge;
+            cursor: pointer;
         }
 
         /*        .myHand:empty::before {*/
@@ -119,8 +265,6 @@
             filter: brightness(50%);
         }
 
-        /*todo- minimum heights, max heights*/
-        /*TODO important- connect 'height%' to a global variable*/
         #bottomBar {
             height: 25%;
             width: 100%;
@@ -181,7 +325,7 @@
             height: 25%;
             width: 20%;
             visibility: initial;
-            background-color: rgba(178, 190, 181, 0.3);
+            background-color: rgba(178, 190, 181, 0.5);
 
             pointer-events: none;
 
@@ -215,7 +359,7 @@
 
             pointer-events: initial;
 
-            background-color: rgba(178, 190, 181, 0.2);
+            background-color: rgba(178, 190, 181, 0.5);
             border-style: solid none none none;
             border-color: rgba(0, 0, 0, 0.5);
         }
@@ -248,7 +392,8 @@
         }
 
         .transparentBg {
-            background-color: transparent;
+            background-color: rgba(178, 190, 181, 0.1);
+<!--            background-color: transparent;-->
         }
 
         #playerName {
@@ -276,6 +421,8 @@
             background-color: #1F1F1F;
             color: white;
             padding: 0;
+
+            border-radius: 20px;
             border: 0;
         }
 
@@ -309,7 +456,7 @@
         <div id="container" style="">
             <canvas id="gameBoard"></canvas>
             <canvas id="touchBoard"></canvas>
-                <img id="inspectImage" >
+                <img alt="imageTooltip" id="inspectImage" src="">
         </div>
         <div id="frontPage">
             <h1>&#127993;
@@ -325,7 +472,7 @@
 
             <!-- player personalization -->
             <div id="playerCustomizeContainer">
-                <i id="ESCAPEtag">[ESCAPE] to find me later.</i>
+<!--                <i id="ESCAPEtag">[ESCAPE] to find me later.</i>-->
                 <div>
                     <label>Welcome, <input type="text" id="playerName">.
                     </label>
@@ -617,22 +764,22 @@
             <dialog id="creditsDialog">
                 <h3>Credits</h3>
                 <h4>Card and playmat assets</h4>
-                <p>Ramy Badie/<a href="https://teeturtle.com/" target="_blank">TeeTurtle</a></p>
-                <p>Source: <a href="https://unstablegameswiki.com/index.php?title=Here_To_Slay" target="_blank">UnstableGamesWiki.com</a></p>
+                <p>Ramy Badie/<a href="https://teeturtle.com/" target="_blank" style="pointer-events: initial">TeeTurtle</a></p>
+                <p>Source: <a href="https://unstablegameswiki.com/index.php?title=Here_To_Slay" target="_blank" style="pointer-events: initial">UnstableGamesWiki.com</a></p>
                 <h4>Background assets</h4>
-                <p>Matt Visiwig/<a href="https://www.svgbackgrounds.com/" target="_blank">SVGBackgrounds</a></p>
-                <p>Source: <a href="https://www.svgbackgrounds.com/set/free-svg-backgrounds-and-patterns/" target="_blank">Free SVG Backgrounds and Patterns by SVGBackgrounds.com</a></p>
+                <p>Matt Visiwig/<a href="https://www.svgbackgrounds.com/" target="_blank" style="pointer-events: initial">SVGBackgrounds</a></p>
+                <p>Source: <a href="https://www.svgbackgrounds.com/set/free-svg-backgrounds-and-patterns/" target="_blank" style="pointer-events: initial">Free SVG Backgrounds and Patterns by SVGBackgrounds.com</a></p>
                 <h4>Visual tokens</h4>
-                <p>SVG Repo/<a href="https://www.svgrepo.com" target="_blank">SVG Repo</a>
+                <p>SVG Repo/<a href="https://www.svgrepo.com" target="_blank" style="pointer-events: initial">SVG Repo</a>
             </dialog>
 
             <dialog id="aboutDialog">
                 <h3>About</h3>
-                <h4>My name is <a href="https://github.com/LanCorC" target="_blank">Lance</a></h4>
+                <h4>My name is <a href="https://github.com/LanCorC" target="_blank" style="pointer-events: initial">Lance</a></h4>
                 <p>My interest in learning has led me to become an aspiring software developer. This project was an experiment in exploring web and game development.</p>
-                <h4>The project</h4>
+                <h4>The Project</h4>
                 <p>I wanted to create an immersive experience of a table-top game night that you can share with friends.
-                    <a href="https://github.com/LanCorC/LiveBoard" target="_blank">Find out more.</a></p>
+                    <a href="https://github.com/LanCorC/LiveBoard" target="_blank" style="pointer-events: initial">Find out more.</a></p>
             </dialog>
         </div>
     </body>

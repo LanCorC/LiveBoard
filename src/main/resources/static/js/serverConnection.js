@@ -13,9 +13,6 @@ import gameState from "./gameState.js";
 //Example: if (... == "chatUpdate") => [process]...boardInterface.chat(processed)
 //Example: if (... == "chatUpdate") => [process]...boardInterface.chat(processed)
 
-
-//TODO- experiment with having ONE server spit out the html, and the SAME connection to server
-//TODO cont- to upgrade to ws (websocket) for joining the game
 //Goal: localhost the server is enough for me to load html + 'start a lobby/game' with self
 //Goal2: have github spit out the HTML, the ws attempt, and loading screen + demo ready
 //attempt at connecting to local server
@@ -33,8 +30,9 @@ class Server {
 
     //boolean- if gameState exists on server
     gameStatus = false;
-    //TODO 'gameConnected' boolean;
-    //TODO: for game actions check server.gameConnected() for executions
+
+    //Determine if player is in active, online game;
+    inGame = false;
 
     //To hold the WebSocket reference
     connection;
@@ -111,8 +109,8 @@ class Server {
         }
 
         socket.onclose = function(event) {
+            console.log("Clean disconnect: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
             if(event.wasClean) {
-                console.log("Clean disconnect: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
                 frontUI.connectionFailed("Clean disconnect: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
             } else {
                 //also triggers if connection attempt fails (server offline)
@@ -139,7 +137,42 @@ class Server {
 //                this.server.chatBox.newEntry(" have disconnected! Attempting to reconnect...");
 //            }
 
-            this.server.chatBox.newEntry(" have disconnected! [Esc] to go back to Main Menu.");
+            frontUI.howToConnect();
+
+            let message = "";
+            switch(event.code) {
+                case 1000:
+                    if(this.server.inGame) {
+                        message = " have left the live game.";
+                    } else {
+                    }
+                    frontUI.connectionFailed(`Connection successfully disconnected. Termination code: ${event.code}`);
+                    break;
+                case 1001: //server-side has decided 1001 is also for terminating an older connection
+                    if(this.server.inGame) {
+                        message = ", a newer instance has connected on this browser! This tab is now disconnected.";
+                    } else {
+                    }
+                    frontUI.connectionFailed("A newer instance has connected on this browser! This tab is now disconnected.");
+                    frontUI.gameLoadMessage("Tip: If you want to simulate two players yourself, please load Incognito Mode, a different browser, or another device.");
+                    break;
+                case 1006:
+                    if(this.server.inGame) {
+                        message = ", your connection has dropped unexpectedly! [Esc] to go to Main Menu.";
+                        alert("Your connection has dropped unexpectedly! [Esc] to go to Main Menu.");
+                    } else {
+                    }
+                    frontUI.connectionFailed(
+                        `Error ${event.code}: the server "${this.address}" could not be reached at this time!`);
+                    break;
+                default:
+                        message = `Your connection from ${this.address} has dropped unexpectedly. Termination code: ${event.code}.`;
+                        frontUI.connectionFailed(message);
+                        alert(message);
+                    break;
+            }
+            this.server.chatBox.newEntry(message);
+            this.server.inGame = false;
             this.server.gameStatus = false;
         }
 
@@ -158,6 +191,7 @@ class Server {
                         console.log(`GameStatus: ${this.server.gameStatus}`);
                         break;
                     case "GameSetup":
+                        this.server.inGame = true;
                         this.server.game.rebuildBoard(data.gameState, data.players, data.itemCount, false);
                         this.server.chatBox.joinChat();
                         break;
@@ -165,6 +199,7 @@ class Server {
                         this.server.frontPage.connectionSuccess(data.explicit);
                         break;
                     case "GameUpdate":
+                        if(!this.server.inGame) return; //reject updates if not 'in'
                         //Purpose messages received here are 'server approved'; we may apply immediately
 
 //                        console.log("Game update received, printing .cards, .decks, .playMats:");
@@ -181,9 +216,9 @@ class Server {
 
                         this.server.game.updateItems(data);
                         break;
-                    //TODO - do not take in update if player is not connected to game
                     //and/or, ensure 'Start Game' sets to 0 first (cleanSlate)
                     case "NewItemCount":
+                        if(!this.server.inGame) return; //reject updates if not 'in'
                         if(data.senderId == this.server.game.clientUser.id) {
                             console.log(`returned ${header}!`);
                             //Do not process;
@@ -197,7 +232,6 @@ class Server {
                             break;
                         }
 
-                        //TODO- update chat
                         console.log(`New player received! ${data.senderId}`);
 
                         this.server.game.addPlayer(data.player);
@@ -205,6 +239,7 @@ class Server {
 
                         break;
                     case "ChatUpdate":
+                        if(!this.server.inGame) return; //reject updates if not 'in'
 //                        if(data.player && data.player.id == this.server.game.clientUser.id) {
 //                            break; //skip processing: message came from us
 //                        }
@@ -212,7 +247,6 @@ class Server {
                             break; //skip processing: message came from us
                         }
                         let sender = this.server.game.getPlayer(data.senderId);
-                        //TODO- differentate between normal chat entry, ping item, ping hand
 
                         switch(data.subHeader) {
                             case "ChatUpdate":
@@ -223,9 +257,9 @@ class Server {
                                     this.server.game.findItems(data.cards), sender
                                 );
                                 break;
-                            case "GiveRandom":
-                                this.server.chatBox.giveRandomToChat(sender, data.player,
-                                    this.server.game.findItems(data.cards));
+                            case "GiveCard":
+                                this.server.chatBox.giveToChat(sender, data.player,
+                                    this.server.game.findItems(data.cards), data.bool);
                                 break;
                             case "ShowHand":
                                 this.server.chatBox.showHandToChat(sender, data.player,
@@ -244,19 +278,19 @@ class Server {
 
                         switch(data.subHeader) {
                             case "Disconnection":
-                                //TODO- update chat
                                 this.server.game.disconnection(data.senderId);
                                 this.server.chatBox.disconnected(data.senderId);
                                 break;
                             case "customize":
                             case "movement":
                             default: //name, color, coord aka "customize" and "movement" subheaders
-                                this.server.game.updatePlayer(data.player);
+                                this.server.game.updatePlayer(data.player, data.subHeader);
                                 break;
                         }
 
                         break;
                     case "PermissionGameAction":
+                        if(!this.server.inGame) return; //reject updates if not 'in'
                         console.log(data);
                         this.server.processPermission(data);
                         break;
@@ -288,13 +322,12 @@ class Server {
 
     //purpose: receive relevant UI elements for visual updates
     //TODO TBD: when to connect to our gameState (on loadscreen? on connect (single lobby?)
-    initialize(frontObj, loadObj, gameObj, chatBox) { //TODO- add chatObj
+    initialize(frontObj, loadObj, gameObj, chatBox) {
         this.frontPage = frontObj;
         this.loading = loadObj;
         this.game = gameState;
         this.chatBox = chatBox;
 
-        //TODO- implement client-side send to server chat message
         chatBox.setServer(this);
 
 //        console.log(this.frontPage);
@@ -305,11 +338,11 @@ class Server {
 //        this.connect();
     }
 
-    //TODO- validate if connected; additional: way to handle if connection drops?
-    //or leave for unlikely
     pushGame(data) {
         //'1' => Websocket.OPEN; '0' => Webocket.CONNECTING
         if(this.connection == undefined || this.connection.readyState != 1) return;
+
+        this.inGame = true;
 
         //data[0] - Object  -> GameState (items)
         //data[1] - Array   ->ArrayList<Users>
@@ -353,6 +386,10 @@ class Server {
             this.game.loadBoard();
             return;
         }
+        if(!this.inGame) {
+            this.chatBox.newEntry(", you are connected but have not joined the live game. Reset denied!");
+            return;
+        }
 
         let message = {};
         message.messageHeader = "ResetGame";
@@ -366,20 +403,13 @@ class Server {
         this.connection.send(message);
     }
 
-    //TODO- server update on gameAction
     pushGameAction(stringAction, items, ...fallbackState)  {
-        //TODO important note: uncomment when not testing
-        if(this.connection == undefined || this.connection.readyState != 1) return;
+        if(this.connection == undefined || this.connection.readyState != 1 || !this.inGame) return;
 
-        //TakeFromDeck* - permission based (wait for server response)
-
-        //for now, just push
-
-        //TODO preview all actions are being read
+        //Testing: preview all actions are being read
 //        console.log(stringAction);
 //        console.log(items);
 //        console.log(`VIP: ${this.requestFreePass}`);
-
 
         //items assumed array, make (items.deck)[]
         if(!Array.isArray(items)) items = new Array(items);
@@ -450,7 +480,6 @@ class Server {
                 break;
         }
 
-        //TODO important: separate decks and items
         let itemsDecks = new Set();
         let itemsCards = new Set();
         let itemsPlayMats = new Set();
@@ -504,11 +533,10 @@ class Server {
     }
 
     //note: "items" is strictly cards- no playmats, decks, tokens
-    sendChat = function(stringData, stringAction, cards, recipient) {
-        if(this.connection == undefined || this.connection.readyState != 1) return;
+    sendChat = function(stringData, stringAction, cards, recipient, bool) {
+        if(this.connection == undefined || this.connection.readyState != 1 || !this.inGame) return;
         if(cards && !Array.isArray(cards)) cards = [cards];
 
-        //TODO- allow for 'PingHand' route for 'SeeHand' gameaction
         let message = {};
         message.messageHeader = "ChatUpdate";
         message.subHeader = stringAction;
@@ -516,6 +544,7 @@ class Server {
         message.explicit = stringData;
         if(recipient) message.player = recipient;          //recipient
         if(cards) message.cards = cards;
+        if(bool != undefined) message.bool = bool;
         message = JSON.stringify(message, this.replacer());
 
         this.connection.send(message);
@@ -524,8 +553,6 @@ class Server {
     //purpose: send clientUser updates to server
     clientUpdate(subHeader) {
         if(this.connection == undefined || this.connection.readyState != 1) return;
-
-        //TODO- if mousemove, include coords
 
         let message = {};
         message.messageHeader = "ClientUpdate";
@@ -542,7 +569,7 @@ class Server {
     //serverCheckItems- the most relevant items that end up manipulated at end of func
     //e,g, 'selectView' is the item.deck, often triggered on topCard (not deck)
     permission(func, funcArgs, serverCheckItems, explicit) {
-        if(this.connection == undefined || this.connection.readyState != 1) {
+        if(this.connection == undefined || this.connection.readyState != 1 || !this.inGame) {
             func(...funcArgs);
             return;
         }
@@ -621,7 +648,6 @@ class Server {
                     if(value && value.isDeck) return value.id; //value is deck, return its id
                     return value; //or 0, if value != deck
                 case "images":  //of 'decks' and 'hands' with backreferences
-                    //TODO-check is actually related to deck
                     let newImagesRef = [];
                     if(value.length == 0) return newImagesRef;  //handle "empty" hand
                     if(!Object.hasOwn(value[0], "index")) {     //are NOT card objects
@@ -633,7 +659,6 @@ class Server {
                     }
                     return newImagesRef;
                 case "players":
-                    //TODO- test if i can handle MAP to just return arr objs values
 //                    console.log(key);
                 default:
                     return value;
