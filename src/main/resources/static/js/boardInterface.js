@@ -406,7 +406,6 @@ class ChatBox {
                 }
                 this.#resetGame();
                 this.newEntry(entry);
-                this.server.resetGame();
                 break;
             default:
                 entry.innerText = `Command '${command}' not recognized`;
@@ -417,9 +416,11 @@ class ChatBox {
     }
 
     #resetGame() {
+        if(!window.confirm("Are you sure you want to RESET GAME?")) return;
         let text = ` is about to reset the board!`;
         this.sendChat(text,"ChatUpdate");
         this.newEntry(text,undefined,"");
+        this.server.resetGame();
     }
 
     #giveRandom(result) {
@@ -785,9 +786,7 @@ function createMenu() {
         .addBuildSpecification("Cycle Background (=)",Controls.cycleBackground,MenuOption.KEEP)
         .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
         .addBuildSpecification("\u26A0 Reset Game \u26A0",()=>{
-            if(window.confirm("Are you sure you want to RESET GAME?")) {
-                userInterface.chatBox.triggerResetGame();
-            }
+            userInterface.chatBox.triggerResetGame();
         },MenuOption.DISCARD)
         .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
         .addBuildSpecification("Leave Game",FrontPage.tools.leaveGame,MenuOption.DISCARD)
