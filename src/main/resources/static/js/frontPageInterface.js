@@ -91,12 +91,14 @@ const frontPage = (function() {
         tools.chat.join("SOLO");
     });
 
-    tools.leaveGame = function() {
+    const leaveGame = function() {
         server.disconnect(1000, "Client has left the game.");
-        gameLoadMessage("You have left the game. Refresh [F5] or press [&#10226;] above to reconnect.");
-        server.inGame = false;
-        hideGame();
+            gameLoadMessage("You have left the game. Refresh [F5] or press [&#10226;] above to reconnect.");
+            server.inGame = false;
+            hideGame();
     }.bind(this);
+
+    tools.leaveGame = leaveGame;
 
     function revealGame() {
         frontPage.style.visibility = "hidden";
@@ -326,7 +328,7 @@ const frontPage = (function() {
     });
 
     return { send, increment, connectionSuccess, connectionFailed, connectionStarted, gameLoadMessage, howToConnect,
-    gameBoardReady, toggleHomescreen, namePlaceholder};
+    gameBoardReady, toggleHomescreen, namePlaceholder, leaveGame};
 })();
 
 //purpose: handle all loading page,elements: connection to assets on loadscr

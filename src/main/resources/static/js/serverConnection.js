@@ -147,6 +147,7 @@ class Server {
                     } else {
                     }
                     frontUI.connectionFailed(`Connection successfully disconnected. Termination code: ${event.code}`);
+                    frontUI.leaveGame();
                     break;
                 case 1001: //server-side has decided 1001 is also for terminating an older connection
                     if(this.server.inGame) {
