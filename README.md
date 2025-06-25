@@ -220,7 +220,7 @@ Project Link: [https://github.com/LanCorC/LiveBoard](https://github.com/LanCorC/
 * Background: [SVG Backgrounds](https://www.svgbackgrounds.com/)
 * Tokens: [SVG Repo](https://www.svgrepo.com/)
 * Inspirations: [Colonist.io](https://colonist.io/)
-* Inspirations: [Playing Cards .io](https://playingcards.io/)
+* Inspirations: [PlayingCards.io](https://playingcards.io/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
