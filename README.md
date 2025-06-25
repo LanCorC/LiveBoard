@@ -217,7 +217,7 @@ Project Link: [https://github.com/LanCorC/LiveBoard](https://github.com/LanCorC/
 * [Canvas Zoom to Cursor](https://phrogz.net/tmp/canvas_zoom_to_cursor.html)
 * [Free server host Render](https://render.com/)
 * Art: [TeeTurtle](https://teeturtle.com/)
-* Assets: [SVG Backgrounds](https://www.svgbackgrounds.com/)
+* Background: [SVG Backgrounds](https://www.svgbackgrounds.com/)
 * Tokens: [SVG Repo](https://www.svgrepo.com/)
 * Inspirations: [Colonist.io](https://colonist.io/)
 * Inspirations: [Playing Cards .io](https://playingcards.io/)
