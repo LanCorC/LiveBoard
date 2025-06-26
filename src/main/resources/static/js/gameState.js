@@ -1029,6 +1029,12 @@ const gameState = (function() {
 //        console.log(...reconstructionPlayers.entries());
         console.log(reconstructionPlayers);
 
+        //if flat webserver, i.e. pathname != "/", add the pathname e.g. /src/main/resources/static...
+        let pathName = window.location.pathname;
+        const appendPathName = pathName != "/";
+        //filter, e.g. ...main/resources/static/Main.html => ...main/resources/static
+        if(appendPathName) pathName = pathName.substring(0,pathName.lastIndexOf("/"));
+
         //Reconnect circular references, and JSON restructured properties
         for(const [key, value] of Object.entries(reconstructionItems)) {
             value.forEach((item) => {
@@ -1050,7 +1056,12 @@ const gameState = (function() {
 //                    console.log(item);
                     item.images.forEach((src) => {
                         const image = new Image();
-                        image.src = src;
+                        //hence, determine via
+                        if(appendPathName) {
+                            image.src = pathName + src;
+                        } else {
+                            image.src = src;
+                        }
                         image.height = item.height;
                         image.width = item.width;
                         image.source = src;
