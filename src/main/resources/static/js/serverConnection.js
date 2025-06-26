@@ -153,8 +153,10 @@ class Server {
                 case 1001: //server-side has decided 1001 is also for terminating an older connection
                     if(this.server.inGame) {
                         message = ", a newer instance has connected on this browser! This tab is now disconnected.";
+                        frontUI.leaveGame();
                     } else {
                     }
+                    alert("A newer instance has connected on this browser! This tab is now disconnected.");
                     frontUI.connectionFailed("A newer instance has connected on this browser! This tab is now disconnected.");
                     frontUI.gameLoadMessage("Tip: If you want to simulate two players yourself, please load Incognito Mode, a different browser, or another device.");
                     break;
