@@ -63,7 +63,7 @@ const frontPage = (function() {
     demoButton.addEventListener("click", async() => {
         server.disconnect(1000, "Client is loading: DEMO");
         gameLoadMessage("Setting up board...");
-        await gameState.rebuildBoard("","","",true);
+        gameState.rebuildBoard("","","",true);
 //        tools.redraw();
         gameLoadMessage("Revealing board!");
         revealGame();
