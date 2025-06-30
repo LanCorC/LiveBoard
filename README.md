@@ -52,7 +52,7 @@
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
-    <li><a href="#demo">Demo</a></li>
+    <li><a href="#features">Features</a></li>
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
@@ -76,7 +76,7 @@
 <!--
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 -->
-This is a passion project sparked from the difficulty of finding the time to meet friends in person to play games. There is no intention to scale, mass-distribute, or monetize this project. The live website only holds one 'lobby', though someone can host their own private lobby by running the server locally and using a third party service to expose the local port, like Cloudflared Tunnel or [Pinggy](https://pinggy.io/).
+This is a passion project sparked from the difficulty of finding the time to meet friends in person to play games. There is no intention to scale, mass-distribute, or monetize this project. The live website holds one 'lobby', though someone can host their own private lobby by running the server locally and using a third party service to expose the local port, like Cloudflared Tunnel or [Pinggy](https://pinggy.io/).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -96,21 +96,37 @@ This is a passion project sparked from the difficulty of finding the time to mee
 
 
 <!-- USAGE EXAMPLES -->
-### Demo (WIP)
+## Features
 
 <!--
 Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 _For more examples, please refer to the [Documentation](https://example.com)_
 -->
-
+* Real-time interactions and movements
 <p align="center">
   <img src="https://github.com/user-attachments/assets/848eb3bd-c3b0-48f5-bb8d-0c5b8149c27a">
 </p>
 
-[Page-only demo here](https://lancorc.github.io/LiveBoard/src/main/resources/static/Main.html)
+* Live text chat, with game-action alerts, and mouse-hover visuals
+<p align="center">
+    <img src="https://github.com/user-attachments/assets/df0cb4bc-4a99-4865-aa80-39292bf33921">
+</p>
+Others
 
-Live-server demo here: [liveboard.onrender.com](liveboard.onrender.com)— please allow up to 1minute for the host to start up the service.
+* Game Functionality
+    * 🎲 The board and deck population is randomized each time 
+    * 👀 Store cards in your hand, and take a peek at decks 
+    * 🦝 Rearrange your hand, or take what exactly you need from a deck 
+    * 📻 Broadcast in chat your dice rolls, or particular cards of interest to notify other players 
+    * 🎭 Interact with players using game actions
+    * 🎨 Choose a name and color for yourself, or randomize!
+    * 🔄 Reset the board to start a new game!
 
+<!-- Try out the demo below -->
+
+  Page-only demo here: [hosted on github](https://lancorc.github.io/LiveBoard/src/main/resources/static/Main.html).
+  
+  Live-server demo here: [liveboard.onrender.com](liveboard.onrender.com)— please allow up to 1minute for the host to start up the service.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -118,7 +134,8 @@ Live-server demo here: [liveboard.onrender.com](liveboard.onrender.com)— pleas
 
 
 <!-- GETTING STARTED -->
-## Getting Started (WIP)
+
+## Getting Started
 <!--
 This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
@@ -132,22 +149,39 @@ To run this project locally, Java JDK and Maven must be installed on your device
   2. Add the `bin` directory made by `apache-maven-X.X.XX` to the `PATH` environment variable. 
   3. Type `mvn -v` in console to verify installation success
   
-### Installation (WIP)
-<!--
-1. Get a free API Key at [https://example.com](https://example.com)
+### Installation
+
+1. Open command prompt or terminal in the desired destination for the files
 2. Clone the repo
    ```sh
-   git clone https://github.com/LanCorC/repo_name.git
+   git clone https://github.com/LanCorC/LiveBoard.git
+   cd LiveBoard
    ```
-3. Install NPM packages
+3. Install Maven packages
    ```sh
-   npm install
+   mvn install
    ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
+4. Launch the program
+   ```sh
+   java -jar target/LiveBoard-1.0-SNAPSHOT.jar
    ```
--->
+   Or find `LiveBoard-1.0.SNAPSHOT.jar` under /LiveBoard/target of the terminal's location and double-click the file.
+5. Visit the program through http://localhost:5000/
+   
+   This port can be edited under `server.port = 5000` in `src/main/resources/application.properties` 
+### Usage
+1. Hosting with a third-party tunnel provider
+
+   To invite your friends to your private lobby, a third-party tunnel provider is a convenient path. I have personally experienced a lot of success from [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/). Once installed, launch LiveBoard, then enter the following command in another terminal:
+  
+   ```sh
+   cloudflared tunnel --url localhost:5000
+   ```
+   If you are using cloudflared, note your temporary website is provided in the console output `https://xxxx.trycloudflare.com`.
+2. Termination
+   
+   If this program was launched via a command line, press CTRL+C or close the terminal to stop the program. Otherwise, you can find this process as `OpenJDK Platform binary` in Task Manager/Activity Monitor/System Monitor for termination.
+   
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
