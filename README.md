@@ -143,11 +143,11 @@ To get a local copy up and running follow these simple example steps.
 ### Prerequisites
 To run this project locally, Java JDK and Maven must be installed on your device.
 * Java JDK ([Download Here](https://www.oracle.com/in/java/technologies/downloads/))
-  1. Type `java -version` in console to verify installation success
-* Maven ([Download Here](https://maven.apache.org/download.cgi), [Instructions Here](https://maven.apache.org/install.html))
   1. Set `JAVA_HOME` environment variable to the path of JDK installation, or have the `java` executable on your `PATH`. [Guide by GfG](https://www.geeksforgeeks.org/setting-environment-java/)
-  2. Add the `bin` directory made by `apache-maven-X.X.XX` to the `PATH` environment variable. 
-  3. Type `mvn -v` in console to verify installation success
+  2. Type `java -version` in console to verify installation success
+* Maven ([Download Here](https://maven.apache.org/download.cgi), [Instructions Here](https://maven.apache.org/install.html))
+  1. Add the `bin` directory made by `apache-maven-X.X.XX` to the `PATH` environment variable. 
+  2. Type `mvn -v` in console to verify installation success
   
 ### Installation
 
