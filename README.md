@@ -152,11 +152,12 @@ To run this project locally, Java JDK and Maven must be installed on your device
 ### Installation
 
 1. Open command prompt or terminal in the desired destination for the files
-2. Clone the repo
+2. Clone the repo with [git](https://github.com/git-guides/install-git)
    ```sh
    git clone https://github.com/LanCorC/LiveBoard.git
    cd LiveBoard
    ```
+   Alternatively, download and unpack the zip file off this Github page under ![<>Code](https://img.shields.io/badge/<>Code-green.svg), then open your terminal inside /LiveBoard
 3. Install Maven packages
    ```sh
    mvn install
