@@ -161,6 +161,9 @@ class Server {
                     frontUI.gameLoadMessage("Tip: If you want to simulate two players yourself, please load Incognito Mode, a different browser, or another device.");
                     break;
                 case 1006:
+                //Added: investigate an elusive 1006 error that caused free host render.com to also gracefully shutdown, mid-2player-game
+                    alert(`Code: ${1006}; Reason: ${event.reason}; WasClean: ${event.wasClean}`);
+                    console.log(`Code: ${1006}; Reason: ${event.reason}; WasClean: ${event.wasClean}`);
                     if(this.server.inGame) {
                         message = ", your connection has dropped unexpectedly! [Esc] to go to Main Menu.";
                         alert("Your connection has dropped unexpectedly! [Esc] to go to Main Menu.");
