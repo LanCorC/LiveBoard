@@ -228,7 +228,7 @@ Don't forget to give the project a star! Thanks again!
 <!-- LICENSE -->
 ## License
 
-This project's software code is distributed with the MIT License. See `LICENSE.txt` for more information. 
+This project's software is distributed with the MIT License. See `LICENSE.txt` for more information. 
 
 Images and symbols used in this project are not my own, and may be subject to copyright and other restrictions.
 
