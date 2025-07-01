@@ -76,7 +76,7 @@
 <!--
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 -->
-This is a passion project sparked from the difficulty of finding the time to meet friends in person to play games. There is no intention to scale, mass-distribute, or monetize this project. The live website holds one 'lobby', though someone can host their own private lobby by running the server locally and using a third party service to expose the local port, like [Cloudflared Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) or [Pinggy](https://pinggy.io/).
+This is a passion project sparked from the difficulty of finding the time to meet friends in person to play games. There is no intention to scale, mass-distribute, or monetize this project. The live website holds one 'lobby', though a private lobby can be hosted by running the server locally and using a third party service to expose the local port, like [Cloudflared Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) or [Pinggy](https://pinggy.io/).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -228,7 +228,9 @@ Don't forget to give the project a star! Thanks again!
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+This project's software code is distributed with the MIT License. See `LICENSE.txt` for more information. 
+
+Images and symbols used in this project are not my own, and may be subject to copyright and other restrictions.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
