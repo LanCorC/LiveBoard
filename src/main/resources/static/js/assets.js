@@ -344,7 +344,7 @@ function populateProperties() {
         "Silver Lining",
         "Dragon's Bile",
         "Soulbound Grimoire",                   //...029
-        "The Gnawng Dread",
+        "The Gnawing Dread",
         "The Raging Manticore",
         "Reptilian Ripper 7+",
         "Doombringer 8+"
@@ -423,7 +423,7 @@ function populateProperties() {
         "Beast Call",
         "Even Bigger Ring",
         "Temporal Hourglass",
-        "Warror Mask",
+        "Warrior Mask",
         "Druid Mask",
         "Bottomless Bag",
         "Soul Tether",
