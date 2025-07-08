@@ -147,8 +147,11 @@ class Server {
                     } else {
                     }
                     frontUI.connectionFailed(`Connection successfully disconnected. Termination code: ${event.code}`);
+                    //TODO - does not actually skip; event.reason propagate
                     let skipReason = ["Client is loading: DEMO", "Client is loading: SOLO"];
                     if(!skipReason.includes(event.reason)) frontUI.leaveGame();
+                    //TODO local testing shows it does register appropriately... why not LiveBoard.onrender.com ?
+                    console.log("Reason: " + event.reason);
                     break;
                 case 1001: //server-side has decided 1001 is also for terminating an older connection
                     if(this.server.inGame) {

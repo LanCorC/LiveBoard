@@ -60,6 +60,8 @@ const frontPage = (function() {
         tools.disable(serverJoinButton);
     });
 
+    //TODO DEMO and SOLO bugging on LiveBoard.onrender.com
+    //loads, then boots to main menu; only when previously connected
     demoButton.addEventListener("click", async() => {
         server.disconnect(1000, "Client is loading: DEMO");
         gameLoadMessage("Setting up board...");
