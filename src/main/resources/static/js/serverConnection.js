@@ -150,8 +150,9 @@ class Server {
                     }
                     frontUI.connectionFailed(`Connection successfully disconnected. Termination code: ${event.code}`);
                     //TODO - does not actually skip; event.reason propagate
-                    let skipReason = ["Client is loading: DEMO", "Client is loading: SOLO"];
-                    if(!skipReason.includes(event.reason)) frontUI.leaveGame();
+                    //TODO testing - what if the solution is to get rid of "leaveGame()" from close code 1000?
+//                    let skipReason = ["Client is loading: DEMO", "Client is loading: SOLO"];
+//                    if(!skipReason.includes(event.reason)) frontUI.leaveGame();
                     //TODO local testing shows it does register appropriately... why not LiveBoard.onrender.com ?
                     //LiveBoard.onrender.com reads emptyString/null
                     console.log("Reason: " + event.reason);
