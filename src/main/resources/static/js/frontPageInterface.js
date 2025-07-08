@@ -188,10 +188,13 @@ const frontPage = (function() {
         let arr = [serverConnectButton, addressInput];
         arr.forEach((ele) => tools.disable(ele));
 
+        serverConnectButtonConnect();
     }
     function enableManualsConnects() {
         let arr = [serverConnectButton, addressInput];
         arr.forEach((ele) => tools.enable(ele));
+
+        serverConnectButtonEdit();
     }
 
     function increment() { //Purpose: subtle 'miscAssets' loading
