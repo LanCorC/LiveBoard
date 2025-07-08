@@ -140,6 +140,8 @@ class Server {
             frontUI.howToConnect();
 
             let message = "";
+            console.log("Event below: ");
+            console.log(event);
             switch(event.code) {
                 case 1000:
                     if(this.server.inGame) {
@@ -151,6 +153,7 @@ class Server {
                     let skipReason = ["Client is loading: DEMO", "Client is loading: SOLO"];
                     if(!skipReason.includes(event.reason)) frontUI.leaveGame();
                     //TODO local testing shows it does register appropriately... why not LiveBoard.onrender.com ?
+                    //LiveBoard.onrender.com reads emptyString/null
                     console.log("Reason: " + event.reason);
                     break;
                 case 1001: //server-side has decided 1001 is also for terminating an older connection
@@ -165,8 +168,9 @@ class Server {
                     break;
                 case 1006:
                 //Added: investigate an elusive 1006 error that caused free host render.com to also gracefully shutdown, mid-2player-game
-                    alert(`Code: ${1006}; Reason: ${event.reason}; WasClean: ${event.wasClean}`);
-                    console.log(`Code: ${1006}; Reason: ${event.reason}; WasClean: ${event.wasClean}`);
+                    //TODO - only alert if in-game; so disable for now; -- was triggering on flat demo as 1006 when 'no server' found
+//                    alert(`Code: ${1006}; Reason: ${event.reason}; WasClean: ${event.wasClean}`);
+                    console.log(`Unexpected closure... Code: ${1006}; Reason: ${event.reason}; WasClean: ${event.wasClean}`);
                     if(this.server.inGame) {
                         message = ", your connection has dropped unexpectedly! [Esc] to go to Main Menu.";
                         alert("Your connection has dropped unexpectedly! [Esc] to go to Main Menu.");
@@ -327,6 +331,7 @@ class Server {
     }
 
     disconnect(code, reason) {
+        console.log("server.disconnect(), reason: " + reason);
         this.connection.close(code, reason);
     }
 
