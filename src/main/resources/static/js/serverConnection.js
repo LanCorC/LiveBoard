@@ -140,8 +140,6 @@ class Server {
             frontUI.howToConnect();
 
             let message = "";
-            console.log("Event below: ");
-            console.log(event);
             switch(event.code) {
                 case 1000:
                     if(this.server.inGame) {
@@ -149,13 +147,6 @@ class Server {
                     } else {
                     }
                     frontUI.connectionFailed(`Connection successfully disconnected. Termination code: ${event.code}`);
-                    //TODO - does not actually skip; event.reason propagate
-                    //TODO testing - what if the solution is to get rid of "leaveGame()" from close code 1000?
-//                    let skipReason = ["Client is loading: DEMO", "Client is loading: SOLO"];
-//                    if(!skipReason.includes(event.reason)) frontUI.leaveGame();
-                    //TODO local testing shows it does register appropriately... why not LiveBoard.onrender.com ?
-                    //LiveBoard.onrender.com reads emptyString/null
-                    console.log("Reason: " + event.reason);
                     break;
                 case 1001: //server-side has decided 1001 is also for terminating an older connection
                     if(this.server.inGame) {
@@ -332,7 +323,6 @@ class Server {
     }
 
     disconnect(code, reason) {
-        console.log("server.disconnect(), reason: " + reason);
         this.connection.close(code, reason);
     }
 
