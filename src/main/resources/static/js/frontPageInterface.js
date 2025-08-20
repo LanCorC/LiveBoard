@@ -5,6 +5,7 @@ import { createChat } from "./boardInterface.js";
 import { createSmallBody, Element} from "./tinyContentHtml.js";
 
 const defaultProjectHost = "https://liveboard.onrender.com";
+const verboseTroubleshoot = false;
 
 //Purpose: control frontPage controls, 'loading screen', and server status (on/offline)
 
@@ -365,6 +366,9 @@ const loading = (function() {
 
 //Purpose to make sure all reference are passed; i.e. 'serverConnection.js' receives its link to chat
 function initialize() {
+    if(verboseTroubleshoot) {
+        console.log("Hi, this is initialize() frontPageInterface.js :)");
+    }
     tools.chat = createChat(gameState.clientUser);
 
     //connect to server
@@ -375,6 +379,10 @@ function initialize() {
 
     //connect gameState to frontPage
     gameState.frontPage = {frontPage, loading};
+
+    if(verboseTroubleshoot) {
+        console.log("initialize() frontPageInterface.js has reached its end :)");
+    }
 }
 
 //TODO more elements
