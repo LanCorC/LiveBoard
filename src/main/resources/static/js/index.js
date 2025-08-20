@@ -80,7 +80,8 @@ export let roll2d6 = undefined;
 
 pregameInterface.initialize();
 
-window.onload = function() {
+//window.onload = function() {
+window.addEventListener("load", (event) => {
     const expansionsToLoad = ["Base Deck"];
     loadAssets(expansionsToLoad);
 
@@ -1064,6 +1065,7 @@ window.onload = function() {
     //For some reason, this needs to be called twice in order to properly capture, as far as tested, "mousedown"
     pulseRedraw();
 }
+);
 
 function purgeSelected() {
     gameState.deselect(selected);

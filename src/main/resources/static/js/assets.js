@@ -4,6 +4,8 @@
 
 //store here: sizes of images too
 
+const verboseTracking = false;
+
 const sizes = {
     small: { //card
         width: 308,
@@ -520,6 +522,10 @@ let count = {
 
 //purpose: load all assets
 function loadAssets(chosenExpansions) {
+    if(verboseTracking) {
+        console.log("hi, we are loading assets :) loadAssets()");
+    }
+    console.log("please help");
 
     expansionProperties.forEach( (value, key, map) => {
         if(loadAll) {} else
@@ -554,6 +560,9 @@ function loadAssets(chosenExpansions) {
 //Purpose: load first, and separately from 'loadAssets'
 //track count of playmats (gameMat, playerMat) for purpose of tracking
 function loadMisc() {
+    if(verboseTracking) {
+        console.log("Hi, we are loading misc :)");
+    }
 
     //load miscellaneous, hardcoded: tokens, image backs
     let image = new Image(sizes.small.width, sizes.small.height);
@@ -818,6 +827,9 @@ function prepareImages(expansions) {
 //TODO- purpose: references to loadscreen, interface is passed
 //to also pass to the objects 'ref numbers', like expected counts
 function initialize(frontObj, loadObj, verbose, assetCount) {
+    if(verboseTracking) {
+        console.log("Hi, we are initializing :) initialize() ");
+    }
     updateInterface.frontPage = frontObj; //show Misc updates
     updateInterface.loading = loadObj; //show overall expansion updates
     updateInterface.assetCount = assetCount;
