@@ -795,7 +795,15 @@ function createMenu() {
     //creates fresh object each time, to evade mix-ups of old/overwritten elements
     let content = [
         () => createSmallBody(
-            Element.BOLD("QuickTips 1/4"), Element.BREAK(),
+            Element.BOLD("QuickTips 1/5"), Element.BREAK(),
+            Element.SEPARATOR(),
+            Element.ITALICS("WIN via Party:"), " first to 7 ", Element.ITALICS("UNIQUE CLASSES"), Element.BREAK(),
+            "a) ", Element.ITALICS("This includes your Party Leader!"), Element.BREAK(),
+            "b) ", Element.ITALICS("Without expansions, it is first to 6 instead."), Element.BREAK(),
+            Element.ITALICS("WIN via Monsters:"), " first to 3 Monsters ", Element.ITALICS("SLAIN"), Element.BREAK(),
+        ),
+        () => createSmallBody(
+            Element.BOLD("QuickTips 2/5"), Element.BREAK(),
             Element.SEPARATOR(),
             Element.ITALICS("DISCARD"), " removes from your hand.", Element.BREAK(),
             Element.ITALICS("SACRIFICE"), " removes from your party.", Element.BREAK(),
@@ -803,14 +811,14 @@ function createMenu() {
             Element.ITALICS("EQUIPMENTS"), " follow the hero it is equipped on— stolen, destroyed, or sacrificed.", Element.BREAK()
         ),
         () => createSmallBody(
-            Element.BOLD("QuickTips 2/4"), Element.BREAK(),
+            Element.BOLD("QuickTips 3/5"), Element.BREAK(),
             Element.SEPARATOR(),
             "All players must be given an opportunity to ", Element.ITALICS("CHALLENGE"), " a Hero, Item, or Magic card played from hand.", Element.BREAK(),
             "Cards can only be ", Element.ITALICS("CHALLENGED"), " once.", Element.BREAK(),
             Element.ITALICS("CHALLENGED"), " player must roll higher than their opponent to resist.", Element.BREAK(),
         ),
          () => createSmallBody(
-             Element.BOLD("QuickTips 3/4"), Element.BREAK(),
+             Element.BOLD("QuickTips 4/5"), Element.BREAK(),
              Element.SEPARATOR(),
              "One Hero's ", Element.ITALICS("EFFECT"), " can only be rolled once per turn— ", Element.BREAK(),
              "a) as it's played,", Element.BREAK(),
@@ -818,7 +826,7 @@ function createMenu() {
              "—unless otherwise repeated/copied by special effects."
          ),
         () => createSmallBody(
-            Element.BOLD("QuickTips 4/4"), Element.BREAK(),
+            Element.BOLD("QuickTips 5/5"), Element.BREAK(),
             Element.SEPARATOR(),
             Element.ITALICS("PARTY LEADERS'"), " class count for Party-Win and Monster requirements.", Element.BREAK(),
             Element.ITALICS("PARTY LEADER"), " The Shadow Claw is not recommended for 2-player games.", Element.BREAK(),
