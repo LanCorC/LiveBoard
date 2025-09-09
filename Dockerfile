@@ -11,6 +11,7 @@
 # WORKDIR /app
 # RUN mvn clean package
 
+#https://github.com/carlossg/docker-maven/blob/main/amazoncorretto-11-debian/Dockerfile
 FROM debian:bookworm-slim AS build
 
 # install corretto after verifying that the key is the one we expect.
