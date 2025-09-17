@@ -484,6 +484,14 @@ window.addEventListener("load", (event) => {
     },false);
 
     window.addEventListener("mousedown", function(event) {
+        console.log("mousedown received");
+        console.log(event);
+
+        //'touch' needs to update here, no equivalent of 'mouse hover over page'
+        if(!event.isTrusted) {
+            mouse.x = event.pageX;
+            mouse.y = event.pageY;
+        };
 
         //Hover references
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
@@ -1061,6 +1069,72 @@ window.addEventListener("load", (event) => {
     }, true);
 
     preventRightClickDefault();
+
+    //Touch-event -> Mouse-event / Wheel event
+    //https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/MouseEvent
+    function onTouch(evt) {
+//        console.log("hey!");
+        console.log(evt.type);
+        evt.preventDefault();
+        if (
+            evt.touches.length > 1 ||
+            (evt.type === "touchend" && evt.touches.length > 0)
+        )
+        return;
+
+//      const newEvt = document.createEvent("MouseEvents");
+        let type = null;
+        let touch = null;
+        let buttons = 0; //note: if 'viewmode', mousedown is ==2; else =1
+
+        switch (evt.type) {
+        case "touchstart":
+            type = "mousedown";
+            touch = evt.changedTouches[0];
+            buttons = 1; //TODO - =2 is rClick needed for deck view
+            break;
+        case "touchmove":
+            type = "mousemove";
+            touch = evt.changedTouches[0];
+            break;
+        case "touchend":
+            type = "mouseup";
+            touch = evt.changedTouches[0];
+            break;
+        }
+        let newEvt = new MouseEvent(type, {
+            screenX: touch.screenX,
+            screenY: touch.screenY,
+            buttons: buttons,               //TODO - mousedown, value = 2 for rClick pings/deckView
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+            ctrlKey: evt.ctrlKey,
+            shiftKey: evt.shiftKey,
+            altKey: evt.altKey,
+            metaKey: evt.metaKey,
+            view: window
+            ,
+            sourceCapabilities: new InputDeviceCapabilities({fireTouchEvents: true})
+
+        });
+
+//        console.log(evt.target);
+
+        evt.target.dispatchEvent(newEvt);
+        //TODO - dispatch to original object, AS WELL AS to the window (generic)
+            //notice: window.addEventListener...
+        window.dispatchEvent(newEvt);
+    }
+
+    window.addEventListener("touchstart", onTouch, {passive: false});
+    window.addEventListener("touchend", onTouch, {passive: false});
+    window.addEventListener("touchcancel", onTouch, {passive: false});
+    window.addEventListener("touchmove", onTouch, {passive: false});
+
+//        window.addEventListener("touchstart", onTouch, {passive: true});
+//        window.addEventListener("touchend", onTouch, {passive: true});
+//        window.addEventListener("touchcancel", onTouch, {passive: true});
+//        window.addEventListener("touchmove", onTouch, {passive: true});
 
     //For some reason, this needs to be called twice in order to properly capture, as far as tested, "mousedown"
     pulseRedraw();
