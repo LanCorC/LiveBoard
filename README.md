@@ -126,7 +126,7 @@ Others
 
   Page-only demo here: [hosted on github](https://lancorc.github.io/LiveBoard/src/main/resources/static/Main.html).
   
-  Live-server demo here: [liveboard.onrender.com](liveboard.onrender.com)—please allow up to 1minute for the host to start up the service.
+  Live-server demo here: [liveboard.onrender.com](https://liveboard.onrender.com)—please allow up to 1minute for the host to start up the service.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
