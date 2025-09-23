@@ -1533,8 +1533,8 @@ const gameState = (function() {
 
         //ref = visual interface (preview)
         if(deck.ref) {
-            userInterface.playerBar.playerUpdate();
-            deck.ref.update();
+            userInterface.playerBar.playerUpdate();     //Update card count on GUI
+            deck.ref.update(card);                      //for touch purposes, element match => do not remove from DOM
         }
 
         //TODO- keep a "JSON.stringify, JSON.parse" fallback state for 'otherCard'

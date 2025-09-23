@@ -1069,11 +1069,9 @@ window.addEventListener("load", (event) => {
 //        console.log("hey!");
 //        console.log(evt.type);
 //        evt.preventDefault();
-        if (
-            evt.touches.length > 1 ||
-            (evt.type === "touchend" && evt.touches.length > 0)
-        )
-        return;
+        if ( evt.touches.length > 1 || (evt.type === "touchend" && evt.touches.length > 0)) {
+            return;
+        }
 
         let type = null;
         let touch = null;

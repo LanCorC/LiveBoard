@@ -98,12 +98,30 @@ class PreviewBox {
     }
 
     //TODO- turn childImgContainer into childContainerDiv - test for visual inaccuracies
-    update() {
+    //Note - 'element' is event root, must not be removed from DOM for touchscreen events to work smoothly
+    update(element) {
         //purge children
         const parent = this.cardHolder;
-        while(parent.firstChild) {
-            delete parent.firstChild.card.ref;
-            parent.firstChild.remove();
+//        while(parent.firstChild) {
+//            delete parent.firstChild.card.ref;
+//            parent.firstChild.remove();
+//        }
+
+        //Below WORKS
+        let i = 0;
+        while(parent.children.item(i)) {
+            const child = parent.children.item(i);
+            delete child.card.ref
+            //if match specific card, increment index; else, delete
+            if(child.card==element) {
+                i++;
+                console.log("that's me!");
+                //make it invisible
+                //NOTE: future updates does 'remove' this element
+                child.style.display='none';
+            } else {
+                parent.removeChild(child);
+            }
         }
 
         if(!this.cardModel || !this.cardModel.images) return;
@@ -219,14 +237,14 @@ class ViewDeck extends PreviewBox {
     //TODO- see if leaving it unchecked for now will break the code launch
 
     //override update()-
-    update() {
+    update(element) {
         if(this.cardModel == null || this.cardModel == undefined) {
             this.cardHolder.setAttribute("empty-hand-text", this.noDeckSelectedText);
             this.minimizeBody();
         } else {
             this.cardHolder.setAttribute("empty-hand-text", this.hideText);
         }
-        super.update();
+        super.update(element);
     }
 
     hideBody() {
