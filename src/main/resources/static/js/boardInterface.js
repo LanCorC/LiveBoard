@@ -111,11 +111,10 @@ class PreviewBox {
         let i = 0;
         while(parent.children.item(i)) {
             const child = parent.children.item(i);
-            delete child.card.ref
+            delete child.card.ref;
             //if match specific card, increment index; else, delete
             if(child.card==element) {
                 i++;
-                console.log("that's me!");
                 //make it invisible
                 //NOTE: future updates does 'remove' this element
                 child.style.display='none';

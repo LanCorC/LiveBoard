@@ -464,6 +464,7 @@ window.addEventListener("load", (event) => {
         mouse.x = event.pageX;
         mouse.y = event.pageY;
 
+        //Track user movement for online
         gameState.clientMovement(contextVis.transformPoint(mouse.x, mouse.y));
 
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
@@ -1117,13 +1118,14 @@ window.addEventListener("load", (event) => {
             altKey: evt.altKey,
             metaKey: evt.metaKey,
             view: window,
+            bubbles: true,
             sourceCapabilities: new InputDeviceCapabilities({fireTouchEvents: true})
 
         });
 
         //this is a CATCHUP - mousemove is crucial for initializing some references, and affects subsequent mousedown
         if(type == "mousedown") {
-            evt.currentTarget.dispatchEvent(new MouseEvent("mousemove", {
+            evt.target.dispatchEvent(new MouseEvent("mousemove", {
                     screenX: touch.screenX,
                     screenY: touch.screenY,
                     buttons: buttons,               //TODO - mousedown, value = 2 for rClick pings/deckView
@@ -1134,11 +1136,11 @@ window.addEventListener("load", (event) => {
                     altKey: evt.altKey,
                     metaKey: evt.metaKey,
                     view: window,
+                    bubbles: true,
                     sourceCapabilities: new InputDeviceCapabilities({fireTouchEvents: true})
-
             }));
         }
-        evt.currentTarget.dispatchEvent(newEvt);
+        evt.target.dispatchEvent(newEvt);
     }
 
     window.addEventListener("touchstart", onTouch, {passive: false});
