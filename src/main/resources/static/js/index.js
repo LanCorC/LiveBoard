@@ -198,6 +198,8 @@ window.addEventListener("load", (event) => {
         //if this is 'back' image, do not display
         if(!item || (item.index == 0 && !isPreview)) {
             inspectImage.style.visibility = `hidden`;
+            inspectImage.style.top = `${0}px`;
+            inspectImage.style.left = `${0}px`;
             return;
         }
         //TODO to become item.getImage() under 'genericFactory'
