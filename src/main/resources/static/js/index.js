@@ -421,12 +421,13 @@ window.addEventListener("load", (event) => {
             handleEdgePanlooping = false;
         }
     }
-    const threshold = 15; //pixels, arbitrary
+    const threshold = 10; //pixels, arbitrary
     const handleDrag = function(event) {
         if(!startPoint) {
             return;
         }
-        //TODO attempt - if via touch, prevent drag if net change in x+y not reached
+
+        //Touch lenience: 'tap' made accessible by introducing a movement threshold to validate 'moving' attempts
         if(
         !dragging &&
         !event.isTrusted &&     //criteria only enables feature for 'crafted' events (Touch)
@@ -490,7 +491,6 @@ window.addEventListener("load", (event) => {
         //handle tooltip hover- if canvas, finds object
         handleImageTooltip();
 
-        //TODO - determine 'sensitivity' for touch
         //check for click-hold-drag
         handleDrag(event);
 
