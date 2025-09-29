@@ -120,7 +120,8 @@ window.addEventListener("load", (event) => {
         y: board.height
     };
 
-    let startPoint;
+    let startPoint;         //translated to canvas dimensions
+    let startPointReal;     //taken from actual mouse positions
     let dragging = false;
 
     //purpose: manage 'redraw' loop
@@ -420,8 +421,17 @@ window.addEventListener("load", (event) => {
             handleEdgePanlooping = false;
         }
     }
+    const threshold = 15; //pixels, arbitrary
     const handleDrag = function(event) {
         if(!startPoint) {
+            return;
+        }
+        //TODO attempt - if via touch, prevent drag if net change in x+y not reached
+        if(
+        !dragging &&
+        !event.isTrusted &&     //criteria only enables feature for 'crafted' events (Touch)
+        Math.abs(mouse.x - startPointReal.x) + Math.abs(mouse.y - startPointReal.y) < threshold) {
+            console.log("Drag rejected: deviation too small");
             return;
         }
 
@@ -480,6 +490,7 @@ window.addEventListener("load", (event) => {
         //handle tooltip hover- if canvas, finds object
         handleImageTooltip();
 
+        //TODO - determine 'sensitivity' for touch
         //check for click-hold-drag
         handleDrag(event);
 
@@ -503,12 +514,14 @@ window.addEventListener("load", (event) => {
         } else if (!(hoverElement instanceof HTMLCanvasElement) && !isPreviewCard) {
             //Invalid drag/select point - not Canvas nor PreviewCard
             startPoint = null;
+            startPointReal = null;
             gameState.startPoint(null);
             gameState.offset(null);
         } else {
             //Valid drag/select point
             document.body.classList.add("grabbing");
             startPoint = contextVis.transformPoint(mouse.x, mouse.y);
+            startPointReal = { x: mouse.x, y: mouse.y };
             gameState.startPoint(startPoint);
             gameState.offset(
                 {x: event.offsetX, y: event.offsetY}
