@@ -496,7 +496,7 @@ window.addEventListener("load", (event) => {
     },false);
 
     let longPress = null;
-    const longPressInterval = 1000; //milliseconds
+    const longPressInterval = 500; //milliseconds
     const longPressRClick = function(event) {
         if(dragging || startPoint == null) {
 //            console.log("boopn't! longpressn't!");
@@ -509,7 +509,6 @@ window.addEventListener("load", (event) => {
         gameState.deselect(itemFocus);
         startPoint = null;
         itemFocus = null;
-        dragging = false;
 
         //some millisecond gap not present in mouseRClick is present here,
         //using setTimeout as buffer
@@ -531,7 +530,7 @@ window.addEventListener("load", (event) => {
                     bubbles: true,
                     sourceCapabilities: new InputDeviceCapabilities({fireTouchEvents: true})
             }));
-        }, 25); //NOTE: 25ms is arbitrary
+        }, 500); //NOTE: 25ms is arbitrary
     };
 
     window.addEventListener("mousedown", function(event) {
