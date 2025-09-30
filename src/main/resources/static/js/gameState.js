@@ -1615,11 +1615,23 @@ const gameState = (function() {
         if(!deck || !deck.deck) return changeMade;        //null item
         if(!deck.isDeck) deck = deck.deck;  //is a card, retrieve its deck
 
-        //is current OR already in use by someone else
-        if(current == deck || (deck.selected && deck.selected != clientUser.id) ) {
+        //is current OR
+        if(current == deck) {
             //Note: if not selected, selected == 0 == falsy
             return changeMade;
         };
+        //is already in use by someone else
+        if(deck.selected && deck.selected != clientUser.id) {
+            let player = players.get(deck.selected);
+            if(player.live) {
+                userInterface.chatBox.newEntry(
+                    ", how did you do that? You should not be able to take a deck from someone LIVE.");
+                return changeMade;
+            }
+            //else, allow overwriting of non-live user
+            userInterface.chatBox.newEntry(
+                `, you took the deck away from ${player.name}, but that's OK 'cos they're AWAY.'`);
+        }
 
         //item is in fact, a CARD representing a deck on HTMLCanvasElement
         if(Object.hasOwn(deck, "deck") && deck.deck.isDeck) {
@@ -1871,8 +1883,15 @@ const gameState = (function() {
         } else if(!soleItem.selected && !soleItem.browsing) {
             //Send to serverConnection to further process
             server.permission(func, funcArgs, [soleItem]);
-        } else {
-//            console.log("processing scrapped!");
+        } else {    //is selected, or browsed by someone else
+            let player = players.get(soleItem.selected);
+            if(!player.live) {
+                func(...funcArgs);
+                return;
+            } else {
+                userInterface.chatBox.newEntry(
+                    `, ${player.name} is already using that!`);
+            }
         }
     }
 
