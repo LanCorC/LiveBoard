@@ -588,6 +588,8 @@ class Server {
         let currentId = Date.now();
         this.#pendingPermissions[currentId] = [func, funcArgs];
 
+//        console.log("permissioning!");
+
         //assuming funcArgs is one item... card/deckm
 
         let message = {};
@@ -624,6 +626,9 @@ class Server {
             callBack[0](...callBack[1]);
 
             delete this.#pendingPermissions[data.timeStamp];
+//            console.log("yipee!");
+        } else {
+//            console.log("cry");
         }
     }
 

@@ -511,23 +511,27 @@ window.addEventListener("load", (event) => {
         itemFocus = null;
         dragging = false;
 
-        //simulate rClick
-        const touch = event.changedTouches[0];
-        rightClick = true;
-        event.target.dispatchEvent(new MouseEvent("mouseup", {
-                screenX: touch.screenX,
-                screenY: touch.screenY,
-                buttons: 2,
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-                ctrlKey: event.ctrlKey,
-                shiftKey: event.shiftKey,
-                altKey: event.altKey,
-                metaKey: event.metaKey,
-                view: window,
-                bubbles: true,
-                sourceCapabilities: new InputDeviceCapabilities({fireTouchEvents: true})
-        }));
+        //some millisecond gap not present in mouseRClick is present here,
+        //using setTimeout as buffer
+        setTimeout(() => {
+            //simulate rClick
+            const touch = event.changedTouches[0];
+            rightClick = true;
+            event.target.dispatchEvent(new MouseEvent("mouseup", {
+                    screenX: touch.screenX,
+                    screenY: touch.screenY,
+                    buttons: 2,
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    ctrlKey: event.ctrlKey,
+                    shiftKey: event.shiftKey,
+                    altKey: event.altKey,
+                    metaKey: event.metaKey,
+                    view: window,
+                    bubbles: true,
+                    sourceCapabilities: new InputDeviceCapabilities({fireTouchEvents: true})
+            }));
+        }, 25); //NOTE: 25ms is arbitrary
     };
 
     window.addEventListener("mousedown", function(event) {
@@ -1143,7 +1147,6 @@ window.addEventListener("load", (event) => {
                 longPress = setTimeout(longPressRClick, longPressInterval, evt);
             }
 
-
             break;
         case "touchmove":
             type = "mousemove";
@@ -1204,7 +1207,6 @@ window.addEventListener("load", (event) => {
     window.addEventListener("touchend", onTouch, {passive: false});
     window.addEventListener("touchcancel", onTouch, {passive: false});
     window.addEventListener("touchmove", onTouch, {passive: false});
-
 
     //For some reason, this needs to be called twice in order to properly capture, as far as tested, "mousedown"
     pulseRedraw();
