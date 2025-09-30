@@ -125,7 +125,7 @@ Others
 * Compatibility
     * ✅ Desktop - Complete
     * 🛠️ Tablet - Work In Progress [(experimental demo)](https://liveboard-testing.onrender.com/)
-    * ⚠️ Mobile - Limited support planned [(experimental demo)](https://liveboard-testing.onrender.com/)
+    * ⚠️🛠️ Mobile - Limited support planned / Work In Progress [(experimental demo)](https://liveboard-testing.onrender.com/)
 
 <!-- Try out the demo below -->
 
