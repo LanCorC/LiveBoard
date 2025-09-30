@@ -432,7 +432,6 @@ window.addEventListener("load", (event) => {
         !dragging &&
         !event.isTrusted &&     //criteria only enables feature for 'crafted' events (Touch)
         Math.abs(mouse.x - startPointReal.x) + Math.abs(mouse.y - startPointReal.y) < threshold) {
-            console.log("Drag rejected: deviation too small");
             return;
         }
 
@@ -495,6 +494,41 @@ window.addEventListener("load", (event) => {
         handleDrag(event);
 
     },false);
+
+    let longPress = null;
+    const longPressInterval = 1000; //milliseconds
+    const longPressRClick = function(event) {
+        if(dragging || startPoint == null) {
+//            console.log("boopn't! longpressn't!");
+            return;
+        }
+//        console.log("boop! longpress!");
+
+        //reset all 'select'
+        purgeSelected();
+        gameState.deselect(itemFocus);
+        startPoint = null;
+        itemFocus = null;
+        dragging = false;
+
+        //simulate rClick
+        const touch = event.changedTouches[0];
+        rightClick = true;
+        event.target.dispatchEvent(new MouseEvent("mouseup", {
+                screenX: touch.screenX,
+                screenY: touch.screenY,
+                buttons: 2,
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                ctrlKey: event.ctrlKey,
+                shiftKey: event.shiftKey,
+                altKey: event.altKey,
+                metaKey: event.metaKey,
+                view: window,
+                bubbles: true,
+                sourceCapabilities: new InputDeviceCapabilities({fireTouchEvents: true})
+        }));
+    };
 
     window.addEventListener("mousedown", function(event) {
 //        console.log("mousedown received");
@@ -1100,8 +1134,16 @@ window.addEventListener("load", (event) => {
             buttons = 1; //TODO - =2 is rClick needed for deck view
             if(evt.target instanceof HTMLCanvasElement || evt.target instanceof HTMLImageElement) {
                 evt.preventDefault();
-//                target = evt.currentTarget;
+
+                //handles emulating rClick for touch
+                if(longPress) {
+                    clearTimeout(longPress);
+                    longPress = null;
+                }
+                longPress = setTimeout(longPressRClick, longPressInterval, evt);
             }
+
+
             break;
         case "touchmove":
             type = "mousemove";
