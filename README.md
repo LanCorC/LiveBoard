@@ -122,6 +122,11 @@ Others
     * 🎨 Choose a name and color for yourself, or randomize!
     * 🔄 Reset the board to start a new game!
 
+* Compatibility
+    * ✅ Desktop - Complete
+    * 🛠️ Tablet - Work In Progress [(experimental demo)](https://liveboard-testing.onrender.com/)
+    * ⚠️ Mobile - Limited support planned [(experimental demo)](https://liveboard-testing.onrender.com/)
+
 <!-- Try out the demo below -->
 
   Page-only demo here: [hosted on github](https://lancorc.github.io/LiveBoard/src/main/resources/static/Main.html).
