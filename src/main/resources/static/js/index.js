@@ -504,33 +504,39 @@ window.addEventListener("load", (event) => {
         }
 //        console.log("boop! longpress!");
 
-        //reset all 'select'
-        purgeSelected();
-        gameState.deselect(itemFocus);
-        startPoint = null;
+        const touch = event.changedTouches[0];
+        rightClick = true;
+        const rightClickEvent = new MouseEvent("mouseup", {
+            screenX: touch.screenX,
+            screenY: touch.screenY,
+            buttons: 2,
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+            ctrlKey: event.ctrlKey,
+            shiftKey: event.shiftKey,
+            altKey: event.altKey,
+            metaKey: event.metaKey,
+            view: window,
+            bubbles: true,
+            sourceCapabilities: new InputDeviceCapabilities({fireTouchEvents: true})
+        });
+
+        if(itemFocus && itemFocus.deck && itemFocus.deck.selected == user.id) {
+//            console.log("yippee!");
+        } else {
+//            console.log("yippeen't :(");
+
+            //reset all 'select'
+            purgeSelected();
+        }
+
+        //prevents current itemFocus from being 'cycleImage()'-d
         itemFocus = null;
 
-        //some millisecond gap not present in mouseRClick is present here,
-        //using setTimeout as buffer
-        setTimeout(() => {
-            //simulate rClick
-            const touch = event.changedTouches[0];
-            rightClick = true;
-            event.target.dispatchEvent(new MouseEvent("mouseup", {
-                    screenX: touch.screenX,
-                    screenY: touch.screenY,
-                    buttons: 2,
-                    clientX: touch.clientX,
-                    clientY: touch.clientY,
-                    ctrlKey: event.ctrlKey,
-                    shiftKey: event.shiftKey,
-                    altKey: event.altKey,
-                    metaKey: event.metaKey,
-                    view: window,
-                    bubbles: true,
-                    sourceCapabilities: new InputDeviceCapabilities({fireTouchEvents: true})
-            }));
-        }, 500); //NOTE: 25ms is arbitrary
+        event.target.dispatchEvent(rightClickEvent);
+
+        //completes 'itemFocus = null', deselecting once finished
+        gameState.deselect(itemFocus);
     };
 
     window.addEventListener("mousedown", function(event) {
