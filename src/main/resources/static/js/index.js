@@ -527,7 +527,6 @@ window.addEventListener("load", (event) => {
         } else {
             userInterface.userInterface.chatBox.newEntry("longpress yippeen't :(",undefined,"");
             console.log("longpress yippeen't :(");
-            gameState.
             //reset all 'select'
             purgeSelected();
         }
