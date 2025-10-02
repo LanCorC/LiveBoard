@@ -27,6 +27,8 @@
     <br />
     -->
     <br />
+    ✅ Desktop | 🛠️ Tablet | ⚠️🛠️ Mobile
+    <br />
     <!--
     <a href="https://github.com/LanCorC/repo_name">View Demo</a>
     ·
