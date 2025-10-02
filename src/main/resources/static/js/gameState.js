@@ -1459,7 +1459,7 @@ const gameState = (function() {
 
         //no type matches
         if(donorCards.length == 0) {
-            if(recipient == clientUser.hand) {
+            if(recipient == clientUser.hand && donor[0].type != "playMat") {
                 userInterface.chatBox.newEntry(`, you cannot add \`${donor[0].type}\` cards into your hand!`);
             }
             console.log(`addToDeck error: no valid donors, or donors included are in recipient`);
