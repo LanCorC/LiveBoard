@@ -474,9 +474,9 @@ public class RequestProcessor {
                 Card serverCopy = (Card) quickRef.get((long) card.id);
                 if(serverCopy == null || serverCopy.timeStamp != card.timeStamp) {
                     message.bool = false;
-//                    System.out.println("Card timestamp mismatch!");
-//                    System.out.printf("ClntCopy: %s%n", card.timeStamp);
-//                    System.out.printf("SrvrCopy: %s%n", serverCopy.timeStamp);
+                    System.out.println("Card timestamp mismatch!");
+                    System.out.printf("ClntCopy: %s%n", card.timeStamp);
+                    System.out.printf("SrvrCopy: %s%n", serverCopy.timeStamp);
                 } else {
 //                    System.out.printf("ClntCopy: %s%n", card.timeStamp);
 //                    System.out.printf("SrvrCopy: %s%n", serverCopy.timeStamp);
@@ -492,9 +492,9 @@ public class RequestProcessor {
                 Deck serverCopy = (Deck) quickRef.get((long) deck.id);
                 if(serverCopy == null || serverCopy.timeStamp != deck.timeStamp) {
                     message.bool = false;
-//                    System.out.println("Deck timestamp mismatch!");
-//                    System.out.printf("ClntCopy: %s%n", deck.timeStamp);
-//                    System.out.printf("SrvrCopy: %s%n", serverCopy.timeStamp);
+                    System.out.println("Deck timestamp mismatch!");
+                    System.out.printf("ClntCopy: %s%n", deck.timeStamp);
+                    System.out.printf("SrvrCopy: %s%n", serverCopy.timeStamp);
                 } else {
 //                    System.out.printf("Deck: %s%n", deck.timeStamp);
                     decks.add(serverCopy);

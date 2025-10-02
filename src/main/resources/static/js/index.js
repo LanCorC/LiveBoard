@@ -120,7 +120,8 @@ window.addEventListener("load", (event) => {
         y: board.height
     };
 
-    let startPoint;
+    let startPoint;         //translated to canvas dimensions
+    let startPointReal;     //taken from actual mouse positions
     let dragging = false;
 
     //purpose: manage 'redraw' loop
@@ -198,6 +199,8 @@ window.addEventListener("load", (event) => {
         //if this is 'back' image, do not display
         if(!item || (item.index == 0 && !isPreview)) {
             inspectImage.style.visibility = `hidden`;
+            inspectImage.style.top = `${0}px`;
+            inspectImage.style.left = `${0}px`;
             return;
         }
         //TODO to become item.getImage() under 'genericFactory'
@@ -418,8 +421,17 @@ window.addEventListener("load", (event) => {
             handleEdgePanlooping = false;
         }
     }
+    const threshold = 10; //pixels, arbitrary
     const handleDrag = function(event) {
         if(!startPoint) {
+            return;
+        }
+
+        //Touch lenience: 'tap' made accessible by introducing a movement threshold to validate 'moving' attempts
+        if(
+        !dragging &&
+        !event.isTrusted &&     //criteria only enables feature for 'crafted' events (Touch)
+        Math.abs(mouse.x - startPointReal.x) + Math.abs(mouse.y - startPointReal.y) < threshold) {
             return;
         }
 
@@ -464,6 +476,7 @@ window.addEventListener("load", (event) => {
         mouse.x = event.pageX;
         mouse.y = event.pageY;
 
+        //Track user movement for online
         gameState.clientMovement(contextVis.transformPoint(mouse.x, mouse.y));
 
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
@@ -477,13 +490,57 @@ window.addEventListener("load", (event) => {
         //handle tooltip hover- if canvas, finds object
         handleImageTooltip();
 
-
         //check for click-hold-drag
         handleDrag(event);
 
     },false);
 
+    let longPress = null;
+    const longPressInterval = 500; //milliseconds
+    const longPressRClick = function(event) {
+        if(dragging || startPoint == null) {
+//            console.log("boopn't! longpressn't!");
+            return;
+        }
+//        console.log("boop! longpress!");
+
+        const touch = event.changedTouches[0];
+        rightClick = true;
+        const rightClickEvent = new MouseEvent("mouseup", {
+            screenX: touch.screenX,
+            screenY: touch.screenY,
+            buttons: 2,
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+            ctrlKey: event.ctrlKey,
+            shiftKey: event.shiftKey,
+            altKey: event.altKey,
+            metaKey: event.metaKey,
+            view: window,
+            bubbles: true,
+            sourceCapabilities: new InputDeviceCapabilities({fireTouchEvents: true})
+        });
+
+        if(itemFocus && itemFocus.deck && itemFocus.deck.selected == user.id) {
+//            console.log("longpress yippee!");
+        } else {
+//            console.log("longpress yippeen't :(");
+            //reset all 'select'
+            purgeSelected();
+        }
+
+        //prevents current itemFocus from being 'cycleImage()'-d
+        itemFocus = null;
+
+        event.target.dispatchEvent(rightClickEvent);
+
+        //completes 'itemFocus = null', deselecting once finished
+        gameState.deselect(itemFocus);
+    };
+
     window.addEventListener("mousedown", function(event) {
+//        console.log("mousedown received");
+//        console.log(event);
 
         //Hover references
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
@@ -499,12 +556,14 @@ window.addEventListener("load", (event) => {
         } else if (!(hoverElement instanceof HTMLCanvasElement) && !isPreviewCard) {
             //Invalid drag/select point - not Canvas nor PreviewCard
             startPoint = null;
+            startPointReal = null;
             gameState.startPoint(null);
             gameState.offset(null);
         } else {
             //Valid drag/select point
             document.body.classList.add("grabbing");
             startPoint = contextVis.transformPoint(mouse.x, mouse.y);
+            startPointReal = { x: mouse.x, y: mouse.y };
             gameState.startPoint(startPoint);
             gameState.offset(
                 {x: event.offsetX, y: event.offsetY}
@@ -1061,6 +1120,155 @@ window.addEventListener("load", (event) => {
     }, true);
 
     preventRightClickDefault();
+
+    let startPinch = false;
+    //...are we making our own touchEvents?
+    let touchPoints = [];
+    let initialLength;
+
+    const pinchzoom = function(event) {
+        if(event.touches.length != 2) {
+            startPinch = false;
+            return;
+        }
+
+        //note: touchPoints contains ORIGINAL positions, hence compare length
+        let a = event.touches[0];
+        let b = event.touches[1];
+
+        const newLength = Math.abs(a.clientX - b.clientX) +
+                          Math.abs(a.clientY - b.clientY);
+        let result;
+        const rate = 0.5;
+        if(initialLength < newLength) {
+            result = rate; //zooming in
+        } else {
+            result = -rate; //zooming out
+        }
+
+        initialLength = newLength;
+
+        zoom(result);
+        return;
+    }
+
+    //Touch-event -> Mouse-event / Wheel event
+    //https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/MouseEvent
+    function onTouch(evt) {
+
+        if (
+//        evt.touches.length > 1 ||
+        (evt.type === "touchend" && evt.touches.length > 0)) {
+            return;
+        }
+
+        let type = null;
+        let touch = null;
+        let buttons = 0; //note: if 'viewmode', mousedown is ==2; else =1
+
+        switch (evt.type) {
+        case "touchstart":
+            type = "mousedown";
+            touch = evt.changedTouches[0];
+            buttons = 1; //TODO - =2 is rClick needed for deck view
+            if(evt.target instanceof HTMLCanvasElement || evt.target instanceof HTMLImageElement) {
+                evt.preventDefault();
+
+                //handles emulating rClick for touch
+                if(longPress) {
+                    clearTimeout(longPress);
+                    longPress = null;
+                }
+                longPress = setTimeout(longPressRClick, longPressInterval, evt);
+            }
+
+            if(evt.touches.length == 2) {
+                startPinch = true;
+                touchPoints[0] = {
+                    x: evt.touches[0].clientX,
+                    y: evt.touches[0].clientY
+                }
+                touchPoints[1] = {
+                    x: evt.touches[1].clientX,
+                    y: evt.touches[1].clientY
+                }
+                initialLength = Math.abs(touchPoints[0].x - touchPoints[1].x) +
+                                Math.abs(touchPoints[0].y - touchPoints[1].y);
+            } else {
+                startPinch = false;
+            }
+
+            break;
+        case "touchmove":
+            type = "mousemove";
+            touch = evt.changedTouches[0];
+
+            if(startPinch) {
+                pinchzoom(evt);
+            }
+
+            break;
+        case "touchend":
+            type = "mouseup";
+            touch = evt.changedTouches[0];
+            if(evt.target instanceof HTMLCanvasElement || evt.target instanceof HTMLImageElement) {
+                evt.preventDefault();
+//                target = evt.currentTarget;
+            }
+            break;
+        }
+
+        //'center' of a pinch to prevent dragging tug-of-war between two points (very stuttery)
+        let screenX;
+        let screenY;
+        let clientX;
+        let clientY;
+        if(evt.touches.length == 2) {
+            screenX = (evt.touches[0].screenX + evt.touches[1].screenX)/2;
+            screenY = (evt.touches[0].screenY + evt.touches[1].screenY)/2;
+            clientX = (evt.touches[0].clientX + evt.touches[1].clientX)/2;
+            clientY = (evt.touches[0].clientY + evt.touches[1].clientY)/2;
+        }
+
+        let newEvt = new MouseEvent(type, {
+            screenX: screenX || touch.screenX,
+            screenY: screenY || touch.screenY,
+            buttons: buttons,               //TODO - mousedown, value = 2 for rClick pings/deckView
+            clientX: clientX || touch.clientX,
+            clientY: clientY || touch.clientY,
+            ctrlKey: evt.ctrlKey,
+            shiftKey: evt.shiftKey,
+            altKey: evt.altKey,
+            metaKey: evt.metaKey,
+            view: window,
+            bubbles: true,
+            sourceCapabilities: new InputDeviceCapabilities({fireTouchEvents: true})
+        });
+
+        //this is a CATCHUP - mousemove is crucial for initializing some references, and affects subsequent mousedown
+        if(type == "mousedown") {
+            evt.target.dispatchEvent(new MouseEvent("mousemove", {
+                    screenX: screenX || touch.screenX,
+                    screenY: screenY || touch.screenY,
+                    buttons: buttons,               //TODO - mousedown, value = 2 for rClick pings/deckView
+                    clientX: clientX || touch.clientX,
+                    clientY: clientY || touch.clientY,
+                    ctrlKey: evt.ctrlKey,
+                    shiftKey: evt.shiftKey,
+                    altKey: evt.altKey,
+                    metaKey: evt.metaKey,
+                    view: window,
+                    bubbles: true,
+                    sourceCapabilities: new InputDeviceCapabilities({fireTouchEvents: true})
+            }));
+        }
+        evt.target.dispatchEvent(newEvt);
+    }
+
+    window.addEventListener("touchstart", onTouch, {passive: false});
+    window.addEventListener("touchend", onTouch, {passive: false});
+    window.addEventListener("touchcancel", onTouch, {passive: false});
+    window.addEventListener("touchmove", onTouch, {passive: false});
 
     //For some reason, this needs to be called twice in order to properly capture, as far as tested, "mousedown"
     pulseRedraw();

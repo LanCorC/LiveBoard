@@ -88,7 +88,9 @@ export class MenuOption {
         if(!func) { //defaults to creating a popup contextMenu
             func = this.createContextMenu;
         }
-        this.container.addEventListener(`pointerdown`, func, false);
+        this.container.addEventListener(`click`, (event) => {
+            func();
+        }, {passive: false});
         return this;
     }
 
