@@ -522,11 +522,9 @@ window.addEventListener("load", (event) => {
         });
 
         if(itemFocus && itemFocus.deck && itemFocus.deck.selected == user.id) {
-            userInterface.userInterface.chatBox.newEntry("longpress yippee!",undefined,"");
-            console.log("longpress yippee!");
+//            console.log("longpress yippee!");
         } else {
-            userInterface.userInterface.chatBox.newEntry("longpress yippeen't :(",undefined,"");
-            console.log("longpress yippeen't :(");
+//            console.log("longpress yippeen't :(");
             //reset all 'select'
             purgeSelected();
         }
