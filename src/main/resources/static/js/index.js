@@ -1122,13 +1122,44 @@ window.addEventListener("load", (event) => {
 
     preventRightClickDefault();
 
+    let startPinch = false;
+    //...are we making our own touchEvents?
+    let touchPoints = [];
+    let initialLength;
+
+    const pinchzoom = function(event) {
+        if(event.touches.length != 2) {
+            startPinch = false;
+            return;
+        }
+
+        //note: touchPoints contains ORIGINAL positions, hence compare length
+        let a = event.touches[0];
+        let b = event.touches[1];
+
+        const newLength = Math.abs(a.clientX - b.clientX) +
+                          Math.abs(a.clientY - b.clientY);
+        let result;
+        const rate = 0.5;
+        if(initialLength < newLength) {
+            result = rate; //zooming in
+        } else {
+            result = -rate; //zooming out
+        }
+
+        initialLength = newLength;
+
+        zoom(result);
+        return;
+    }
+
     //Touch-event -> Mouse-event / Wheel event
     //https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/MouseEvent
     function onTouch(evt) {
-//        console.log("hey!");
-//        console.log(evt.type);
-//        evt.preventDefault();
-        if ( evt.touches.length > 1 || (evt.type === "touchend" && evt.touches.length > 0)) {
+
+        if (
+//        evt.touches.length > 1 ||
+        (evt.type === "touchend" && evt.touches.length > 0)) {
             return;
         }
 
@@ -1152,15 +1183,31 @@ window.addEventListener("load", (event) => {
                 longPress = setTimeout(longPressRClick, longPressInterval, evt);
             }
 
+            if(evt.touches.length == 2) {
+                startPinch = true;
+                touchPoints[0] = {
+                    x: evt.touches[0].clientX,
+                    y: evt.touches[0].clientY
+                }
+                touchPoints[1] = {
+                    x: evt.touches[1].clientX,
+                    y: evt.touches[1].clientY
+                }
+                initialLength = Math.abs(touchPoints[0].x - touchPoints[1].x) +
+                                Math.abs(touchPoints[0].y - touchPoints[1].y);
+            } else {
+                startPinch = false;
+            }
+
             break;
         case "touchmove":
             type = "mousemove";
             touch = evt.changedTouches[0];
-//            if(evt.target instanceof HTMLImageElement) {
-//                console.log("moving image");
-//            } else {
-//                console.log("moving");
-//            }
+
+            if(startPinch) {
+                pinchzoom(evt);
+            }
+
             break;
         case "touchend":
             type = "mouseup";
@@ -1169,15 +1216,27 @@ window.addEventListener("load", (event) => {
                 evt.preventDefault();
 //                target = evt.currentTarget;
             }
-//            console.log("touchend");
             break;
         }
+
+        //'center' of a pinch to prevent dragging tug-of-war between two points (very stuttery)
+        let screenX;
+        let screenY;
+        let clientX;
+        let clientY;
+        if(evt.touches.length == 2) {
+            screenX = (evt.touches[0].screenX + evt.touches[1].screenX)/2;
+            screenY = (evt.touches[0].screenY + evt.touches[1].screenY)/2;
+            clientX = (evt.touches[0].clientX + evt.touches[1].clientX)/2;
+            clientY = (evt.touches[0].clientY + evt.touches[1].clientY)/2;
+        }
+
         let newEvt = new MouseEvent(type, {
-            screenX: touch.screenX,
-            screenY: touch.screenY,
+            screenX: screenX || touch.screenX,
+            screenY: screenY || touch.screenY,
             buttons: buttons,               //TODO - mousedown, value = 2 for rClick pings/deckView
-            clientX: touch.clientX,
-            clientY: touch.clientY,
+            clientX: clientX || touch.clientX,
+            clientY: clientY || touch.clientY,
             ctrlKey: evt.ctrlKey,
             shiftKey: evt.shiftKey,
             altKey: evt.altKey,
@@ -1185,17 +1244,16 @@ window.addEventListener("load", (event) => {
             view: window,
             bubbles: true,
             sourceCapabilities: new InputDeviceCapabilities({fireTouchEvents: true})
-
         });
 
         //this is a CATCHUP - mousemove is crucial for initializing some references, and affects subsequent mousedown
         if(type == "mousedown") {
             evt.target.dispatchEvent(new MouseEvent("mousemove", {
-                    screenX: touch.screenX,
-                    screenY: touch.screenY,
+                    screenX: screenX || touch.screenX,
+                    screenY: screenY || touch.screenY,
                     buttons: buttons,               //TODO - mousedown, value = 2 for rClick pings/deckView
-                    clientX: touch.clientX,
-                    clientY: touch.clientY,
+                    clientX: clientX || touch.clientX,
+                    clientY: clientY || touch.clientY,
                     ctrlKey: evt.ctrlKey,
                     shiftKey: evt.shiftKey,
                     altKey: evt.altKey,
