@@ -536,6 +536,7 @@ window.addEventListener("load", (event) => {
         event.target.dispatchEvent(rightClickEvent);
 
         //completes 'itemFocus = null', deselecting once finished
+        //Important: happens after rightClick. rClick while currently selected means priority-accepted request.
         gameState.deselect(thisFocus);
     };
 
