@@ -529,13 +529,14 @@ window.addEventListener("load", (event) => {
             purgeSelected();
         }
 
+        let thisFocus = itemFocus;
         //prevents current itemFocus from being 'cycleImage()'-d
         itemFocus = null;
 
         event.target.dispatchEvent(rightClickEvent);
 
         //completes 'itemFocus = null', deselecting once finished
-        gameState.deselect(itemFocus);
+        gameState.deselect(thisFocus);
     };
 
     window.addEventListener("mousedown", function(event) {
