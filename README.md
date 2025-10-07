@@ -27,7 +27,7 @@
     <br />
     -->
     <br />
-    ✅ Desktop | 🛠️ Tablet | ⚠️🛠️ Mobile
+    ✅ Desktop | 👌 Tablet | 👌 Mobile
     <br />
     <!--
     <a href="https://github.com/LanCorC/repo_name">View Demo</a>
@@ -113,6 +113,12 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <p align="center">
     <img src="https://github.com/user-attachments/assets/df0cb4bc-4a99-4865-aa80-39292bf33921">
 </p>
+
+* Supported on touch devices
+<p align="center">
+    <img src="https://github.com/user-attachments/assets/8f8c17c1-1296-4572-bcb4-16b7cdfa3ce3">
+</p>
+
 Others
 
 * Game Functionality
@@ -125,9 +131,9 @@ Others
     * 🔄 Reset the board to start a new game!
 
 * Compatibility
-    * ✅ Desktop - Complete
-    * 🛠️ Tablet - Work In Progress [(experimental demo)](https://liveboard-testing.onrender.com/)
-    * ⚠️🛠️ Mobile - Limited support planned / Work In Progress [(experimental demo)](https://liveboard-testing.onrender.com/)
+    * ✅ Desktop - Recommended
+    * 👌 Tablet - Supported
+    * 👌 Mobile - Supported
 
 <!-- Try out the demo below -->
 
@@ -198,7 +204,7 @@ To run this project locally, Java JDK and Maven must be installed on your device
 
 <!-- ROADMAP -->
 ## Roadmap
-- [ ] Tablet Browser Touch Capabilities
+- [x] Tablet Browser Touch Capabilities
 - [ ] Assistive side-buttons
     - [ ] 'View' Mode
     - [ ] 'Drag' Mode
