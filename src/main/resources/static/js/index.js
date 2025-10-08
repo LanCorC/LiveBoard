@@ -480,9 +480,7 @@ window.addEventListener("load", (event) => {
         gameState.clientMovement(contextVis.transformPoint(mouse.x, mouse.y));
 
         hoverElement = document.elementFromPoint(mouse.x, mouse.y);
-        gameState.hoverIsCanvas(hoverElement instanceof HTMLCanvasElement);
-//        console.log(itemFocus);
-//        console.log(gameState.itemFromRGB(contextTouch, mouse));
+        gameState.hoverIsCanvas(event.target instanceof HTMLCanvasElement);
 
         if (document.elementFromPoint(mouse.x, mouse.y) instanceof HTMLCanvasElement)
         hoverElement = gameState.itemFromRGB(contextTouch, mouse);
@@ -724,6 +722,9 @@ window.addEventListener("load", (event) => {
         dragging = false;
         gameState.purgeHoverItem();
         pulseRedraw();
+
+        //TODO - mouseup, check empty preview for hand;
+        //clarify if evt.target is HTMLImageElement, then find corresponding card => card.deck if any
     }, false);
 
     //Rotate the board around the mouse, press 'a' or 'd'
@@ -1154,6 +1155,8 @@ window.addEventListener("load", (event) => {
         return;
     }
 
+    let leftPreviewBox = false;
+
     //Touch-event -> Mouse-event / Wheel event
     //https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/MouseEvent
     function onTouch(evt) {
@@ -1173,7 +1176,10 @@ window.addEventListener("load", (event) => {
             type = "mousedown";
             touch = evt.changedTouches[0];
             buttons = 1; //TODO - =2 is rClick needed for deck view
-            if(evt.target instanceof HTMLCanvasElement || evt.target instanceof HTMLImageElement) {
+            if(evt.target instanceof HTMLCanvasElement
+            //NOTE: letting HTMLImageElement through w/o evt.preventDefault() enables touch scroll
+//            || evt.target instanceof HTMLImageElement
+            ) {
                 evt.preventDefault();
 
                 //handles emulating rClick for touch
@@ -1183,6 +1189,9 @@ window.addEventListener("load", (event) => {
                 }
                 longPress = setTimeout(longPressRClick, longPressInterval, evt);
             }
+
+            //true - target is ImageElement
+            leftPreviewBox = !(evt.target instanceof HTMLImageElement);
 
             if(evt.touches.length == 2) {
                 startPinch = true;
@@ -1209,14 +1218,33 @@ window.addEventListener("load", (event) => {
                 pinchzoom(evt);
             }
 
+            //TODO note: able to faceup/facedown card in preview (deck) makes this awkward
+            //undesired effects: may accidentally 'flip up' a card, and on taking from the deck, everyone sees
+            //desired solution: prevent faceup/facedown via noncanvas
+            //TODO future: taking the 2nd last card of a deck via preview dissolves the deck => breaks event chain
+            if(!leftPreviewBox) {
+                const currElement = document.elementFromPoint(touch.clientX, touch.clientY);
+                if(currElement instanceof HTMLCanvasElement) {
+                    //has left
+                    leftPreviewBox = true;
+                } else {
+                    //has not left
+                    return;
+                }
+            }
+
             break;
         case "touchend":
             type = "mouseup";
             touch = evt.changedTouches[0];
-            if(evt.target instanceof HTMLCanvasElement || evt.target instanceof HTMLImageElement) {
+            if(evt.target instanceof HTMLCanvasElement
+//            || evt.target instanceof HTMLImageElement
+            ) {
                 evt.preventDefault();
 //                target = evt.currentTarget;
             }
+
+            leftPreviewBox = true;
             break;
         }
 
