@@ -17,6 +17,10 @@ import gameState from "./gameState.js";
 //Goal2: have github spit out the HTML, the ws attempt, and loading screen + demo ready
 //attempt at connecting to local server
 
+//if github, forwards server connection to render.com
+const serverHost = "liveboard.onrender.com";
+const forwardFrom = "lancorc.github.io";
+
 class Server {
 
     constructor() {
@@ -60,6 +64,7 @@ class Server {
     connect(address) {
 //        connect(address, reconnectCount, immediatelyJoin) {
         if(!address) address = window.location.host;
+        if(address == forwardFrom) address = serverHost;
         const endpoint = "/multiplay";
 
         let regExp = /(?<=:\/\/).*/; //search for after :// as in http:// https://
