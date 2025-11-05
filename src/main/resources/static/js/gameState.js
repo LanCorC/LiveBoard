@@ -1034,7 +1034,7 @@ const gameState = (function() {
         const appendPathName = pathName != "/";
         //filter, e.g. ...main/resources/static/Main.html => ...main/resources/static
         if(appendPathName) pathName = pathName.substring(0,pathName.lastIndexOf("/"));
-        pathName += "/";
+        pathName += "/"; // ...resources/static/
 
         //Reconnect circular references, and JSON restructured properties
         for(const [key, value] of Object.entries(reconstructionItems)) {
