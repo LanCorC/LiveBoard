@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -9,13 +10,24 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
 
+    //Redirect requests to reduce hosting load
+    String backendHostingService = "https://liveboard.onrender.com/";
+    String frontendHostingService = "https://lancorc.github.io/LiveBoard/src/main/resources/static/Main.html";
+
     /**
      * Handles GET requests to the "/" endpoint.
      *
      * @return View name for the client page.
      */
     @GetMapping("/")
-    public String index() {
+    public String index(HttpServletRequest request) {
+
+        //if matches server hosting service, forward to github pages
+        String originURL = request.getRequestURL().toString();
+        if(originURL.equals(backendHostingService)) {
+            return "redirect:" + frontendHostingService;
+        }
+
         return "Main.html";
     }
 }
