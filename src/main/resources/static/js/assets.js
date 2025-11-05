@@ -26,16 +26,26 @@ const sizes = {
 };
 
 const assets = (function() {
+//    const tapIcon = new Image();
+//    tapIcon.src = `./images/Tokens/hand-tap-svgrepo-com.svg`;
+//    const deckIcon = new Image();
+//    deckIcon.src = `./images/Tokens/stack-push-svgrepo-com.svg`;
+//    const moveTo = new Image();
+//    moveTo.src = `./images/Tokens/send-svgrepo-com.svg`;
+//    const no = new Image();
+//    no.src = `./images/Tokens/no-svgrepo-com.svg`;
+//    const view = new Image();
+//    view.src = `./images/Tokens/magnifier-glass-svgrepo-com.svg`;
     const tapIcon = new Image();
-    tapIcon.src = `./images/Tokens/hand-tap-svgrepo-com.svg`;
+    tapIcon.src = `images/Tokens/hand-tap-svgrepo-com.svg`;
     const deckIcon = new Image();
-    deckIcon.src = `./images/Tokens/stack-push-svgrepo-com.svg`;
+    deckIcon.src = `images/Tokens/stack-push-svgrepo-com.svg`;
     const moveTo = new Image();
-    moveTo.src = `./images/Tokens/send-svgrepo-com.svg`;
+    moveTo.src = `images/Tokens/send-svgrepo-com.svg`;
     const no = new Image();
-    no.src = `./images/Tokens/no-svgrepo-com.svg`;
+    no.src = `images/Tokens/no-svgrepo-com.svg`;
     const view = new Image();
-    view.src = `./images/Tokens/magnifier-glass-svgrepo-com.svg`;
+    view.src = `images/Tokens/magnifier-glass-svgrepo-com.svg`;
     const backImg = 0;
     const frontImg = 1;
 
@@ -498,7 +508,7 @@ let padHundred = function(number) {
     return result + number.toString();
 }
 
-let baseAddress = "./images";
+let baseAddress = "images";
 const loadAll = true; //testing variable: if true, loads all expansions
 
 //"This won't take long.."
