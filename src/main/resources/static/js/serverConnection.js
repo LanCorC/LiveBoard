@@ -122,6 +122,7 @@ class Server {
                 //                console.log("Something went wrong!")
                 //                frontPage.send("Server not found, or closed unexpectedly!");
                 frontUI.connectionFailed("Dirty disconnect: " + event.code + " " + event.reason + " readystate: " + socket.readyState);
+                frontUI.howToConnect();
             }
 
             //todo if server error, 1011, retry connection immediately
@@ -142,7 +143,6 @@ class Server {
 //                this.server.chatBox.newEntry(" have disconnected! Attempting to reconnect...");
 //            }
 
-            frontUI.howToConnect();
 
             let message = "";
             switch(event.code) {

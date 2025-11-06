@@ -141,8 +141,10 @@ const frontPage = (function() {
     function howToConnect() {
         gameLoadMessage(
             createSmallBody(
-                "If you are viewing this project on Github, this webpage can only serve [DEMO] and [SOLO].", Element.BREAK(),
                 "To try the live project, grab a friend and visit ", Element.LINK(defaultProjectHost), "!"
+//                ,
+//                Element.BREAK(),
+//                "Note: You must be on a secure website to access non-local servers."
             )
         );
     }

@@ -5,6 +5,7 @@
 
 <!-- PROJECT SHIELDS -->
 ![GitHub last commit](https://img.shields.io/github/last-commit/LanCorC/LiveBoard)
+![](https://img.shields.io/website?url=https%3A%2F%2Fliveboard.onrender.com%2F&up_message=LIVE&down_message=DOWN&label=Multiplayer%20Server)
 
 <!-- PROJECT LOGO -->
 
@@ -36,9 +37,8 @@
     ·
     <a href="https://github.com/LanCorC/repo_name/issues">Request Feature</a>
     -->
-    <a href="http://liveboard.onrender.com/">View Live Demo</a>
-    ·
-    <a href="https://lancorc.github.io/LiveBoard/src/main/resources/static/Main.html">View Flat Demo</a>
+    <a href="http://liveboard.onrender.com/">View Demo</a>
+    <br />
   </p>
 </div>
 
@@ -136,10 +136,9 @@ Others
     * 👌 Mobile - Supported
 
 <!-- Try out the demo below -->
-
-  Page-only demo here: [hosted on github](https://lancorc.github.io/LiveBoard/src/main/resources/static/Main.html).
-  
-  Live-server demo here: [liveboard.onrender.com](https://liveboard.onrender.com)—please allow up to 1minute for the host to start up the service.
+![](https://img.shields.io/website?url=https%3A%2F%2Fliveboard.onrender.com%2F&up_message=LIVE&down_message=DOWN&label=Multiplayer%20Server)
+<br />
+[Demo here](https://lancorc.github.io/LiveBoard/src/main/resources/static/Main.html)—please allow up to 1minute for the host to start up the service.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
