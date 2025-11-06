@@ -421,9 +421,15 @@ class ChatBox {
                     this.newEntry(", please use '/rg' or '/resetgame' to reset the game.");
                     break;
                 }
-                this.#resetGame();
-                this.newEntry(entry);
-                this.server.resetGame();
+
+                if(window.confirm("Are you sure you want to RESET GAME?")) {
+                    this.#resetGame();
+                    this.server.resetGame();
+                } else {
+                    entry.innerText = "RESETGAME cancelled.";
+                    this.newEntry(entry);
+                }
+
                 break;
             default:
                 entry.innerText = `Command '${command}' not recognized`;
@@ -801,9 +807,7 @@ function createMenu() {
         .addBuildSpecification("Cycle Background (=)",Controls.cycleBackground,MenuOption.KEEP)
         .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
         .addBuildSpecification("\u26A0 Reset Game \u26A0",()=>{
-            if(window.confirm("Are you sure you want to RESET GAME?")) {
-                userInterface.chatBox.triggerResetGame();
-            }
+            userInterface.chatBox.triggerResetGame();
         },MenuOption.DISCARD)
         .addBuildSpecification(createSmallBody(Element.SEPARATOR()),undefined,MenuOption.KEEP)
         .addBuildSpecification("Leave Game",FrontPage.tools.leaveGame,MenuOption.DISCARD)
