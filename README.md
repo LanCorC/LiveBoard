@@ -176,18 +176,18 @@ To run this project locally, Java JDK and Maven must be installed on your device
    cd LiveBoard
    ```
    **Alternatively**, download and unpack the zip file off this Github page through ![<>Code](https://img.shields.io/badge/<>Code-green.svg), then open your terminal inside the /LiveBoard folder.
-   If you are using a code editor, simply run the *Dockerfile* at the project root to skip steps 4 and 5.
-4. Build the image and choose a name for Docker to use
+   If you are using a code editor, simply run the *Dockerfile* at the project root to skip steps 3 and 4.
+3. Build the image and choose a name for Docker to use
    ```sh
    docker build -t imageNameHere .
    ```
    This process may take a couple minutes. Hint: include the '.' (dot) at the end.
-5. Run the image
+4. Run the image
    ```sh
    docker run -p 8080:5000 imageNameHere
    ```
    `8080` here defines the local port for your access. This is relevant in the next step.
-6. Visit the program through http://localhost:8080/
+5. Visit the program through http://localhost:8080/
 
    If you are running this program without Docker, the program defaults to http://localhost:5000/. This port can be edited under `server.port = 5000` in `src/main/resources/application.properties` 
 
