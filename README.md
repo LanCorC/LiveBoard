@@ -153,6 +153,12 @@ This is an example of how you may give instructions on setting up your project l
 To get a local copy up and running follow these simple example steps.
 -->
 ### Prerequisites
+Download and install Docker Desktop [here](https://www.docker.com/).
+- Type `docker --version` into your system's command line interface to verify installation success
+   - This is *Command Prompt* on Windows
+    
+Run this program.
+<!--
 To run this project locally, Java JDK and Maven must be installed on your device.
 * Java JDK ([Download Here](https://www.oracle.com/in/java/technologies/downloads/))
   1. Set `JAVA_HOME` environment variable to the path of JDK installation, or have the `java` executable on your `PATH`. [Guide by GfG](https://www.geeksforgeeks.org/setting-environment-java/)
@@ -160,9 +166,32 @@ To run this project locally, Java JDK and Maven must be installed on your device
 * Maven ([Download Here](https://maven.apache.org/download.cgi), [Instructions Here](https://maven.apache.org/install.html))
   1. Add the `bin` directory made by `apache-maven-X.X.XX` to the `PATH` environment variable. 
   2. Type `mvn -v` in console to verify installation success
-  
+  -->
 ### Installation
 
+1. Open command prompt or terminal in the desired destination for the files
+2. Clone the repo with [git](https://github.com/git-guides/install-git)
+   ```sh
+   git clone https://github.com/LanCorC/LiveBoard.git
+   cd LiveBoard
+   ```
+   **Alternatively**, download and unpack the zip file off this Github page through ![<>Code](https://img.shields.io/badge/<>Code-green.svg), then open your terminal inside the /LiveBoard folder.
+   If you are using a code editor, simply run the *Dockerfile* at the project root to skip steps 4 and 5.
+4. Build the image and choose a name for Docker to use
+   ```sh
+   docker build -t imageNameHere .
+   ```
+   This process may take a couple minutes. Hint: include the '.' (dot) at the end.
+5. Run the image
+   ```sh
+   docker run -p 8080:5000 imageNameHere
+   ```
+   `8080` here defines the local port for your access. This is relevant in the next step.
+6. Visit the program through http://localhost:8080/
+
+   If you are running this program without Docker, the program defaults to http://localhost:5000/. This port can be edited under `server.port = 5000` in `src/main/resources/application.properties` 
+
+<!--
 1. Open command prompt or terminal in the desired destination for the files
 2. Clone the repo with [git](https://github.com/git-guides/install-git)
    ```sh
@@ -182,19 +211,23 @@ To run this project locally, Java JDK and Maven must be installed on your device
 5. Visit the program through http://localhost:5000/
    
    This port can be edited under `server.port = 5000` in `src/main/resources/application.properties` 
+
+   -->
 ### Usage
 1. Hosting with a third-party tunnel provider
 
    To invite your friends to your private lobby, a third-party tunnel provider is a convenient path. I have personally experienced a lot of success from [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/). Once installed, launch LiveBoard, then enter the following command in another terminal:
   
    ```sh
-   cloudflared tunnel --url localhost:5000
+   cloudflared tunnel --url localhost:8080
    ```
    If you are using cloudflared, note your temporary website is provided in the console output `https://xxxx.trycloudflare.com`.
 2. Termination
-   
+   <!--
    If this program was launched via a command line, press CTRL+C or close the terminal to stop the program. Otherwise, you can find this process as `OpenJDK Platform binary` in Task Manager/Activity Monitor/System Monitor for termination.
-   
+   -->
+   * Launched via command line: terminate the command line tool or press CTRL+C.
+   * Launched using Docker Desktop: close the program or stop the active container in the interface.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
