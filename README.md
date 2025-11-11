@@ -225,7 +225,7 @@ Tip: Step 3 creates a container based on the image created in Step 2, allowing y
    
    b) LAN party
    
-   You can also play with others on the same network by exposing your local port. Players can then load the program through their browser on `<your IP address>:8080`. I have had success with this by adding an Inbound Rule on Windows Defender Firewall on port 8080 for Private networks.
+   You can also play with others on the same network by exposing your local port. Players can then load the program through their browser on `<your IP address>:8080`. I have had success with this by adding an Inbound Rule on Windows Defender Firewall on port 8080 for Private networks, then setting the trusted home network as Private.
    
 3. Termination
    <!--
