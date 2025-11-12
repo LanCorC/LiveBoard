@@ -79,10 +79,6 @@ function getMiscImages(type) {
     return miscRef.get(type);
 }
 
-//todo ?? see if i trash this
-function getRefImages(expansion) {
-
-}
 
 //is a hashmap better?
 let refExpansionCards = {
@@ -512,13 +508,6 @@ const updateInterface = {
     assetCount: null
 }
 
-//let originalCount = {
-//    expansionCards: 0,  //to track how many items have loaded in
-//    expansionCardsExpected: 0, //purpose: to calculate asset loading %ge
-//    expansionsLeft: 0,   //purpose: tracking %ge of all cards loaded (absolute number)
-//    miscCards: 0,
-//    miscCardsExpected: 39
-//}
 
 let count = {
     expansionCards: 0,  //to track how many items have loaded in
@@ -563,24 +552,6 @@ function loadAssets(chosenExpansions) {
         loadExpansionCards(key, value);
     });
 }
-
-//function reloadAssets(chosenExpansions) {
-//    //wipe visual UI, loading counters;
-//    //TODO - refExpansionCards - empty them
-//    for(const expansion in refExpansionCards) {
-//        for(const cardType in refExpansionCards[expansion]) {
-//            refExpansionCards[expansion][cardType].length = 0;
-//        }
-//    }
-//
-//    for(const [key, value] of Object.entries(originalCount)) {
-//        updateInterface.assetCount[`${key}`] = value;
-//    }
-//
-//    loadMisc(); //is tied to assetCount, so restart that too
-//    //call function
-//    loadAssets(chosenExpansions);
-//}
 
 //Purpose: load first, and separately from 'loadAssets'
 //track count of playmats (gameMat, playerMat) for purpose of tracking
@@ -758,7 +729,6 @@ function preProcessPlaymat(card, folderName) {
         itemCount[folderName]++; //"PlayMats" folderName
         processPlayMat(card);
 
-        //TODO? track when misc is finished, maybe unimportant
         if(updateInterface.frontPage) updateInterface.frontPage.increment();
     };
 
