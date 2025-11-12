@@ -294,7 +294,7 @@ Images and symbols used in this project are not my own, and may be subject to co
 
 Project Link: [https://github.com/LanCorC/LiveBoard](https://github.com/LanCorC/LiveBoard)
 
-Say hi, or leave a comment! [Google Form](https://docs.google.com/forms/d/e/1FAIpQLScRD8gJX_LBdwJ6MNhVotK2vhRsMAXvKuj3a2zlpXcWOtCFmw/viewform)
+Say hi, or leave a comment! [Google Form](https://forms.gle/vyYZbpHZDhmGTEM66)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

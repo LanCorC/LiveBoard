@@ -142,9 +142,9 @@ const frontPage = (function() {
     function howToConnect() {
         gameLoadMessage(
             createSmallBody(
-                "To try the live project, grab a friend and visit ", Element.LINK(defaultProjectHost), "!",
+                "To try the live demo, grab a friend and visit ", Element.LINK(defaultProjectHost), "!",
                 Element.BREAK(),
-                "or find out how to ", Element.LINK(defaultHowTo, "host your own lobby"), " for free!"
+                "or find out how to ", Element.LINK(defaultHowTo, "host your own lobby"), "!"
 //                "Note: You must be on a secure website to access non-local servers."
             )
         );
