@@ -124,7 +124,7 @@ Others
 * Game Functionality
     * 🎲 The board and deck population is randomized each time 
     * 👀 Store cards in your hand, and take a peek at decks 
-    * 🦝 Rearrange your hand, or take what exactly you need from a deck 
+    * 🦝 Rearrange your hand, or take exactly what you need from a deck 
     * 📻 Broadcast in chat your dice rolls, or particular cards of interest to notify other players 
     * 🎭 Interact with players using game actions
     * 🎨 Choose a name and color for yourself, or randomize!
