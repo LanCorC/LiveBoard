@@ -78,7 +78,7 @@
 <!--
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 -->
-This is a passion project sparked from the difficulty of finding the time to meet friends in person to play games. There is no intention to scale, mass-distribute, or monetize this project. The live website holds one 'lobby', though a private lobby can be hosted by running the server locally and using a third party service to expose the local port, like [Cloudflared Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) or [Pinggy](https://pinggy.io/).
+This is a passion project sparked from the difficulty of finding the time to meet friends in person to play games. There is no intention to scale, mass-distribute, or monetize this project. The live demo holds one 'lobby', though a private lobby can be hosted by running the server locally and using a third party service to expose the local port, like [Cloudflared Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -293,6 +293,8 @@ Images and symbols used in this project are not my own, and may be subject to co
 [Reach me here!](https://github.com/LanCorC#reach-me)
 
 Project Link: [https://github.com/LanCorC/LiveBoard](https://github.com/LanCorC/LiveBoard)
+
+Say hi, or leave a comment! [Google Form](https://docs.google.com/forms/d/e/1FAIpQLScRD8gJX_LBdwJ6MNhVotK2vhRsMAXvKuj3a2zlpXcWOtCFmw/viewform)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
