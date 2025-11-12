@@ -533,7 +533,6 @@ function loadAssets(chosenExpansions) {
     if(verboseTracking) {
         console.log("hi, we are loading assets :) loadAssets()");
     }
-    console.log("please help");
 
     expansionProperties.forEach( (value, key, map) => {
         if(loadAll) {} else
@@ -673,6 +672,9 @@ function loadExpansionCards(folderName, properties) {
     });
 }
 
+//flag to alert user only once
+let brokenImages = false;
+
 function preProcessRefCard(card, expansion, prefix) {
     card.onload = () => {
         itemCount[expansion]++; //"PlayMats" folderName
@@ -683,11 +685,13 @@ function preProcessRefCard(card, expansion, prefix) {
 
     card.onerror = () => {
         console.log(`Something went wrong: ${card.magicId} ${expansion}`);
-        //TODO testing - if image fails, will it fix itself? or better a button to reset, reload?
-        console.log(`Reapplying now {this.src}...`);
-        this.src = `${baseAddress}/Game/${expansion}/${prefix}${padHundred(card.magicId)}.png`;
-        //TODO testing - if broken, will it loop broken? can i override it here?
-        this.onerror = () => { alert("please reload - broken images")};
+        console.log(`Reapplying now {card.src}...`);
+        card.src = `${baseAddress}/Game/${expansion}/${prefix}${padHundred(card.magicId)}.png`;
+        card.onerror = () => {
+            if(brokenImages) return;
+            brokenImages = true;
+            alert("Please reload the page - some images have failed to load.");
+        };
     }
 
     card.src = `${baseAddress}/Game/${expansion}/${prefix}${padHundred(card.magicId)}.png`;
@@ -760,7 +764,14 @@ function preProcessPlaymat(card, folderName) {
 
     card.onerror = () => {
         console.log(`Something went wrong: ${card.magicId} ${folderName}`);
-    }
+        console.log(`Reapplying now {card.src}...`);
+        card.src = `${baseAddress}/${folderName}/${padHundred(card.magicId)}.png`;
+        card.onerror = () => {
+            if(brokenImages) return;
+            brokenImages = true;
+            alert("Please reload the page - some images have failed to load.");
+            };
+        }
 
     card.src = `${baseAddress}/${folderName}/${padHundred(card.magicId)}.png`;
     card.source = `${baseAddress}/${folderName}/${padHundred(card.magicId)}.png`;
