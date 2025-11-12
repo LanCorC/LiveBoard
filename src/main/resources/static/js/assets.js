@@ -79,10 +79,6 @@ function getMiscImages(type) {
     return miscRef.get(type);
 }
 
-//todo ?? see if i trash this
-function getRefImages(expansion) {
-
-}
 
 //is a hashmap better?
 let refExpansionCards = {
@@ -512,6 +508,7 @@ const updateInterface = {
     assetCount: null
 }
 
+
 let count = {
     expansionCards: 0,  //to track how many items have loaded in
     expansionCardsExpected: 0, //purpose: to calculate asset loading %ge
@@ -525,7 +522,6 @@ function loadAssets(chosenExpansions) {
     if(verboseTracking) {
         console.log("hi, we are loading assets :) loadAssets()");
     }
-    console.log("please help");
 
     expansionProperties.forEach( (value, key, map) => {
         if(loadAll) {} else
@@ -647,6 +643,9 @@ function loadExpansionCards(folderName, properties) {
     });
 }
 
+//flag to alert user only once
+let brokenImages = false;
+
 function preProcessRefCard(card, expansion, prefix) {
     card.onload = () => {
         itemCount[expansion]++; //"PlayMats" folderName
@@ -657,6 +656,13 @@ function preProcessRefCard(card, expansion, prefix) {
 
     card.onerror = () => {
         console.log(`Something went wrong: ${card.magicId} ${expansion}`);
+        console.log(`Reapplying now {card.src}...`);
+        card.src = `${baseAddress}/Game/${expansion}/${prefix}${padHundred(card.magicId)}.png`;
+        card.onerror = () => {
+            if(brokenImages) return;
+            brokenImages = true;
+            alert("Please reload the page - some images have failed to load.");
+        };
     }
 
     card.src = `${baseAddress}/Game/${expansion}/${prefix}${padHundred(card.magicId)}.png`;
@@ -723,13 +729,19 @@ function preProcessPlaymat(card, folderName) {
         itemCount[folderName]++; //"PlayMats" folderName
         processPlayMat(card);
 
-        //TODO? track when misc is finished, maybe unimportant
         if(updateInterface.frontPage) updateInterface.frontPage.increment();
     };
 
     card.onerror = () => {
         console.log(`Something went wrong: ${card.magicId} ${folderName}`);
-    }
+        console.log(`Reapplying now {card.src}...`);
+        card.src = `${baseAddress}/${folderName}/${padHundred(card.magicId)}.png`;
+        card.onerror = () => {
+            if(brokenImages) return;
+            brokenImages = true;
+            alert("Please reload the page - some images have failed to load.");
+            };
+        }
 
     card.src = `${baseAddress}/${folderName}/${padHundred(card.magicId)}.png`;
     card.source = `${baseAddress}/${folderName}/${padHundred(card.magicId)}.png`;

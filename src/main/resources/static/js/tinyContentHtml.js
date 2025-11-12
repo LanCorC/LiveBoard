@@ -36,10 +36,10 @@ export class Element {
     static SEPARATOR() {
         return document.createElement("hr");
     }
-    static LINK(linkString) {
+    static LINK(linkString, linkText) {
         let a = document.createElement("a");
         a.href = linkString;
-        a.innerText = linkString;
+        a.innerText = linkText || linkString;
         a.target = "_blank";
         a.style.pointerEvents = "initial";
 

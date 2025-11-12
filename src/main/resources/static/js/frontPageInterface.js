@@ -5,6 +5,7 @@ import { createChat } from "./boardInterface.js";
 import { createSmallBody, Element} from "./tinyContentHtml.js";
 
 const defaultProjectHost = "https://liveboard.onrender.com";
+const defaultHowTo = "https://github.com/LanCorC/LiveBoard/tree/master?tab=readme-ov-file#prerequisites";
 const verboseTroubleshoot = false;
 
 //Purpose: control frontPage controls, 'loading screen', and server status (on/offline)
@@ -141,9 +142,9 @@ const frontPage = (function() {
     function howToConnect() {
         gameLoadMessage(
             createSmallBody(
-                "To try the live project, grab a friend and visit ", Element.LINK(defaultProjectHost), "!"
-//                ,
-//                Element.BREAK(),
+                "To try the live project, grab a friend and visit ", Element.LINK(defaultProjectHost), "!",
+                Element.BREAK(),
+                "or find out how to ", Element.LINK(defaultHowTo, "host your own lobby"), " for free!"
 //                "Note: You must be on a secure website to access non-local servers."
             )
         );
