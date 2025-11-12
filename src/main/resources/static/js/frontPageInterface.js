@@ -144,7 +144,7 @@ const frontPage = (function() {
             createSmallBody(
                 "To try the live demo, grab a friend and visit ", Element.LINK(defaultProjectHost), "!",
                 Element.BREAK(),
-                "or find out how to ", Element.LINK(defaultHowTo, "host your own lobby"), "!"
+                "Or find out how to ", Element.LINK(defaultHowTo, "host your own lobby"), "!"
 //                "Note: You must be on a secure website to access non-local servers."
             )
         );
@@ -220,6 +220,12 @@ const frontPage = (function() {
             //true, - "Join Game";      //future: default for 'non PartyLeader'
             serverJoinButton.innerText = "Join Game";
             gameLoadMessage("To join the game in session, press [Join Game]!");
+
+            gameLoadMessage(createSmallBody(
+                "To join the game in session, press [Join Game]!",
+                Element.BREAK(),
+                "Or find out how to ", Element.LINK(defaultHowTo, "host your own lobby"), "!"
+            ));
         } else {
             //false, - "Start Game"     //future: default for 'PartyLeader'
             serverJoinButton.innerText = "Start Game";
