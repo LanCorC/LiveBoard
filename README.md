@@ -36,8 +36,11 @@
     <a href="https://github.com/LanCorC/repo_name/issues">Report Bug</a>
     ·
     <a href="https://github.com/LanCorC/repo_name/issues">Request Feature</a>
+    https://forms.gle/vyYZbpHZDhmGTEM66
     -->
-    <a href="http://liveboard.onrender.com/">View Demo</a>
+    <a href="https://lancorc.github.io/LiveBoard/src/main/resources/static/Main.html">View Demo</a>
+    ·
+    <a href="https://forms.gle/vyYZbpHZDhmGTEM66">Feedback/Comments</a>
     <br />
   </p>
 </div>
