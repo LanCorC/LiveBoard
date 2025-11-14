@@ -842,7 +842,7 @@ function createMenu() {
              Element.BOLD("QuickTips 4/5"), Element.BREAK(),
              Element.SEPARATOR(),
              "One Hero's ", Element.ITALICS("EFFECT"), " can only be rolled once per turn— ", Element.BREAK(),
-             "a) as it's played,", Element.BREAK(),
+             "a) as it's played from the hand,", Element.BREAK(),
              "b) by spending an action point", Element.BREAK(),
              "—unless otherwise repeated/copied by special effects."
          ),
