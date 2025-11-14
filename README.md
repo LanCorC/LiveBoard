@@ -283,8 +283,7 @@ Don't forget to give the project a star! Thanks again!
 
 This project's software is distributed with the MIT License. See `LICENSE.txt` for more information. 
 
-Images and symbols used in this project are not my own, and may be subject to copyright and other restrictions.
-
+Images and symbols used in this project are not my own, and may be subject to copyright and other restrictions. See <a href="#acknowledgments">Acknowledgments</a>.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
