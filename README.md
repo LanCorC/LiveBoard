@@ -38,9 +38,9 @@
     <a href="https://github.com/LanCorC/repo_name/issues">Request Feature</a>
     https://forms.gle/vyYZbpHZDhmGTEM66
     -->
-    <a href="https://lancorc.github.io/LiveBoard/src/main/resources/static/Main.html">View Demo</a>
+    <a href="https://lancorc.github.io/LiveBoard/">View Demo</a>
     ·
-    <a href="https://forms.gle/vyYZbpHZDhmGTEM66">Feedback/Comments</a>
+    <a href="https://forms.gle/vyYZbpHZDhmGTEM66">Feedback & Comments</a>
     <br />
   </p>
 </div>
@@ -141,7 +141,7 @@ Others
 <!-- Try out the demo below -->
 ![](https://img.shields.io/website?url=https%3A%2F%2Fliveboard.onrender.com%2F&up_message=LIVE&down_message=DOWN&label=Multiplayer%20Server)
 <br />
-[Demo here](https://lancorc.github.io/LiveBoard/src/main/resources/static/Main.html)—please allow up to 1minute for the host to start up the service.
+[Demo here](https://lancorc.github.io/LiveBoard/)—please allow up to 1minute for the host to start up the service.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

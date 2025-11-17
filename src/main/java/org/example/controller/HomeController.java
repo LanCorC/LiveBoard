@@ -12,7 +12,7 @@ public class HomeController {
 
     //Redirect requests to reduce hosting load
     String backendHostingService = "https://liveboard.onrender.com/";
-    String frontendHostingService = "https://lancorc.github.io/LiveBoard/src/main/resources/static/Main.html";
+    String frontendHostingService = "https://lancorc.github.io/LiveBoard/";
 
     /**
      * Handles GET requests to the "/" endpoint.
