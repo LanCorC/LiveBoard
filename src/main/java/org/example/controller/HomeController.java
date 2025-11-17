@@ -28,6 +28,6 @@ public class HomeController {
             return "redirect:" + frontendHostingService;
         }
 
-        return "Main.html";
+        return "index.html";
     }
 }
