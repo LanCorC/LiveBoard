@@ -5,7 +5,7 @@
 
 <!-- PROJECT SHIELDS -->
 ![GitHub last commit](https://img.shields.io/github/last-commit/LanCorC/LiveBoard)
-![](https://img.shields.io/website?url=https%3A%2F%2Fliveboard.onrender.com%2F&up_message=LIVE&down_message=DOWN&label=Multiplayer%20Server)
+![](https://img.shields.io/website?url=https%3A%2F%2Fliveboard.onrender.com%2F&up_message=LIVE&down_message=DOWN&label=Multiplayer%20Demo%20Server)
 
 <!-- PROJECT LOGO -->
 
@@ -139,7 +139,7 @@ Others
     * 👌 Mobile - Supported
 
 <!-- Try out the demo below -->
-![](https://img.shields.io/website?url=https%3A%2F%2Fliveboard.onrender.com%2F&up_message=LIVE&down_message=DOWN&label=Multiplayer%20Server)
+![](https://img.shields.io/website?url=https%3A%2F%2Fliveboard.onrender.com%2F&up_message=LIVE&down_message=DOWN&label=Multiplayer%20Demo%20Server)
 <br />
 [Demo here](https://lancorc.github.io/LiveBoard/)—please allow up to 1minute for the host to start up the service.
 
