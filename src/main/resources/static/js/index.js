@@ -98,6 +98,8 @@ window.addEventListener("load", (event) => {
     board.setHeight(window.innerHeight);
     board.setWidth(window.innerWidth);
 
+    //track multiplier for touch-zoom reference
+    let zoomMultiplier;
     function centerBoard() {
         gameState.translateDimensions(board.clientWidth, board.clientHeight);
 
@@ -111,6 +113,8 @@ window.addEventListener("load", (event) => {
         let pt =
         contextVis.transformPoint(board.clientWidth/2, board.clientHeight/2);
         contextVis.translate(pt.x - center.x, pt.y - center.y);
+
+        zoomMultiplier = multiplier;
     }
     centerBoard();
 
@@ -437,6 +441,13 @@ window.addEventListener("load", (event) => {
 
         //Drag item or canvas
         let point = contextVis.transformPoint(mouse.x, mouse.y);
+        //TODO - of no current meaningful effect
+//        let point;
+//        if(startPinch) {
+//            point = contextVis.transformPoint(pinchCenterPoint.x, pinchCenterPoint.y);
+//        } else {
+//            point = contextVis.transformPoint(mouse.x, mouse.y);
+//        }
         let dx = point.x - startPoint.x;
         let dy = point.y - startPoint.y;
 
@@ -1014,8 +1025,12 @@ window.addEventListener("load", (event) => {
 
     //scrollResize responsiveness multiplier
     let scale = 1.1;
+    //TODO - of no current meaningful effect
+    //track centerpoint at start of pinch
+//    let pinchCenterPoint;
 
-    const zoom = function(val) {
+    //val - zooming in or zooming out; override val - set zoom to value (where valid)
+    const zoom = function(val, overrideVal) {
 //        console.log("Start of zoom");
         let factor = Math.pow(scale, val); //example: scale '2' results in => double (pow2) or half (pow-2 = x0.5)
 
@@ -1025,8 +1040,6 @@ window.addEventListener("load", (event) => {
         } else {
             maxZoomOut = false;
         }
-
-        let pt = contextVis.transformPoint(mouse.x, mouse.y);
 
         //a assumed identical to d
         let {a, b, c, d} = contextVis.getTransform();
@@ -1056,12 +1069,38 @@ window.addEventListener("load", (event) => {
         let override = false;
         let currMinimum = assets.dimensions.minZoomoutTransform;
 
+        let newMultiplier = overrideVal ? overrideVal : currentMultiplier*factor;
+//        newMultiplier = Math.max(0.05, newMultiplier);
+
+        //TODO - for some reason, the offset is now wrong...
+            //as compared to original ver.
+            //test this out -- seems on browser, no pinch, offset is correct.
+            //browser - devtool - simulate tablet, no pinch - offset is correct.
+            //see if organic mobile pinch is breaking this?
+            //OK - for some reason it's fine now. keep an eye out.
+
+            //some annoyances: on-pinch jitters
+            //some annoyances: sometimes now breaks out of 'maxzoomout'
+
         if(factor < 1 &&
-        currentMultiplier * factor < currMinimum) {
+        newMultiplier < currMinimum) {
             override = true;
             maxZoomOut = true;
         }
 
+
+        //options on 'pt' do not make any meaningful difference on 'onpinch jitter' OR afterPinch
+        let pt = contextVis.transformPoint(mouse.x, mouse.y);
+        //TODO - of no current meaningful effect
+//        let pt;
+//        if(overrideVal) {
+//            pt = contextVis.transformPoint(pinchCenterPoint.x, pinchCenterPoint.y);
+//        } else {
+//            pt = contextVis.transformPoint(mouse.x, mouse.y);
+//        }
+
+        //TODO - this might be source of 'onpinch jitter' -- maybe see handledrag dragstart?
+        //if overrideVal, use centerpoint pt.x, pt.y
         contextVis.translate(pt.x, pt.y);
         let {e, f} = contextVis.getTransform();
         switch(user.position) {
@@ -1069,31 +1108,34 @@ window.addEventListener("load", (event) => {
                 if(override) {
                     contextVis.setTransform(0, currMinimum, -currMinimum, 0, e, f);
                 } else {
-                    contextVis.setTransform(0, currentMultiplier*factor, -currentMultiplier*factor, 0, e, f);
+                    contextVis.setTransform(0, newMultiplier, -newMultiplier, 0, e, f);
                 }
                 break;
             case 2:
                 if(override) {
                     contextVis.setTransform(-currMinimum, 0, 0, -currMinimum, e, f);
                 } else {
-                    contextVis.setTransform(-currentMultiplier*factor, 0, 0, -currentMultiplier*factor, e, f);
+                    contextVis.setTransform(-newMultiplier, 0, 0, -newMultiplier, e, f);
                 }
                 break;
             case 3:
                 if(override) {
                     contextVis.setTransform(0, -currMinimum, +currMinimum, 0, e, f);
                 } else {
-                    contextVis.setTransform(0, -currentMultiplier*factor, currentMultiplier*factor, 0, e, f);
+                    contextVis.setTransform(0, -newMultiplier, newMultiplier, 0, e, f);
                 }
                 break;
             default:
                 if(override) {
                     contextVis.setTransform(currMinimum, b, c, currMinimum, e, f);
                 } else {
-                    contextVis.scale(factor, factor);
+                    contextVis.setTransform(newMultiplier, 0, 0, newMultiplier, e, f);
                 }
         }
         contextVis.translate(-pt.x, -pt.y);
+
+        //update zoom multiplier for touch-zoom tracking
+        zoomMultiplier = newMultiplier;
 
         pulseRedraw();
 //        console.log("End of zoom");
@@ -1128,6 +1170,8 @@ window.addEventListener("load", (event) => {
     //...are we making our own touchEvents?
     let touchPoints = [];
     let initialLength;
+    let initialZoomMultiplier;
+    let currentProportion = 1;
 
     const pinchzoom = function(event) {
         if(event.touches.length != 2) {
@@ -1141,17 +1185,12 @@ window.addEventListener("load", (event) => {
 
         const newLength = Math.abs(a.clientX - b.clientX) +
                           Math.abs(a.clientY - b.clientY);
-        let result;
-        const rate = 0.5;
-        if(initialLength < newLength) {
-            result = rate; //zooming in
-        } else {
-            result = -rate; //zooming out
-        }
 
-        initialLength = newLength;
+        const proportion = newLength/initialLength;
+        let val = currentProportion < proportion ? 0.1 : -0.1;  //value just has to be negative or positive
+        currentProportion = proportion;
+        zoom(val, proportion * initialZoomMultiplier);
 
-        zoom(result);
         return;
     }
 
@@ -1203,8 +1242,18 @@ window.addEventListener("load", (event) => {
                     x: evt.touches[1].clientX,
                     y: evt.touches[1].clientY
                 }
+
+                //track for zoom proportionality
+                initialZoomMultiplier = zoomMultiplier;
                 initialLength = Math.abs(touchPoints[0].x - touchPoints[1].x) +
                                 Math.abs(touchPoints[0].y - touchPoints[1].y);
+
+                //todo: add readjustment of 'pt' - between these points.
+                //TODO note: currently of no meaningful effect
+//                pinchCenterPoint = {
+//                    x: (touchPoints[0].x - touchPoints[1].x)/2,
+//                    y: (touchPoints[0].y - touchPoints[1].y)/2
+//                };
             } else {
                 startPinch = false;
             }
@@ -1214,8 +1263,23 @@ window.addEventListener("load", (event) => {
             type = "mousemove";
             touch = evt.changedTouches[0];
 
-            if(startPinch) {
+            if(evt.touches.length == 2) {
                 pinchzoom(evt);
+            }
+            else if (startPinch) {
+            //TODO - potential afterPinch jitter fix
+                //if one finger drops,
+                startPinch = false;
+
+                //TODO - see if you can 'undo' the offset from 'centerPinch'
+                //startPoint -> center of both
+                //one drops off -> the last remaining touch rubberbands to where 'center of both' was
+                //leads to afterPinch jitter
+//                if(dragging) {
+//                    startPointReal.x = evt.touches[0].x;
+//                    startPointReal.y = evt.touches[0].y;
+//                    startPoint = contextVis.transformPoint(startPointReal.x, startPointReal.y);
+//                }
             }
 
             //TODO note: able to faceup/facedown card in preview (deck) makes this awkward
@@ -1253,6 +1317,7 @@ window.addEventListener("load", (event) => {
         let screenY;
         let clientX;
         let clientY;
+        //stops major jitters - establishes a 'center point' and prevents tug-of-war between two points
         if(evt.touches.length == 2) {
             screenX = (evt.touches[0].screenX + evt.touches[1].screenX)/2;
             screenY = (evt.touches[0].screenY + evt.touches[1].screenY)/2;
