@@ -750,6 +750,27 @@ class ChatBox {
         p.append(" has joined the table!");
         this.newEntry(p);
     }
+
+    viewingDeck(deck, sender) {
+        if(Array.isArray(deck)) deck = deck[0];
+
+        //[[Player]] is looking at Type pile (count)! emoji
+        let emoji = [`🔍`, `👀`, `🕵️`];
+        let chosenE = emoji[Math.floor(Math.random() * emoji.length)];
+
+        let p = document.createElement("p");
+        let bold = document.createElement("B");
+        p.append(formatName(sender));
+        p.append(" is peeking inside ");
+        bold.innerText = `${deck.type} pile (${deck.images.length})`;
+        p.append(bold);
+        p.append(`! ${chosenE}`);
+
+        console.log("boardInterface viewingDeck");
+
+        if(!sender) this.sendChat("","ViewingDeck", deck);
+        this.newEntry(p);
+    }
 }
 
 //object ref to gameState (client-side updates UI)

@@ -276,6 +276,11 @@ class Server {
                                 this.server.chatBox.showHandToChat(sender, data.player,
                                     this.server.game.findItems(data.cards));
                                 break;
+                            case "ViewingDeck":
+                                this.server.chatBox.viewingDeck(
+                                    this.server.game.findItems(data.decks), sender
+                                );
+                                break;
                             default:
                                 console.log(`ChatUpdate type "${data.subHeader}" not recognized`);
                                 break;
@@ -547,6 +552,11 @@ class Server {
     sendChat = function(stringData, stringAction, cards, recipient, bool) {
         if(this.connection == undefined || this.connection.readyState != 1 || !this.inGame) return;
         if(cards && !Array.isArray(cards)) cards = [cards];
+        let deck; //exception for 'chatBox.viewingDeck()', which anticipates only a single deck object
+        if(cards && cards[0].isDeck) {
+            deck = cards;
+            cards = 0;
+        }
 
         let message = {};
         message.messageHeader = "ChatUpdate";
@@ -555,6 +565,7 @@ class Server {
         message.explicit = stringData;
         if(recipient) message.player = recipient;          //recipient
         if(cards) message.cards = cards;
+        if(deck) message.decks = new Array(...deck);
         if(bool != undefined) message.bool = bool;
         message = JSON.stringify(message, this.replacer());
 

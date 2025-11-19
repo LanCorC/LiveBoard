@@ -1646,6 +1646,9 @@ const gameState = (function() {
         select(deck, clientUser);
         userInterface.preview.setView(deck);
 
+        //[[Player]] is looking at [[Type]] pile ([[count]])!
+        userInterface.chatBox.viewingDeck(deck);
+
         server.pushGameAction("selectView", deck);
 
         changeMade = true;
