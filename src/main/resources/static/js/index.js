@@ -610,6 +610,12 @@ window.addEventListener("load", (event) => {
             itemFocus = null;
         }
 
+        //prevent shenanigans while pinch zooming
+        if(startPinch) {
+            itemFocus = null;
+            return;
+        }
+
         //TODO important- itemFocus is received, special note for server/VIP requests
         //on mousedown, if available, valid item, select and redraw
         if(itemFocus && !(itemFocus instanceof HTMLElement)) {
@@ -701,7 +707,7 @@ window.addEventListener("load", (event) => {
         }
 
         //handles 'previewDivElement' selection, de-selection
-        if(rightClick) {
+        if(rightClick && !startPinch) {
             let item = gameState.itemFromRGB(contextTouch, mouse);
 
             //Proceed with canvas related rClicks
