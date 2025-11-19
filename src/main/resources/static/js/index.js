@@ -240,7 +240,7 @@ window.addEventListener("load", (event) => {
 
     const handleImageTooltip = function(event) {
 
-        if(!inspectMode) {
+        if(!inspectMode || startPinch) {
             return;
         }
 
