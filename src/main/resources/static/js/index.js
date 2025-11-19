@@ -574,6 +574,8 @@ window.addEventListener("load", (event) => {
             //Valid drag/select point
             document.body.classList.add("grabbing");
             startPoint = contextVis.transformPoint(mouse.x, mouse.y);
+
+            //for translating x/y from deck preview to board
             startPointReal = { x: mouse.x, y: mouse.y };
             gameState.startPoint(startPoint);
             gameState.offset(
@@ -1079,10 +1081,9 @@ window.addEventListener("load", (event) => {
             //see if organic mobile pinch is breaking this?
             //OK - for some reason it's fine now. keep an eye out.
 
-            //some annoyances: on-pinch jitters
             //some annoyances: sometimes now breaks out of 'maxzoomout'
 
-        if(factor < 1 &&
+        if( factor < 1 && newMultiplier < currMinimum ||
         newMultiplier < currMinimum) {
             override = true;
             maxZoomOut = true;
@@ -1099,7 +1100,6 @@ window.addEventListener("load", (event) => {
 //            pt = contextVis.transformPoint(mouse.x, mouse.y);
 //        }
 
-        //TODO - this might be source of 'onpinch jitter' -- maybe see handledrag dragstart?
         //if overrideVal, use centerpoint pt.x, pt.y
         contextVis.translate(pt.x, pt.y);
         let {e, f} = contextVis.getTransform();
@@ -1248,12 +1248,11 @@ window.addEventListener("load", (event) => {
                 initialLength = Math.abs(touchPoints[0].x - touchPoints[1].x) +
                                 Math.abs(touchPoints[0].y - touchPoints[1].y);
 
-                //todo: add readjustment of 'pt' - between these points.
-                //TODO note: currently of no meaningful effect
-//                pinchCenterPoint = {
-//                    x: (touchPoints[0].x - touchPoints[1].x)/2,
-//                    y: (touchPoints[0].y - touchPoints[1].y)/2
-//                };
+                //Controls for on-pinch rubberband
+                let point = startPoint;
+                let newCenter = contextVis.transformPoint(touchPoints[1].x, touchPoints[1].y);
+                startPoint.x += (newCenter.x-point.x)/2;
+                startPoint.y += (newCenter.y-point.y)/2;
             } else {
                 startPinch = false;
             }
@@ -1267,19 +1266,16 @@ window.addEventListener("load", (event) => {
                 pinchzoom(evt);
             }
             else if (startPinch) {
-            //TODO - potential afterPinch jitter fix
                 //if one finger drops,
                 startPinch = false;
 
-                //TODO - see if you can 'undo' the offset from 'centerPinch'
-                //startPoint -> center of both
-                //one drops off -> the last remaining touch rubberbands to where 'center of both' was
-                //leads to afterPinch jitter
-//                if(dragging) {
-//                    startPointReal.x = evt.touches[0].x;
-//                    startPointReal.y = evt.touches[0].y;
-//                    startPoint = contextVis.transformPoint(startPointReal.x, startPointReal.y);
-//                }
+                //Controls for after-pinch rubberband
+                if(startPoint != null) {
+                    let point = contextVis.transformPoint(touch.pageX, touch.pageY);
+
+                    startPoint.x += point.x-startPoint.x;
+                    startPoint.y += point.y-startPoint.y;
+                }
             }
 
             //TODO note: able to faceup/facedown card in preview (deck) makes this awkward
