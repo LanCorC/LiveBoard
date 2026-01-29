@@ -26,6 +26,17 @@ let tools = {
     leaveGame: undefined
 }; //store 'outside functions' like context redraw
 
+//Placeholder warning/notice - potential future fix
+const braveCheck = function() {
+    try {
+        if(navigator.brave && navigator.brave.isBrave()) {
+            alert("You are using Brave browser -- please turn your Shields DOWN for the app to work or use another browser.");
+        }
+    } catch (e) {
+    }
+}
+braveCheck();
+
 //purpose: handle all frontPage - connect button, load board, [join lobby?]
 const frontPage = (function() {
     //element reference
